@@ -21,6 +21,7 @@ namespace levana
     const char* get_name();
     frame *get_top();
     bool init();
+    int  msgbox(const char *msg, const char *caption = "Message");
     bool yield(bool onlyIfNeeded = false);
     void set_name(const char *name);
     void set_top(frame *top);

@@ -11,7 +11,7 @@
 if lev then
   -- nothing to do
 else
-  package.cpath = package.cpath .. ';./src/?.so;./src/lib?.so'
+  package.cpath = package.cpath .. ';./src/?.so'
   require 'levana'
 
   app   = {}

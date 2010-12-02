@@ -1,8 +1,8 @@
 CXX = g++
-SRC = app.cpp entry.cpp frame.cpp
+SRC = app.cpp entry.cpp frame.cpp menu.cpp
 OBJS = $(SRC:%.cpp=%.o)
 OUT = a.out
-DLIB = liblevana.so
+DLIB = levana.so
 SLIB = liblevana.a
 PCH = prec.h.gch
 WX_CXXFLAGS=`wx-config --cxxflags`
@@ -46,6 +46,7 @@ main.o: main.cpp levana/app.hpp
 app.o: app.cpp levana/app.hpp
 entry.o: entry.cpp levana/entry.hpp
 frame.o: frame.cpp levana/frame.hpp
+menu.o: menu.cpp levana/menu.hpp
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $<
 

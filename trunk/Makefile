@@ -1,8 +1,9 @@
 PREFIX=/tmp
 OUT = a.out
 BIN = levana
-DLIB = liblevana.so
+DLIB = levana.so
 SLIB = liblevana.a
+LUA_VERSION = 5.1
 
 all: build bin lib
 
@@ -18,9 +19,12 @@ lib: src/$(DLIB) src/$(SLIB)
 	cp src/{$(DLIB),$(SLIB)} lib/
 
 install:
-	install -d $(PREFIX)/{bin,lib}
-	install src/levana $(PREFIX)/bin
-	install src/levana.so $(PREFIX)/lib
+	install -d $(PREFIX)/bin
+	install bin/$(BIN) $(PREFIX)/bin/$(BIN)
+	install -d $(PREFIX)/lib
+	install lib/$(SLIB) $(PREFIX)/lib/
+	install -d $(PREFIX)/lib/lua/$(LUA_VERSION)
+	install lib/$(DLIB) $(PREFIX)/lib/lua/$(LUA_VERSION)/
 
 clean:
 	cd src && make clean

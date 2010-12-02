@@ -2,7 +2,7 @@
 #define _FRAME_HPP
 
 /////////////////////////////////////////////////////////////////////////////
-// Name:        levana/frame.hpp
+// Name:        src/levana/frame.hpp
 // Purpose:     header for frame managing class
 // Author:      Akiva Miura <akiva.miura@gmail.com>
 // Created:     12/01/2010
@@ -10,7 +10,7 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
-using namespace std;
+#include "menu.hpp"
 
 namespace levana
 {
@@ -28,6 +28,7 @@ namespace levana
                   int x = -1, int y = -1, int w = -1, int h = -1,
                   long style = -1, const char *name = "frame");
       const char *get_title();
+      void set_menubar(menubar *mb);
       void set_title(const char *title);
       bool show(bool bShow = true);
       static frame *get_top();

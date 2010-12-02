@@ -2,7 +2,7 @@
 #define _ENTRY_HPP
 
 /////////////////////////////////////////////////////////////////////////////
-// Name:        levana/entry.cpp
+// Name:        src/levana/entry.hpp
 // Purpose:     header for binding the C++ library to lua script
 // Author:      Akiva Miura <akiva.miura@gmail.com>
 // Created:     12/01/2010

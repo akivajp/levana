@@ -68,6 +68,7 @@ extern "C" {
         def("autoloop", &app::autoloop),
         def("get_name", &app::get_name),
         def("get_top", &app::get_top),
+        def("msgbox", &app::msgbox),
         def("yield", &app::yield),
         def("set_name", &app::set_name),
         def("set_top", &app::set_top)
@@ -79,8 +80,15 @@ extern "C" {
         .def("close", &frame::close)
         .def("create", &frame::create)
         .def("get_title", &frame::get_title)
+        .def("set_menubar", &frame::set_menubar)
         .def("set_title", &frame::set_title)
-        .def("show", &frame::show)
+        .def("show", &frame::show),
+      class_<menu>("menu")
+        .def(constructor<const char *>())
+        .def("append", &menu::append),
+      class_<menubar>("menubar")
+        .def(constructor<>())
+        .def("append", &menubar::append)
     ];
     lua_entry(globals(L)["arg"]);
     return 1;

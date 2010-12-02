@@ -109,6 +109,13 @@ namespace levana
     return wxGetApp().OnInit();
   }
 
+  int app::msgbox(const char *msg, const char *caption)
+  {
+    wxString new_msg(msg, wxConvUTF8);
+    wxString new_caption(caption, wxConvUTF8);
+    return wxMessageBox(new_msg, new_caption);
+  }
+
   bool app::yield(bool onlyIfNeeded)
   {
     wxGetApp().Yield();

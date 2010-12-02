@@ -82,6 +82,11 @@ namespace levana
     return str.c_str();
   }
 
+  void frame::set_menubar(menubar *mb)
+  {
+    ((wxFrame *)_obj)->SetMenuBar((wxMenuBar *)mb->_obj);
+  }
+
   void frame::set_title(const char *title)
   {
     ((wxFrame *)_obj)->SetTitle(wxString(title, wxConvUTF8));
