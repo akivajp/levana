@@ -11,19 +11,62 @@
 #include "levana/frame.hpp"
 
 #include <string>
+#include <map>
 
-class subFrame : wxFrame
-{
-  public:
-    subFrame(wxWindow* parent, wxWindowID id, const wxString& title,
-            const wxPoint& pos = wxDefaultPosition,
-            const wxSize& size = wxDefaultSize,
-            long style = wxDEFAULT_FRAME_STYLE,
-            const wxString& name = wxT("frame"));
-};
 
 namespace levana
 {
+
+  class myFrame : public wxFrame
+  {
+    public:
+      myFrame();
+      myFrame(wxWindow* parent, wxWindowID id, const wxString &title,
+              const wxPoint &pos = wxDefaultPosition,
+              const wxSize &size = wxDefaultSize,
+              long style = wxDEFAULT_FRAME_STYLE,
+              const wxString& name = wxT("frame"));
+      void Connect(int id, wxEventType eventType, luabind::object lua_func);
+//      void Connect(wxEventType eventType, luabind::object lua_func);
+      void ProcEvent(wxEvent &event);
+    private:
+      std::map<int, std::map<int, luabind::object> > event_map;
+  };
+
+  myFrame::myFrame()
+    : wxFrame(), event_map()
+  {}
+
+  myFrame::myFrame(wxWindow *parent, wxWindowID id, const wxString &title,
+                   const wxPoint &pos, const wxSize &size,
+                   long style, const wxString &name)
+    : wxFrame(parent, id, title, pos, size, style, name), event_map()
+  {}
+
+  void myFrame::Connect(int id, wxEventType eventType, luabind::object lua_func)
+  {
+    event_map[eventType][id] = lua_func;
+    this->wxFrame::Connect(id, eventType, (wxObjectEventFunction)&myFrame::ProcEvent);
+  }
+
+  void myFrame::ProcEvent(wxEvent &event)
+  {
+    std::map<int, luabind::object> id_map;
+    std::map<int, luabind::object>::iterator i;
+    id_map = event_map[event.GetEventType()];
+    i = id_map.find(-1);
+    if (i != id_map.end())
+    {
+      i->second();
+      return;
+    }
+    i = id_map.find(event.GetId());
+    if (i != id_map.end())
+    {
+      i->second();
+      return;
+    }
+  }
 
   frame::frame()
   {
@@ -44,7 +87,7 @@ namespace levana
 
   frame::~frame()
   {
-    delete (wxFrame *)_obj;
+    delete (myFrame *)_obj;
   }
 
   bool frame::close(bool force)
@@ -59,6 +102,11 @@ namespace levana
     return false;
   }
 
+  void frame::connect_menu(int id, luabind::object lua_func)
+  {
+    ((myFrame *)_obj)->Connect(id, wxEVT_COMMAND_MENU_SELECTED, lua_func);
+  }
+
   bool frame::create(int id, const char *title,
                      int x, int y, int w, int h, long style, const char *name)
   {
@@ -70,7 +118,7 @@ namespace levana
     if (w == -1 && h == -1) { size = wxDefaultSize; }
     if (style == -1) { style = wxDEFAULT_FRAME_STYLE; }
 
-    _obj = new wxFrame(NULL, id, wxString(title, wxConvUTF8),
+    _obj = new myFrame(NULL, id, wxString(title, wxConvUTF8),
                          pos, size, style, wxString(name, wxConvUTF8));
     if (!_obj) { return false; }
     return true;

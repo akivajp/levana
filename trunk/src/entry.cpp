@@ -78,6 +78,7 @@ extern "C" {
         .def(constructor<int, const char*, int, int, int, int,
                          long, const char*>())
         .def("close", &frame::close)
+        .def("connect_menu", &frame::connect_menu)
         .def("create", &frame::create)
         .def("get_title", &frame::get_title)
         .def("set_menubar", &frame::set_menubar)

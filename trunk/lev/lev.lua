@@ -17,6 +17,10 @@ else
   app   = {}
   lev   = {}
 
+  function _(str)
+    return str
+  end
+
   -------------------------------------------------------------------
   -- begin 'app' table rewrapping
   app.autoloop = levana.app.autoloop
@@ -34,6 +38,13 @@ else
   app.name = function(name)
     if (name == nil) then return levana.app.get_name() end
     levana.app.set_name(name)
+  end
+
+  app.msgbox = function(str, caption)
+    if (caption == nil) then caption = '' end
+    local result = levana.app.msgbox(str, caption)
+    levana.app.yield(false)
+    return result
   end
   -- end of 'app' table rewrapping
   -------------------------------------------------------------------
@@ -68,16 +79,64 @@ else
     self.obj:set_title(title)
   end
 
+  function frame:set_menubar(mb)
+    self.obj:set_menubar(mb.obj)
+  end
+
   function frame:show(show)
     if (show == nil) then show = true end
     return self.obj:show(show)
   end
 
+  function frame:__tostring()
+    return self.obj:get_title()
+  end
+
   lev.frame = frame
   frame = nil
-  -- end of 'frame' rewrapping
+  -- end of 'frame' class rewrapping
+  -------------------------------------------------------------------
+ 
+
+  -------------------------------------------------------------------
+  -- begin 'menu' class rewrapping
+  class 'menu'
+
+  function menu:__init(title)
+    if (title == nil) then title = '' end
+    self.obj = levana.menu(title)
+  end
+
+  function menu:append(id, str, help_str)
+    if (id == nil) then id = -1 end
+    if (help_str == nil) then help_str = '' end
+    return self.obj:append(id, str, help_str)
+  end
+
+  lev.menu = menu
+  menu = nil
+  -- end of 'menu' class rewrapping
+  -------------------------------------------------------------------
+ 
+
+  -------------------------------------------------------------------
+  -- begin 'menubar' class rewrapping
+  class 'menubar'
+ 
+  function menubar:__init()
+    self.obj = levana.menubar()
+  end
+
+  function menubar:append(menu, title)
+    self.obj:append(menu.obj, title)
+  end
+
+  lev.menubar = menubar
+  menubar = nil
+  -- end of 'menubar' class rewrapping
   -------------------------------------------------------------------
 
   app.name("Levana Application")
+  collectgarbage()
 end
 

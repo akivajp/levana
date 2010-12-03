@@ -12,6 +12,8 @@
 
 #include "menu.hpp"
 
+namespace luabind { class object; }
+
 namespace levana
 {
 
@@ -24,6 +26,7 @@ namespace levana
             long style = -1, const char *name = "frame");
       ~frame();
       bool close(bool force=false);
+      void connect_menu(int id, luabind::object lua_func);
       bool create(int id, const char *title,
                   int x = -1, int y = -1, int w = -1, int h = -1,
                   long style = -1, const char *name = "frame");
