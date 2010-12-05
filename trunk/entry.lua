@@ -1,4 +1,4 @@
-require 'lev/lev'
+require 'lev/all'
 
 mb = lev.menubar()
 file = lev.menu()
