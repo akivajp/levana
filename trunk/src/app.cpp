@@ -14,20 +14,23 @@
 
 #include <string>
 
-const int max_arg_len = 256;
 int lua_main(int argc, char **argv);
 
 namespace levana
 {
-
   class myApp : public wxApp
   {
     public:
-      virtual bool OnInit(void);
-      virtual int OnExit(void);
-      virtual int MainLoop(void);
+      inline myApp() {}
       void set_argv();
       void del_argv();
+      int AutoLoop();
+      virtual bool OnInit(void);
+      virtual int OnExit(void);
+//      virtual int MainLoop(void);
+      bool Yield();
+      inline wxEventLoop *GetEventLoop() { return m_mainLoop; }
+    private:
       char **argv_utf8;
   };
 
@@ -58,27 +61,44 @@ namespace levana
       delete[] argv_utf8[i];
     }
     delete[] argv_utf8;
+    argv_utf8 = NULL;
+  }
+
+  int myApp::AutoLoop()
+  {
+    while(this->GetTopWindow())
+    {
+      this->Yield();
+    }
+    return 0;
   }
 
   bool myApp::OnInit(void)
   {
     set_argv();
+    m_mainLoop = new wxEventLoop();
+    wxEventLoop::SetActive(m_mainLoop);
     return true;
   }
 
   int myApp::OnExit(void)
   {
     del_argv();
-    printf("Bye, Bye!\n");
   }
 
-  int myApp::MainLoop()
+//  int myApp::MainLoop()
+//  {
+//    while(GetTopWindow())
+//    {
+//      this->Yield();
+//    }
+//    return 0;
+//  }
+  
+  bool myApp::Yield()
   {
-    while(GetTopWindow())
-    {
-      this->Yield();
-    }
-    return 0;
+    while(!this->Pending()) { this->ProcessIdle(); }
+    return wxTheApp->Yield(true);
   }
 }
 
@@ -86,10 +106,23 @@ DECLARE_APP(levana::myApp);
 
 namespace levana
 {
-
   int app::autoloop()
   {
-    return wxGetApp().MainLoop();
+    return wxGetApp().AutoLoop();
+  }
+
+  void app::cleanup()
+  {
+    wxGetApp().OnExit();
+  }
+
+  bool app::entry(int argc, char **argv)
+  {
+    static bool entried = false;
+    if (entried) { return false; }
+    if (!wxEntryStart(argc, argv)) { return false; }
+    app::init();
+    return true;
   }
 
   const char *app::get_name()

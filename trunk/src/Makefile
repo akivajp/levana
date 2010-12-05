@@ -23,7 +23,7 @@ clean:
 	rm -rf tags *.o *.gch
 
 distclean: clean
-	rm $(OUT) $(DLIB) $(SLIB)
+	rm -f $(OUT) $(DLIB) $(SLIB)
 
 tags: $(SRC) $(SRC:%.cpp=levana/%.hpp)
 	ctags -R .
@@ -32,7 +32,6 @@ $(PCH): prec.h
 	$(CXX) $(CXXFLAGS) $<
 
 $(OUT): $(OBJS) main.o
-	ctags -R .
 	$(CXX) -o $(OUT) main.o $(OBJS) $(LIBS)
 
 $(SLIB): $(OBJS)

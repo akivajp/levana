@@ -19,6 +19,7 @@ extern "C" {
 
 #include <wx/wx.h>
 #include <wx/taskbar.h>
+#include <wx/evtloop.h>
 #include <luabind/luabind.hpp>
 
 

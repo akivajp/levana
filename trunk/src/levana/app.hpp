@@ -18,6 +18,8 @@ namespace levana
   namespace app
   {
     int autoloop();
+    void cleanup();
+    bool entry(int argc, char **argv);
     const char* get_name();
     frame *get_top();
     bool init();

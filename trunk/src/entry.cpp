@@ -12,6 +12,11 @@
 
 #include <sstream>
 
+void final_release()
+{
+  levana::app::cleanup();
+}
+
 namespace levana
 {
 
@@ -34,7 +39,8 @@ namespace levana
           argv[j] = new char[len + 1];
           strcpy(argv[j++], ss.str().c_str());
         }
-        wxEntryStart(argc, argv);
+        app::entry(argc, argv);
+        atexit(final_release);
         for (int i = 0; i < argc; i++) { delete argv[i]; }
         delete argv;
       }
@@ -45,9 +51,8 @@ namespace levana
     }
     else
     {
-      // entry with the arguments
-      wxEntryStart(argc, argv);
-      app::init();
+      app::entry(0, NULL);
+      atexit(final_release);
     }
     return 0;
   }

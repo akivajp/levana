@@ -29,6 +29,11 @@ namespace levana
       void Connect(int id, wxEventType eventType, luabind::object lua_func);
 //      void Connect(wxEventType eventType, luabind::object lua_func);
       void ProcEvent(wxEvent &event);
+      void OnClose(wxEvent &evt)
+      {
+        wxMessageBox(_("OnClose!!!"));
+        Destroy();
+      }
     private:
       std::map<int, std::map<int, luabind::object> > event_map;
   };
@@ -121,6 +126,7 @@ namespace levana
     _obj = new myFrame(NULL, id, wxString(title, wxConvUTF8),
                          pos, size, style, wxString(name, wxConvUTF8));
     if (!_obj) { return false; }
+//    ((wxFrame*)_obj)->Connect(wxEVT_CLOSE_WINDOW, (wxObjectEventFunction)&myFrame::OnClose);
     return true;
   }
 

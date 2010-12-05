@@ -11,7 +11,7 @@
 if lev then
   -- nothing to do
 else
-  package.cpath = package.cpath .. ';./src/?.so'
+--  package.cpath = package.cpath .. ';./src/?.so'
   require 'levana'
 
   app   = {}
@@ -24,10 +24,11 @@ else
   -------------------------------------------------------------------
   -- begin 'app' table rewrapping
   app.autoloop = levana.app.autoloop
+  app.mainloop = levana.app.mainloop
 
   app.top = function(top)
-    if (top == nil) then return levana.app.get_top() end
-    levana.app.set_top()
+    if (top == nil) then return lev.frame(levana.app.get_top()) end
+    levana.app.set_top(top.obj)
   end
 
   app.doevents = function(only_if_needed)
@@ -54,8 +55,12 @@ else
   -- begin 'frame' class rewrapping
   class 'frame'
 
-  function frame:__init(conf_table)
-    local c = conf_table
+  function frame:__init(conf)
+    if (type(conf) == 'userdata') then
+      self.obj = conf
+      return
+    end
+    local c = conf
     if (c == nil) then c = {} end
     if (c.id == nil) then c.id = -1 end
     if (c.title == nil) then c.title = "Levana Application" end
@@ -72,6 +77,10 @@ else
   function frame:close(force)
     if (force == nil) then show = false end
     return self.obj:close(force)
+  end
+
+  function frame:connect_menu(id, func)
+    self.obj:connect_menu(id, func)
   end
 
   function frame:title(title)
