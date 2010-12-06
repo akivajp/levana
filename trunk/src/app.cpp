@@ -76,8 +76,8 @@ namespace levana
   bool myApp::OnInit(void)
   {
     set_argv();
-    m_mainLoop = new wxEventLoop();
-    wxEventLoop::SetActive(m_mainLoop);
+//    m_mainLoop = new wxEventLoop();
+//    wxEventLoop::SetActive(m_mainLoop);
     return true;
   }
 
@@ -94,7 +94,7 @@ namespace levana
 //    }
 //    return 0;
 //  }
-  
+
   bool myApp::Yield()
   {
     while(!this->Pending()) { this->ProcessIdle(); }
@@ -108,7 +108,8 @@ namespace levana
 {
   int app::autoloop()
   {
-    return wxGetApp().AutoLoop();
+//    return wxGetApp().AutoLoop();
+    return wxGetApp().OnRun();
   }
 
   void app::cleanup()
@@ -122,6 +123,7 @@ namespace levana
     if (entried) { return false; }
     if (!wxEntryStart(argc, argv)) { return false; }
     app::init();
+    entried = true;
     return true;
   }
 
