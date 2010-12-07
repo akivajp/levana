@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        src/levana/icon.hpp
-// Purpose:     Header for icon handling class
+// Name:        src/icon.cpp
+// Purpose:     source for icon handling class
 // Author:      Akiva Miura <akiva.miura@gmail.com>
 // Created:     12/06/2010
 // Copyright:   (C) 2010 Akiva Miura

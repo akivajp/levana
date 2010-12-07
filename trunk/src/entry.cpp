@@ -98,7 +98,9 @@ extern "C" {
         .def("append", &menu::append),
       class_<menubar>("menubar")
         .def(constructor<>())
-        .def("append", &menubar::append)
+        .def("append", &menubar::append),
+      class_<systray>("systray")
+        .def(constructor<>())
     ];
     lua_entry(globals(L)["arg"]);
     return 1;

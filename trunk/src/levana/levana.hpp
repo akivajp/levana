@@ -14,6 +14,7 @@
 #include "app.hpp"
 #include "entry.hpp"
 #include "frame.hpp"
+#include "taskbar.hpp"
 
 #endif // _LEVANA_HPP
 

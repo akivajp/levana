@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        levana/frame.hpp
+// Name:        src/frame.cpp
 // Purpose:     source for frame managing class
 // Author:      Akiva Miura <akiva.miura@gmail.com>
 // Created:     12/01/2010
