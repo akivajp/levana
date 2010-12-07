@@ -40,7 +40,7 @@ else
   app.msgbox = function(str, caption)
     if (caption == nil) then caption = '' end
     local result = levana.app.msgbox(str, caption)
-    levana.app.yield(false)
+    levana.app.yield()
     return result
   end
   -- end of 'app' table rewrapping

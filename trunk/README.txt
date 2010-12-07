@@ -2,11 +2,13 @@ Levanaをダウンロード頂き、ありがとうございます。
 当ソフトウェアを使うことによって、とても簡潔な記述で高度なメディア操作が可能になります。
 
 
-【ソフトウェア情報】
+【ソフトウェア関連情報】
 ・ソフトウェア正式名称：Levana
 ・ソフトウェア読み仮名：レヴァナ
 ・ソフトウェア開発者名：Akiva Miura
 ・開発者連絡先：akiva.miura@gmail.com
+・公式プロジェクトWiki：http://levana.sourceforge.jp/
+・開発Blog：http://d.hatena.ne.jp/Akiva/
 
 
 【構成ファイル】
