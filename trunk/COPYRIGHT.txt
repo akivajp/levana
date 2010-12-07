@@ -9,7 +9,7 @@ For details and rationale, see http://levana.sourceforge.jp/
 
 ===============================================================================
 
-Copyright © 2010 Akiva Miura
+Copyright (C) 2010 Akiva Miura
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@ THE SOFTWARE.
 ===============================================================================
 Lua is used in Levana, and it licensed under MIT License.
 
-Copyright © 1994–2010 Lua.org, PUC-Rio.
+Copyright (C) 1994 - 2010 Lua.org, PUC-Rio.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
