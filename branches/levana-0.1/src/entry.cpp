@@ -89,12 +89,18 @@ extern "C" {
         .def("set_menubar", &frame::set_menubar)
         .def("set_title", &frame::set_title)
         .def("show", &frame::show),
+      class_<icon>("icon")
+        .def(constructor<>())
+        .def("levana_icon", &icon::levana_icon)
+        .def("load_xpm", &icon::load_xpm),
       class_<menu>("menu")
         .def(constructor<const char *>())
         .def("append", &menu::append),
       class_<menubar>("menubar")
         .def(constructor<>())
-        .def("append", &menubar::append)
+        .def("append", &menubar::append),
+      class_<systray>("systray")
+        .def(constructor<>())
     ];
     lua_entry(globals(L)["arg"]);
     return 1;

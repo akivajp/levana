@@ -27,7 +27,6 @@ namespace levana
       int AutoLoop();
       virtual bool OnInit(void);
       virtual int OnExit(void);
-//      virtual int MainLoop(void);
       bool Yield();
       inline wxEventLoop *GetEventLoop() { return m_mainLoop; }
     private:
@@ -49,7 +48,7 @@ namespace levana
     }
     catch(...)
     {
-      printf("Initialization failed\n");
+      throw "app: initialization failed";
       exit(-1);
     }
   }
@@ -86,15 +85,6 @@ namespace levana
     del_argv();
   }
 
-//  int myApp::MainLoop()
-//  {
-//    while(GetTopWindow())
-//    {
-//      this->Yield();
-//    }
-//    return 0;
-//  }
-  
   bool myApp::Yield()
   {
     while(!this->Pending()) { this->ProcessIdle(); }
@@ -108,7 +98,8 @@ namespace levana
 {
   int app::autoloop()
   {
-    return wxGetApp().AutoLoop();
+//    return wxGetApp().AutoLoop();
+    return wxGetApp().OnRun();
   }
 
   void app::cleanup()
@@ -122,6 +113,7 @@ namespace levana
     if (entried) { return false; }
     if (!wxEntryStart(argc, argv)) { return false; }
     app::init();
+    entried = true;
     return true;
   }
 
@@ -149,9 +141,9 @@ namespace levana
     return wxMessageBox(new_msg, new_caption);
   }
 
-  bool app::yield(bool onlyIfNeeded)
+  bool app::yield()
   {
-    wxGetApp().Yield();
+    return wxGetApp().Yield();
   }
 
   void app::set_name(const char *name)

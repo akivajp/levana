@@ -10,6 +10,7 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
+#include "base.hpp"
 #include "menu.hpp"
 #include "icon.hpp"
 
@@ -18,28 +19,29 @@ namespace luabind { class object; }
 namespace levana
 {
 
-  class frame
+  class frame : public base
   {
     public:
-      frame();
-      frame(int id, const char *title,
+      inline frame() : base() {}
+      frame(frame *parent, int id, const char *title,
             int x = -1, int y = -1, int w = -1, int h = -1,
             long style = -1, const char *name = "frame");
       ~frame();
-      bool close(bool force=false);
+      inline bool close(/* false */) { return close(false); }
+      bool close(bool force);
       void connect_menu(int id, luabind::object lua_func);
-      bool create(int id, const char *title,
-                  int x = -1, int y = -1, int w = -1, int h = -1,
-                  long style = -1, const char *name = "frame");
       const char *get_title();
       void set_icon(const icon &i);
       void set_menubar(menubar *mb);
       void set_title(const char *title);
-      bool show(bool bShow = true);
+      inline bool show(/* true */) { return show(true); }
+      bool show(bool bShow);
       static frame *get_top();
       static void set_top(frame *top);
     private:
-      void* _obj;
+      bool create(frame *parent, int id, const char *title,
+                  int x = -1, int y = -1, int w = -1, int h = -1,
+                  long style = -1, const char *name = "frame");
   };
 
 }

@@ -14,26 +14,17 @@
 
 namespace levana
 {
+  icon::icon()
+  {
+    _obj = NULL;
+  }
+
   icon::icon(const char **bits)
   {
     try {
       _obj = new wxIcon(bits);
     }
     catch (...) {
-      throw("icon: loading error");
-    }
-  }
-
-  icon::icon(const char *filename)
-  {
-    // wxInitAllImageHandlers();
-    try {
-      _obj = new wxIcon();
-      wxImage img(wxString(filename, wxConvUTF8), wxBITMAP_TYPE_ANY);
-      img.Rescale(25, 25);
-      ((wxIcon *)_obj)->CopyFromBitmap(img);
-    }
-    catch(...) {
       throw("icon: loading error");
     }
   }
@@ -47,7 +38,6 @@ namespace levana
   {
     if (_obj) { delete (wxIcon *)_obj; }
     _obj = new wxIcon(wxString(filename, wxConvUTF8), wxBITMAP_TYPE_XPM);
-//    _obj = new wxIcon(wxString(filename, wxConvUTF8));
     if (_obj == NULL) { return false; }
     return true;
   }

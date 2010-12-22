@@ -15,19 +15,24 @@
 
 namespace levana
 {
-  namespace app
+  class app
   {
-    int autoloop();
-    void cleanup();
-    bool entry(int argc, char **argv);
-    const char* get_name();
-    frame *get_top();
-    bool init();
-    int  msgbox(const char *msg, const char *caption = "Message");
-    bool yield();
-    void set_name(const char *name);
-    void set_top(frame *top);
-  }
+    public:
+      app();
+      ~app();
+      int  autoloop();
+      int  msgbox(const char *msg);
+      int  msgbox(const char *msg, const char *caption);
+      bool yield();
+      // name property base
+      const char* name_get();
+      void name_set(const char *name);
+      // top frame property base
+      frame *top_get();
+      void   top_set(frame *top);
+      // static method
+      static bool entry(int argc, char **argv);
+  };
 }
 
 #endif // _APP_HPP

@@ -11,6 +11,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "menu.hpp"
+#include "icon.hpp"
 
 namespace luabind { class object; }
 
@@ -31,6 +32,7 @@ namespace levana
                   int x = -1, int y = -1, int w = -1, int h = -1,
                   long style = -1, const char *name = "frame");
       const char *get_title();
+      void set_icon(const icon &i);
       void set_menubar(menubar *mb);
       void set_title(const char *title);
       bool show(bool bShow = true);

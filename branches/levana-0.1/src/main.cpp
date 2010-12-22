@@ -12,25 +12,6 @@
 #include "levana/entry.hpp"
 #include "levana/app.hpp"
 
-class luaDoFile : public wxThread
-{
-  public:
-    luaDoFile(lua_State *L, const char *filename)
-      : wxThread(wxTHREAD_JOINABLE), L(L), filename(filename) {}
-  private:
-    lua_State *L;
-    const char *filename;
-    inline void *Entry()
-    {
-      if (luaL_dofile(L, filename))
-      {
-        wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
-        exit(-1);
-      }
-      return 0;
-    }
-};
-
 int main(int argc, char **argv)
 {
   using namespace levana;

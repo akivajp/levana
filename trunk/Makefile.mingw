@@ -1,0 +1,26 @@
+CXXFLAGS = `/usr/mingw32/usr/bin/wx-config --cxxflags` -I/usr/mingw32/usr/include
+LIBS = -L/usr/mingw32/usr/lib `/usr/mingw32/usr/bin/wx-config --libs` -llua -lluabind -static
+CXX=mingw32-g++
+VERSION=0.1.2
+PACK_DIR=levana-$(VERSION)
+
+all: build
+
+build:
+	cd src && make pch lib bin CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)" LIBS="$(LIBS)"
+	install -d $(PACK_DIR)
+	install -d $(PACK_DIR)/lev
+	install lev/* $(PACK_DIR)/lev/
+	install src/a.out $(PACK_DIR)/levana.exe
+	install COPYRIGHT $(PACK_DIR)/COPYRIGHT.txt
+	install MANUAL    $(PACK_DIR)/MANUAL.txt
+	install README    $(PACK_DIR)/README.txt
+	install entry.lua $(PACK_DIR)/entry.txt
+	unix2dos $(PACK_DIR)/*.txt $(PACK_DIR)/lev/*
+
+clean:
+	cd src && make clean
+
+distclean: clean
+	rm -rf $(PACK_DIR)
+

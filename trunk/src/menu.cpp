@@ -13,7 +13,17 @@
 namespace levana
 {
 
-  menu::menu(const char *title)
+  menu::menu() : base()
+  {
+    try {
+      _obj = new wxMenu();
+    }
+    catch(...) {
+      throw "menu: allocation error";
+    }
+  }
+
+  menu::menu(const char *title) : base()
   {
     try {
       _obj = new wxMenu(wxString(title, wxConvUTF8));
@@ -36,8 +46,12 @@ namespace levana
     if (item == NULL) { return 0; }
     return item->GetId();
   }
+  int menu::append(menu *m, int id, const char *str, const char *help_str)
+  {
+    return m->append(id, str, help_str);
+  }
 
-  
+
   menubar::menubar()
   {
     try {

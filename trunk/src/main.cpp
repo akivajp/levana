@@ -23,12 +23,11 @@ int main(int argc, char **argv)
     luaL_openlibs(L);
 
     // levana library registration
-    luabind::object preload = luabind::globals(L)["package"]["preload"];
-    preload.push(L);
+    lua_getglobal(L, "package");
+    lua_getfield(L, -1, "preload");
     lua_pushcfunction(L, &luaopen_levana);
     lua_setfield(L, -2, "levana");
-    lua_gettop(L);
-    lua_gettop(L);
+    lua_pop(L, 2);
 
     app::entry(argc, argv);
     // run entry program

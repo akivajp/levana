@@ -10,29 +10,30 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
+#include "base.hpp"
+
 namespace levana
 {
 
-  class menu
+  class menu : public base
   {
     public:
-      menu(const char *title = "");
+      menu();
+      menu(const char *title);
       ~menu();
       int append(int id, const char *str, const char *help_str = "");
+      static int append(menu *m, int id, const char *str, const char *help_str = "");
+      friend class systray;
       friend class menubar;
-    private:
-      void *_obj;
   };
 
-  class menubar
+  class menubar : public base
   {
     public:
       menubar();
       ~menubar();
       bool append(menu *m, const char *title);
       friend class frame;
-    private:
-      void *_obj;
   };
 
 }

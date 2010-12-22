@@ -8,7 +8,7 @@ LUA_VERSION = 5.1
 all: build bin lib
 
 mingw:
-	make -f Makefile-mingw
+	make -f Makefile.mingw
 	install -d bin
 	mv src/a.out bin/$(BIN).exe
 	install -d lib

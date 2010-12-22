@@ -10,21 +10,20 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
-#include "base.hpp"
-
 namespace levana
 {
-  class icon : public base
+  class icon
   {
     public:
-      inline icon() : base() {}
+      icon();
       icon(const char **bits);
-      icon(const char *filename);
       ~icon();
       bool load_xpm(const char *filename);
       static const icon &levana_icon();
       friend class frame;
       friend class systray;
+    private:
+      void *_obj;
   };
 }
 

@@ -22,6 +22,8 @@ extern "C" {
 #include <wx/evtloop.h>
 #include <luabind/luabind.hpp>
 
+#include <map>
+#include <string>
 
 #endif // _PREC_H
 

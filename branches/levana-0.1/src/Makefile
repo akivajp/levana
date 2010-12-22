@@ -1,5 +1,5 @@
 CXX = g++
-SRC = app.cpp entry.cpp frame.cpp menu.cpp
+SRC = app.cpp entry.cpp frame.cpp icon.cpp menu.cpp taskbar.cpp
 OBJS = $(SRC:%.cpp=%.o)
 OUT = a.out
 DLIB = levana.so
@@ -45,7 +45,9 @@ main.o: main.cpp levana/app.hpp
 app.o: app.cpp levana/app.hpp
 entry.o: entry.cpp levana/entry.hpp
 frame.o: frame.cpp levana/frame.hpp
+icon.o: icon.cpp levana/icon.hpp
 menu.o: menu.cpp levana/menu.hpp
+taskbar.o: taskbar.cpp levana/taskbar.hpp
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $<
 

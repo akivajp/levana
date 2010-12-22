@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        levana/frame.hpp
+// Name:        src/frame.cpp
 // Purpose:     source for frame managing class
 // Author:      Akiva Miura <akiva.miura@gmail.com>
 // Created:     12/01/2010
@@ -29,11 +29,6 @@ namespace levana
       void Connect(int id, wxEventType eventType, luabind::object lua_func);
 //      void Connect(wxEventType eventType, luabind::object lua_func);
       void ProcEvent(wxEvent &event);
-      void OnClose(wxEvent &evt)
-      {
-        wxMessageBox(_("OnClose!!!"));
-        Destroy();
-      }
     private:
       std::map<int, std::map<int, luabind::object> > event_map;
   };
@@ -126,7 +121,7 @@ namespace levana
     _obj = new myFrame(NULL, id, wxString(title, wxConvUTF8),
                          pos, size, style, wxString(name, wxConvUTF8));
     if (!_obj) { return false; }
-//    ((wxFrame*)_obj)->Connect(wxEVT_CLOSE_WINDOW, (wxObjectEventFunction)&myFrame::OnClose);
+    this->set_icon(icon::levana_icon());
     return true;
   }
 
@@ -134,6 +129,11 @@ namespace levana
   {
     const std::string str = (const char *)((wxFrame *)_obj)->GetTitle().mb_str(wxConvUTF8);
     return str.c_str();
+  }
+
+  void frame::set_icon(const icon &i)
+  {
+    ((wxFrame *)_obj)->SetIcon(*((wxIcon *)i._obj));
   }
 
   void frame::set_menubar(menubar *mb)
@@ -150,6 +150,8 @@ namespace levana
   {
     return ((wxFrame *)_obj)->Show(bShow);
   }
+
+  // static member functions
 
   frame *frame::get_top()
   {

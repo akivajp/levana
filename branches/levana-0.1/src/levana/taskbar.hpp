@@ -11,7 +11,6 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "icon.hpp"
-#include "menu.hpp"
 
 namespace levana
 {
@@ -21,7 +20,6 @@ namespace levana
       systray();
       ~systray();
       bool set_icon(const icon& i, const char *tooltip = "");
-      void set_menu(menu *m);
     private:
       void *_obj;
   };

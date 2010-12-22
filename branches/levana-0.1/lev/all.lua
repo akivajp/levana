@@ -24,16 +24,12 @@ else
   -------------------------------------------------------------------
   -- begin 'app' table rewrapping
   app.autoloop = levana.app.autoloop
-  app.mainloop = levana.app.mainloop
+  app.yield    = levana.app.yield
+  app.doevents = levana.app.yield
 
   app.top = function(top)
     if (top == nil) then return lev.frame(levana.app.get_top()) end
     levana.app.set_top(top.obj)
-  end
-
-  app.doevents = function(only_if_needed)
-    if (only_if_needed == nil) then only_if_needed = false end
-    return levana.app.yield(only_if_needed)
   end
 
   app.name = function(name)
@@ -44,7 +40,7 @@ else
   app.msgbox = function(str, caption)
     if (caption == nil) then caption = '' end
     local result = levana.app.msgbox(str, caption)
-    levana.app.yield(false)
+    levana.app.yield()
     return result
   end
   -- end of 'app' table rewrapping
