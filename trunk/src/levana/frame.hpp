@@ -38,6 +38,7 @@ namespace levana
       bool show(bool bShow);
       static frame *get_top();
       static void set_top(frame *top);
+      friend class draw;
     private:
       bool create(frame *parent, int id, const char *title,
                   int x = -1, int y = -1, int w = -1, int h = -1,

@@ -15,11 +15,11 @@
 
 namespace levana
 {
-  class app
+  class appli
   {
     public:
-      app();
-      ~app();
+      appli();
+      ~appli();
       int  autoloop();
       int  msgbox(const char *msg);
       int  msgbox(const char *msg, const char *caption);

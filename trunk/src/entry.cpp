@@ -38,7 +38,7 @@ namespace levana
           argv[j] = new char[len + 1];
           strcpy(argv[j++], ss.str().c_str());
         }
-        app::entry(argc, argv);
+        appli::entry(argc, argv);
         atexit(final_release);
         for (int i = 0; i < argc; i++) { delete argv[i]; }
         delete argv;
@@ -50,7 +50,7 @@ namespace levana
     }
     else
     {
-      app::entry(0, NULL);
+      appli::entry(0, NULL);
       atexit(final_release);
     }
     return 0;
@@ -68,14 +68,27 @@ extern "C" {
     lua_entry(globals(L)["arg"]);
     module(L, "levana")
     [
-      class_<app>("app")
+      class_<appli>("appli")
         .def(constructor<>())
-        .def("autoloop", &app::autoloop)
-        .def("msgbox", (int(app::*)(const char*))&app::msgbox)
-        .def("msgbox", (int(app::*)(const char*, const char*))&app::msgbox)
-        .def("yield", &app::yield)
-        .property("name", &app::name_get, &app::name_set)
-        .property("top",  &app::top_get,  &app::top_set),
+        .def("autoloop", &appli::autoloop)
+        .def("msgbox", (int(appli::*)(const char*))&appli::msgbox)
+        .def("msgbox", (int(appli::*)(const char*, const char*))&appli::msgbox)
+        .def("yield", &appli::yield)
+        .property("name", &appli::name_get, &appli::name_set)
+        .property("top",  &appli::top_get,  &appli::top_set),
+//      namespace_("cfg")
+//      [
+//        value("default", levana::cfg::DEFAULT)
+//      ],
+      class_<cfg>("cfg")
+        .enum_("constants")
+        [
+          value("default", levana::cfg::DEFAULT),
+          value("fixed",   levana::cfg::FIXED)
+        ],
+      class_<draw>("draw")
+        .def(constructor<frame*, int, int>())
+        .def("using", &draw::use),
       class_<frame>("frame")
         .def(constructor<>())
         .def(constructor<frame*, int, const char*, int, int, int, int,
@@ -109,7 +122,7 @@ extern "C" {
         .def("set_icon", &systray::set_icon)
         .def("set_menu", &systray::set_menu)
     ];
-//    lua_entry(globals(L)["arg"]);
+    luaopen_gl(L);
     return 1;
   }
 }

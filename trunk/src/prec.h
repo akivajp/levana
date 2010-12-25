@@ -18,8 +18,9 @@ extern "C" {
 }
 
 #include <wx/wx.h>
-#include <wx/taskbar.h>
 #include <wx/evtloop.h>
+#include <wx/glcanvas.h>
+#include <wx/taskbar.h>
 #include <luabind/luabind.hpp>
 
 #include <map>

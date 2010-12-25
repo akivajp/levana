@@ -14,7 +14,7 @@ else
 --  package.cpath = package.cpath .. ';./src/?.so'
   require 'levana'
 
-  app = levana.app()
+  app = levana.appli()
   lev = {}
 
   function _(str)

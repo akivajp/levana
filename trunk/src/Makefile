@@ -1,12 +1,12 @@
 CXX = g++
-SRC = app.cpp entry.cpp frame.cpp icon.cpp menu.cpp sizer.cpp taskbar.cpp
+SRC = app.cpp draw.cpp entry.cpp frame.cpp gl.cpp icon.cpp menu.cpp sizer.cpp taskbar.cpp
 OBJS = $(SRC:%.cpp=%.o)
 OUT = a.out
 DLIB = levana.so
 SLIB = liblevana.a
 PCH = prec.h.gch
 WX_CXXFLAGS=`wx-config --cxxflags`
-WX_LIBS = `wx-config --libs`
+WX_LIBS = `wx-config --libs std gl`
 CXXFLAGS = $(WX_CXXFLAGS) -fPIC
 LIBS = $(WX_LIBS) -llua -lluabind
 
@@ -28,7 +28,7 @@ distclean: clean
 tags: $(SRC) $(SRC:%.cpp=levana/%.hpp)
 	ctags -R .
 
-$(PCH): prec.h
+$(PCH): prec.h levana/levana.hpp
 	$(CXX) $(CXXFLAGS) $<
 
 $(OUT): $(OBJS) main.o
@@ -43,8 +43,10 @@ $(DLIB): $(OBJS)
 
 main.o: main.cpp levana/app.hpp
 app.o: app.cpp levana/app.hpp
+draw.o: draw.cpp levana/draw.hpp levana/frame.hpp
 entry.o: entry.cpp $(SRC:%.cpp=levana/%.hpp)
 frame.o: frame.cpp levana/frame.hpp connect.hpp levana/icon.hpp
+gl.o: gl.cpp levana/gl.hpp
 icon.o: icon.cpp levana/icon.hpp
 menu.o: menu.cpp levana/menu.hpp levana/icon.hpp
 sizer.o: sizer.cpp levana/sizer.hpp

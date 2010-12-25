@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     lua_setfield(L, -2, "levana");
     lua_pop(L, 2);
 
-    app::entry(argc, argv);
+    appli::entry(argc, argv);
     // run entry program
     for (int i = 0; i < len; i++)
     {

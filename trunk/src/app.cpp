@@ -97,29 +97,29 @@ DECLARE_APP(levana::myApp);
 
 namespace levana
 {
-  app::app()
+  appli::appli()
   {
     wxGetApp().OnInit();
     name_set("Levana Application");
   }
 
-  app::~app()
+  appli::~appli()
   {
     wxGetApp().OnExit();
   }
 
-  int app::autoloop()
+  int appli::autoloop()
   {
     return wxGetApp().AutoLoop();
 //    return wxGetApp().OnRun();
   }
 
 
-  int app::msgbox(const char *msg)
+  int appli::msgbox(const char *msg)
   {
     return this->msgbox(msg, "Message");
   }
-  int app::msgbox(const char *msg, const char *caption)
+  int appli::msgbox(const char *msg, const char *caption)
   {
     int result;
     wxString new_msg(msg, wxConvUTF8);
@@ -129,37 +129,37 @@ namespace levana
     return result;
   }
 
-  bool app::yield()
+  bool appli::yield()
   {
     return wxGetApp().Yield();
   }
 
 
   // name property base
-  const char *app::name_get()
+  const char *appli::name_get()
   {
     const std::string name =
       (const char *)wxGetApp().GetAppName().mb_str(wxConvUTF8);
     return name.c_str();
   }
-  void app::name_set(const char *name)
+  void appli::name_set(const char *name)
   {
     wxGetApp().SetAppName(wxString(name, wxConvUTF8));
   }
 
 
   // top window property base
-  frame *app::top_get()
+  frame *appli::top_get()
   {
     return frame::get_top();
   }
-  void app::top_set(frame *top)
+  void appli::top_set(frame *top)
   {
     frame::set_top(top);
   }
 
   // static method
-  bool app::entry(int argc, char **argv)
+  bool appli::entry(int argc, char **argv)
   {
     static bool entried = false;
     if (entried) { return false; }

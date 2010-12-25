@@ -12,8 +12,11 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "app.hpp"
+#include "cfg.hpp"
+#include "draw.hpp"
 #include "entry.hpp"
 #include "frame.hpp"
+#include "gl.hpp"
 #include "taskbar.hpp"
 
 #endif // _LEVANA_HPP

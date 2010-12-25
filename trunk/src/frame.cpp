@@ -26,13 +26,10 @@ namespace levana
               const wxSize &size = wxDefaultSize,
               long style = wxDEFAULT_FRAME_STYLE,
               const wxString& name = wxT("frame"));
+      // Common Connect Interface
       void Connect(int id, wxEventType eventType, luabind::object lua_func);
-//      void Connect(wxEventType eventType, luabind::object lua_func);
       void ProcEvent(wxEvent &event);
       func_map fmap;
-//      std::map<int, std::map<int, luabind::object> > fmap;
-    private:
-//      std::map<int, std::map<int, luabind::object> > event_map;
   };
 
   myFrame::myFrame(wxWindow *parent, wxWindowID id, const wxString &title,

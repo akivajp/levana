@@ -13,8 +13,8 @@ build:
 	install lev/* $(PACK_DIR)/lev/
 	install src/a.out $(PACK_DIR)/levana.exe
 	install COPYRIGHT $(PACK_DIR)/COPYRIGHT.txt
-	install MANUAL    $(PACK_DIR)/MANUAL.txt
-	install README    $(PACK_DIR)/README.txt
+	install MANUAL.ja $(PACK_DIR)/MANUAL.ja.txt
+	install README.ja $(PACK_DIR)/README.ja.txt
 	install entry.lua $(PACK_DIR)/entry.txt
 	unix2dos $(PACK_DIR)/*.txt $(PACK_DIR)/lev/*
 
