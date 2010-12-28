@@ -13,7 +13,7 @@
 namespace levana
 {
 
-  menu::menu() : base()
+  menu::menu() : ctrl()
   {
     try {
       _obj = new wxMenu();
@@ -23,7 +23,7 @@ namespace levana
     }
   }
 
-  menu::menu(const char *title) : base()
+  menu::menu(const char *title) : ctrl()
   {
     try {
       _obj = new wxMenu(wxString(title, wxConvUTF8));
@@ -52,7 +52,7 @@ namespace levana
   }
 
 
-  menubar::menubar()
+  menubar::menubar() : ctrl()
   {
     try {
       _obj = new wxMenuBar();
@@ -71,6 +71,10 @@ namespace levana
   {
     wxString new_title(title, wxConvUTF8);
     return ((wxMenuBar *)_obj)->Append((wxMenu *)m->_obj, new_title);
+  }
+  bool menubar::append(menubar *mb, menu *m, const char *title)
+  {
+    return mb->append(m, title);
   }
 
 }

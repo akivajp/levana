@@ -10,7 +10,6 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
-#include "base.hpp"
 #include "menu.hpp"
 #include "icon.hpp"
 #include "event.hpp"
@@ -20,28 +19,30 @@ namespace luabind { class object; }
 namespace levana
 {
 
-  class frame : public base, public handler
+  class frame : public ctrl
   {
     public:
-      inline frame() : base() {}
+      inline frame() : ctrl() {}
       frame(frame *parent, int id, const char *title,
             int x = -1, int y = -1, int w = -1, int h = -1,
             long style = -1, const char *name = "frame");
       ~frame();
-      inline bool close(/* false */) { return close(false); }
       bool close(bool force);
+      bool close_noforce() { return close(false); }
+      void fit();
       void seticon(const icon &i);
       void setmenubar(menubar *mb);
+      static void setmenubar(frame *f, menubar *mb);
       void setonmenu(int id, luabind::object lua_func);
-      inline bool show(/* true */) { return show(true); }
-      bool show(bool bShow);
+//      static void setonmenu(frame *f, int id, luabind::object lua_func);
+      bool show(bool showing);
+      bool show_true() { return show(true); }
       // title property
       const char *gettitle();
       void settitle(const char *title);
       // static function
       static frame *gettop();
       static void settop(frame *top);
-      friend class draw;
     private:
       bool create(frame *parent, int id, const char *title,
                   int x = -1, int y = -1, int w = -1, int h = -1,

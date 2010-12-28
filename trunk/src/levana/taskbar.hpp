@@ -10,20 +10,23 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
+#include "event.hpp"
 #include "icon.hpp"
 #include "menu.hpp"
 
+namespace luabind { class object; }
+
 namespace levana
 {
-  class systray
+  class systray : public ctrl
   {
     public:
       systray();
       ~systray();
-      bool set_icon(const icon& i, const char *tooltip = "");
-      void set_menu(menu *m);
-    private:
-      void *_obj;
+      bool seticon(const icon& i, const char *tooltip = "");
+      void setmenu(menu *m);
+      static void setmenu(systray *st, menu *m);
+      void setonmenu(int id, luabind::object lua_func);
   };
 }
 

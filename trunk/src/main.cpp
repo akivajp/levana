@@ -46,6 +46,23 @@ int main(int argc, char **argv)
   else
   {
     // argc >= 2
+    lua_State *L = lua_open();
+    luaL_openlibs(L);
+
+    // levana library registration
+    lua_getglobal(L, "package");
+    lua_getfield(L, -1, "preload");
+    lua_pushcfunction(L, &luaopen_levana);
+    lua_setfield(L, -2, "levana");
+    lua_pop(L, 2);
+
+    appli::entry(argc, argv);
+    if (luaL_dofile(L, argv[1]))
+    {
+      wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
+      exit(-1);
+    }
+    return 0;
   }
   return 0;
 }

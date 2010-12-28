@@ -11,14 +11,22 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "base.hpp"
+#include "event.hpp"
 
 namespace levana
 {
   class sizer : public base
   {
-    private:
-      sizer();
-      ~sizer();
+    protected:
+      inline sizer() : base() {}
+      inline ~sizer() {}
+    public:
+      void addctrl(ctrl *c, int proportion = 0, int flag = 0, int border = 0);
+      void addsizer(sizer *s, int proportion = 0, int flag = 0, int border = 0);
+      void addspace(int width, int height, int proportion = 0, int flag = 0, int border = 0);
+      void fit(ctrl *c);
+      void fitinside(ctrl *c);
+      void layout();
   };
 
   class hsizer : public sizer

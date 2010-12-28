@@ -66,6 +66,8 @@ extern "C" {
 
     luabind::open(L);
     lua_entry(globals(L)["arg"]);
+
+    // constants
     module(L, "levana")
     [
       class_<cfg>("cfg")
@@ -73,36 +75,51 @@ extern "C" {
         [
           value("default", levana::cfg::DEFAULT),
           value("fixed",   levana::cfg::FIXED)
-        ],
+        ]
+    ];
+
+    // application management
+    module(L, "levana")
+    [
       class_<appli>("appli")
         .def(constructor<>())
         .def("autoloop", &appli::autoloop)
-        .def("msgbox", (int(appli::*)(const char*))&appli::msgbox)
-        .def("msgbox", (int(appli::*)(const char*, const char*))&appli::msgbox)
+        .def("msgbox", &appli::msgbox)
+        .def("msgbox", &appli::msgbox_msg)
         .def("yield", &appli::yield)
         .property("name", &appli::getname, &appli::setname)
-        .property("top",  &appli::gettop,  &appli::settop),
-      class_<handler>("handler")
-        .def("connect", &handler::connect)
-        .def("setonmenu", &handler::setonmenu),
-      class_<draw>("draw")
+        .property("top",  &appli::gettop,  &appli::settop)
+    ];
+
+    // GUI control, event handling
+    module(L, "levana")
+    [
+      // base class
+      class_<ctrl>("ctrl")
+        .def("connect", &ctrl::connect)
+        .def("exists", &ctrl::exists)
+        .def("setonmenu", &ctrl::setonmenu),
+      // derived classes
+      class_<draw, ctrl>("draw")
         .def(constructor<frame*, int, int>())
+        .def("clear", &draw::clear)
+        .def("flush", &draw::flush)
         .def("using", &draw::use),
-      class_<frame, handler>("frame")
+      class_<frame, ctrl>("frame")
         .def(constructor<frame*, int, const char*, int, int, int, int,
                          long, const char*>())
-        .def("close", (bool(frame::*)(void))&frame::close)
-        .def("close", (bool(frame::*)(bool))&frame::close)
-        .def("setmenubar", &frame::setmenubar)
-        .def("show", (bool(frame::*)(void))&frame::show)
-        .def("show", (bool(frame::*)(bool))&frame::show)
-        .property("title", &frame::gettitle, &frame::settitle),
-      class_<icon>("icon")
-        .def(constructor<>())
-        .def(constructor<const char *>())
-        .def("levana_icon", &icon::levana_icon)
-        .def("load_xpm", &icon::load_xpm),
-      class_<menu>("menu")
+        .def("close", &frame::close)
+        .def("close", &frame::close_noforce)
+        .def("fit", &frame::fit)
+        .def("setmenubar", (void(frame::*)(menubar *))&frame::setmenubar)
+        .def("show", &frame::show)
+        .def("show", &frame::show_true)
+        .property("title", &frame::gettitle, &frame::settitle)
+        .scope
+        [
+          def("setmenubar", (void(*)(frame*, menubar*))&frame::setmenubar)
+        ],
+      class_<menu, ctrl>("menu")
         .def(constructor<>())
         .def(constructor<const char *>())
         .def("append", (int(menu::*)(int, const char*, const char *))&menu::append)
@@ -110,13 +127,30 @@ extern "C" {
         [
           def("append", (int(*)(menu*, int, const char*, const char *))&menu::append)
         ],
-      class_<menubar>("menubar")
+      class_<menubar, ctrl>("menubar")
         .def(constructor<>())
-        .def("append", &menubar::append),
-      class_<systray>("systray")
+        .def("append", (bool(menubar::*)(menu*, const char *))&menubar::append)
+        .scope
+        [
+          def("append", (bool(*)(menubar*, menu*, const char *))&menubar::append)
+        ],
+      class_<systray, ctrl>("systray")
         .def(constructor<>())
-        .def("set_icon", &systray::set_icon)
-        .def("set_menu", &systray::set_menu)
+        .def("seticon", &systray::seticon)
+        .def("setmenu", (void(systray::*)(menu*))&systray::setmenu)
+        .scope
+        [
+          def("setmenu", (void(*)(systray*, menu*))&systray::setmenu)
+        ]
+    ];
+
+    module(L, "levana")
+    [
+      class_<icon>("icon")
+        .def(constructor<>())
+        .def(constructor<const char *>())
+        .def("levana_icon", &icon::levana_icon)
+        .def("load_xpm", &icon::load_xpm)
     ];
     luaopen_gl(L);
     return 1;

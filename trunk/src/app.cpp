@@ -115,10 +115,6 @@ namespace levana
   }
 
 
-  int appli::msgbox(const char *msg)
-  {
-    return this->msgbox(msg, "Message");
-  }
   int appli::msgbox(const char *msg, const char *caption)
   {
     int result;

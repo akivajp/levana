@@ -11,15 +11,16 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
-#include "base.hpp"
-#include "frame.hpp"
+#include "event.hpp"
 
 namespace levana
 {
-  class draw : public base
+  class draw : public ctrl
   {
     public:
-      draw(frame *parent, int width, int height);
+      draw(ctrl *parent, int width, int height);
+      void clear();
+      void flush();
       void use();
   };
 }

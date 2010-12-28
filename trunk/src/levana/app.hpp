@@ -21,8 +21,8 @@ namespace levana
       appli();
       ~appli();
       int  autoloop();
-      int  msgbox(const char *msg);
       int  msgbox(const char *msg, const char *caption);
+      int  msgbox_msg(const char *msg) { return msgbox(msg, "Message"); }
       bool yield();
       // name property
       const char* getname();

@@ -23,6 +23,7 @@ namespace levana
       ~icon();
       bool load_xpm(const char *filename);
       static const icon &levana_icon();
+      static const icon &levana_icon2();
       friend class frame;
       friend class systray;
   };

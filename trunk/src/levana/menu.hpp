@@ -10,12 +10,12 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
-#include "base.hpp"
+#include "event.hpp"
 
 namespace levana
 {
 
-  class menu : public base
+  class menu : public ctrl
   {
     public:
       menu();
@@ -27,12 +27,13 @@ namespace levana
       friend class menubar;
   };
 
-  class menubar : public base
+  class menubar : public ctrl
   {
     public:
       menubar();
       ~menubar();
       bool append(menu *m, const char *title);
+      static bool append(menubar *mb, menu *m, const char *title);
       friend class frame;
   };
 

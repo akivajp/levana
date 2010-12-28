@@ -45,7 +45,7 @@ namespace levana
 
   frame::frame(frame *parent, int id, const char *title,
                int x, int y, int w, int h, long style, const char *name)
-    : base()
+    : ctrl()
   {
     bool success = this->create(parent, id, title, x, y, w, h, style, name);
     if (!success)
@@ -88,7 +88,13 @@ namespace levana
                          pos, size, style, wxString(name, wxConvUTF8));
     if (!_obj) { return false; }
     this->seticon(icon::levana_icon());
+    this->id = ((myFrame *)_obj)->GetId();
     return true;
+  }
+
+  void frame::fit()
+  {
+    ((myFrame *)_obj)->Fit();
   }
 
   void frame::seticon(const icon &i)
@@ -100,15 +106,23 @@ namespace levana
   {
     ((wxFrame *)_obj)->SetMenuBar((wxMenuBar *)mb->_obj);
   }
+  void frame::setmenubar(frame *f, menubar *mb)
+  {
+    f->setmenubar(mb);
+  }
 
   void frame::setonmenu(int id, luabind::object lua_func)
   {
     ((myFrame *)_obj)->Connect(id, wxEVT_COMMAND_MENU_SELECTED, lua_func);
   }
+//  void frame::setonmenu(frame *f, int id, luabind::object lua_func)
+//  {
+//    f->setonmenu(id, lua_func);
+//  }
 
-  bool frame::show(bool bShow)
+  bool frame::show(bool showing)
   {
-    return ((wxFrame *)_obj)->Show(bShow);
+    return ((wxFrame *)_obj)->Show(showing);
   }
 
   // title property

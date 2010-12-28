@@ -14,22 +14,38 @@
 
 namespace levana
 {
-  draw::draw(frame *parent, int width, int height)
+  draw::draw(ctrl *parent, int width, int height)
   {
     try {
-      wxFrame *p = NULL;
-      if (parent) { p = (wxFrame *)parent->_obj; }
+      wxWindow *p = NULL;
+      if (parent) { p = (wxWindow *)parent->_obj; }
       _obj = new wxGLCanvas(p, -1, wxDefaultPosition, wxSize(width, height));
     }
     catch(...) {
       throw "draw: allocation error";
     }
+    this->use();
+    glViewport(0, 0, width, height);
+    glLoadIdentity();
+    glOrtho(0, width, height, 0, -1.0, 1.0);
+  }
+
+  void draw::clear()
+  {
+//    ((wxGLCanvas *)_obj)->SetCurrent();
+//    glClearColor(0,0,0,0);
+    glClear(GL_COLOR_BUFFER_BIT);
+//    glFlush();
+  }
+
+  void draw::flush()
+  {
+    glFlush();
   }
 
   void draw::use()
   {
-    wxGLCanvas *gl = (wxGLCanvas *)_obj;
-    gl->SetCurrent();
+    ((wxGLCanvas *)_obj)->SetCurrent();
   }
 }
 

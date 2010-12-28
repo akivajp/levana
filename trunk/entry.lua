@@ -2,16 +2,18 @@ require 'lev/all'
 
 mb = lev.menubar()
 file = lev.menu()
-id_exit = file:append {str = '&Exit'}
+file:append {str = '&Exit', func = function() frm:close() end}
 mb:append(file, '&File')
 
-tray = levana.systray()
-tray:set_menu(file)
---tray:set_icon(levana.icon('./levana.xpm'), 'Levana Application')
+tray = lev.systray()
+sysmenu = lev.menu()
+sysmenu:append {str = '&Test', func = function() app:msgbox("bye systray"); frm:close() end}
+tray:setmenu(sysmenu)
 
 frm = lev.frame()
 frm:setmenubar(mb)
-frm:setonmenu(id_exit, function() app:msgbox('Bye Bye!'); frm:close() end)
 frm:show()
-app:autoloop()
+while frm:exists() do
+  app:yield()
+end
 

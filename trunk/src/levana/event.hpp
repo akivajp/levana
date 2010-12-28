@@ -17,15 +17,22 @@ namespace luabind { class object; }
 
 namespace levana
 {
-  class handler
+  class ctrl : public base
   {
     protected:
-      inline handler() {}
+      inline ctrl() : base(), id(0) {}
+      inline ~ctrl() {}
     public:
       virtual void connect(int type, luabind::object lua_func)
-      { throw "derived handler::connect is not yet implemented"; }
+      { throw "ctrl: derived handler::connect has not been implemented"; }
+      bool exists();
       virtual void setonmenu(int id, luabind::object lua_func)
-      { throw "derived handler::setonmenu is not yet implemented"; }
+      { throw "ctrl: derived handler::setonmenu has not been implemented"; }
+      friend class draw;
+      friend class frame;
+      friend class sizer;
+    private:
+      int id;
   };
 }
 

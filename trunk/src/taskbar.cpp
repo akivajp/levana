@@ -9,6 +9,7 @@
 
 #include "prec.h"
 #include "levana/taskbar.hpp"
+#include "connect.hpp"
 
 namespace levana
 {
@@ -17,12 +18,23 @@ namespace levana
     public:
       myTaskBarIcon() : wxTaskBarIcon() { menu = NULL; }
       void SetRClickMenu(wxMenu *m) { this->menu = m; }
+
+      // Common Connect Interface
+      inline void Connect(int id, wxEventType eventType, luabind::object lua_func)
+      {
+        levana::Connect(this, id, eventType, lua_func);
+      }
+      void ProcEvent(wxEvent &event)
+      {
+        levana::ProcEvent(this, event);
+      }
+      func_map fmap;
     private:
       wxMenu *menu;
       virtual wxMenu *CreatePopupMenu() { return menu; }
   };
 
-  systray::systray()
+  systray::systray() : ctrl()
   {
     try {
       _obj = new myTaskBarIcon();
@@ -30,7 +42,7 @@ namespace levana
     catch (...) {
       throw "systray: allocation error";
     }
-//    this->set_icon(icon::levana_icon(), "Levana Application");
+    this->seticon(icon::levana_icon2(), "Levana Application");
   }
 
   systray::~systray()
@@ -38,16 +50,25 @@ namespace levana
     delete (myTaskBarIcon *)_obj;
   }
 
-  bool systray::set_icon(const icon& i, const char *tooltip)
+  bool systray::seticon(const icon& i, const char *tooltip)
   {
     myTaskBarIcon *tray = (myTaskBarIcon *)_obj;
     return tray->SetIcon(*((wxIcon*)i._obj), wxString(tooltip, wxConvUTF8));
   }
 
-  void systray::set_menu(menu *m)
+  void systray::setmenu(menu *m)
   {
     myTaskBarIcon *tray = (myTaskBarIcon *)_obj;
     tray->SetRClickMenu((wxMenu *)m->_obj);
+  }
+  void systray::setmenu(systray *st, menu *m)
+  {
+    st->setmenu(m);
+  }
+
+  void systray::setonmenu(int id, luabind::object lua_func)
+  {
+    ((myTaskBarIcon *)_obj)->Connect(id, wxEVT_COMMAND_MENU_SELECTED, lua_func);
   }
 }
 
