@@ -13,13 +13,14 @@
 #include "base.hpp"
 #include "menu.hpp"
 #include "icon.hpp"
+#include "event.hpp"
 
 namespace luabind { class object; }
 
 namespace levana
 {
 
-  class frame : public base
+  class frame : public base, public handler
   {
     public:
       inline frame() : base() {}
@@ -29,15 +30,17 @@ namespace levana
       ~frame();
       inline bool close(/* false */) { return close(false); }
       bool close(bool force);
-      void connect_menu(int id, luabind::object lua_func);
-      const char *get_title();
-      void set_icon(const icon &i);
-      void set_menubar(menubar *mb);
-      void set_title(const char *title);
+      void seticon(const icon &i);
+      void setmenubar(menubar *mb);
+      void setonmenu(int id, luabind::object lua_func);
       inline bool show(/* true */) { return show(true); }
       bool show(bool bShow);
-      static frame *get_top();
-      static void set_top(frame *top);
+      // title property
+      const char *gettitle();
+      void settitle(const char *title);
+      // static function
+      static frame *gettop();
+      static void settop(frame *top);
       friend class draw;
     private:
       bool create(frame *parent, int id, const char *title,

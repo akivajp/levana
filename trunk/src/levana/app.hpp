@@ -24,12 +24,12 @@ namespace levana
       int  msgbox(const char *msg);
       int  msgbox(const char *msg, const char *caption);
       bool yield();
-      // name property base
-      const char* name_get();
-      void name_set(const char *name);
-      // top frame property base
-      frame *top_get();
-      void   top_set(frame *top);
+      // name property
+      const char* getname();
+      void setname(const char *name);
+      // top property
+      frame *gettop();
+      void   settop(frame *top);
       // static method
       static bool entry(int argc, char **argv);
   };

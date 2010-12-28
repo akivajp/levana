@@ -20,33 +20,28 @@ namespace levana
   class myFrame : public wxFrame
   {
     public:
-      myFrame() : wxFrame(), fmap() {}
-      myFrame(wxWindow* parent, wxWindowID id, const wxString &title,
+      inline myFrame() : wxFrame(), fmap() {}
+
+      inline myFrame(wxWindow* parent, wxWindowID id, const wxString &title,
               const wxPoint &pos = wxDefaultPosition,
               const wxSize &size = wxDefaultSize,
               long style = wxDEFAULT_FRAME_STYLE,
-              const wxString& name = wxT("frame"));
+              const wxString& name = wxT("frame"))
+        : wxFrame(parent, id, title, pos, size, style, name), fmap()
+      {}
+
       // Common Connect Interface
-      void Connect(int id, wxEventType eventType, luabind::object lua_func);
-      void ProcEvent(wxEvent &event);
+      inline void Connect(int id, wxEventType eventType, luabind::object lua_func)
+      {
+        levana::Connect(this, id, eventType, lua_func);
+      }
+      void ProcEvent(wxEvent &event)
+      {
+        levana::ProcEvent(this, event);
+      }
       func_map fmap;
   };
 
-  myFrame::myFrame(wxWindow *parent, wxWindowID id, const wxString &title,
-                   const wxPoint &pos, const wxSize &size,
-                   long style, const wxString &name)
-    : wxFrame(parent, id, title, pos, size, style, name), fmap()
-  {}
-
-  void myFrame::Connect(int id, wxEventType eventType, luabind::object lua_func)
-  {
-    levana::Connect(this, id, eventType, lua_func);
-  }
-
-  void myFrame::ProcEvent(wxEvent &event)
-  {
-    levana::ProcEvent(this, event);
-  }
 
   frame::frame(frame *parent, int id, const char *title,
                int x, int y, int w, int h, long style, const char *name)
@@ -76,11 +71,6 @@ namespace levana
     return false;
   }
 
-  void frame::connect_menu(int id, luabind::object lua_func)
-  {
-    ((myFrame *)_obj)->Connect(id, wxEVT_COMMAND_MENU_SELECTED, lua_func);
-  }
-
   bool frame::create(frame *parent, int id, const char *title,
                      int x, int y, int w, int h, long style, const char *name)
   {
@@ -97,29 +87,23 @@ namespace levana
     _obj = new myFrame(parent_frm, id, wxString(title, wxConvUTF8),
                          pos, size, style, wxString(name, wxConvUTF8));
     if (!_obj) { return false; }
-    this->set_icon(icon::levana_icon());
+    this->seticon(icon::levana_icon());
     return true;
   }
 
-  const char *frame::get_title()
-  {
-    const std::string str = (const char *)((wxFrame *)_obj)->GetTitle().mb_str(wxConvUTF8);
-    return str.c_str();
-  }
-
-  void frame::set_icon(const icon &i)
+  void frame::seticon(const icon &i)
   {
     ((wxFrame *)_obj)->SetIcon(*((wxIcon *)i._obj));
   }
 
-  void frame::set_menubar(menubar *mb)
+  void frame::setmenubar(menubar *mb)
   {
     ((wxFrame *)_obj)->SetMenuBar((wxMenuBar *)mb->_obj);
   }
 
-  void frame::set_title(const char *title)
+  void frame::setonmenu(int id, luabind::object lua_func)
   {
-    ((wxFrame *)_obj)->SetTitle(wxString(title, wxConvUTF8));
+    ((myFrame *)_obj)->Connect(id, wxEVT_COMMAND_MENU_SELECTED, lua_func);
   }
 
   bool frame::show(bool bShow)
@@ -127,9 +111,20 @@ namespace levana
     return ((wxFrame *)_obj)->Show(bShow);
   }
 
+  // title property
+  const char *frame::gettitle()
+  {
+    const std::string str = (const char *)((wxFrame *)_obj)->GetTitle().mb_str(wxConvUTF8);
+    return str.c_str();
+  }
+  void frame::settitle(const char *title)
+  {
+    ((wxFrame *)_obj)->SetTitle(wxString(title, wxConvUTF8));
+  }
+
   // static member functions
 
-  frame *frame::get_top()
+  frame *frame::gettop()
   {
     static frame top;
     top._obj = wxTheApp->GetTopWindow();
@@ -137,7 +132,7 @@ namespace levana
     return &top;
   }
 
-  void frame::set_top(frame *top)
+  void frame::settop(frame *top)
   {
     wxTheApp->SetTopWindow((wxFrame *)top->_obj);
   }

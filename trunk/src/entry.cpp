@@ -68,39 +68,35 @@ extern "C" {
     lua_entry(globals(L)["arg"]);
     module(L, "levana")
     [
-      class_<appli>("appli")
-        .def(constructor<>())
-        .def("autoloop", &appli::autoloop)
-        .def("msgbox", (int(appli::*)(const char*))&appli::msgbox)
-        .def("msgbox", (int(appli::*)(const char*, const char*))&appli::msgbox)
-        .def("yield", &appli::yield)
-        .property("name", &appli::name_get, &appli::name_set)
-        .property("top",  &appli::top_get,  &appli::top_set),
-//      namespace_("cfg")
-//      [
-//        value("default", levana::cfg::DEFAULT)
-//      ],
       class_<cfg>("cfg")
         .enum_("constants")
         [
           value("default", levana::cfg::DEFAULT),
           value("fixed",   levana::cfg::FIXED)
         ],
+      class_<appli>("appli")
+        .def(constructor<>())
+        .def("autoloop", &appli::autoloop)
+        .def("msgbox", (int(appli::*)(const char*))&appli::msgbox)
+        .def("msgbox", (int(appli::*)(const char*, const char*))&appli::msgbox)
+        .def("yield", &appli::yield)
+        .property("name", &appli::getname, &appli::setname)
+        .property("top",  &appli::gettop,  &appli::settop),
+      class_<handler>("handler")
+        .def("connect", &handler::connect)
+        .def("setonmenu", &handler::setonmenu),
       class_<draw>("draw")
         .def(constructor<frame*, int, int>())
         .def("using", &draw::use),
-      class_<frame>("frame")
-        .def(constructor<>())
+      class_<frame, handler>("frame")
         .def(constructor<frame*, int, const char*, int, int, int, int,
                          long, const char*>())
         .def("close", (bool(frame::*)(void))&frame::close)
         .def("close", (bool(frame::*)(bool))&frame::close)
-        .def("connect_menu", &frame::connect_menu)
-        .def("get_title", &frame::get_title)
-        .def("set_menubar", &frame::set_menubar)
-        .def("set_title", &frame::set_title)
+        .def("setmenubar", &frame::setmenubar)
         .def("show", (bool(frame::*)(void))&frame::show)
-        .def("show", (bool(frame::*)(bool))&frame::show),
+        .def("show", (bool(frame::*)(bool))&frame::show)
+        .property("title", &frame::gettitle, &frame::settitle),
       class_<icon>("icon")
         .def(constructor<>())
         .def(constructor<const char *>())

@@ -13,7 +13,7 @@
 #include <wx/glcanvas.h>
 #include <luabind/luabind.hpp>
 
-
+/*
 template <typename T>
 class gl
 {
@@ -105,6 +105,7 @@ static int lua_glGetp(lua_State *L)
   table.push(L);
   return 1;
 }
+*/
 
 
 static inline void register_to(lua_State *L, const char *lib, const char *funcname, lua_CFunction func)
@@ -122,11 +123,11 @@ extern "C"
   extern int luaopen_gl(lua_State *L)
   {
     using namespace luabind;
-
+    /*
     luabind::open(L);
     module(L, "gl")
     [
-      def("begin", &glBegin),
+      def("beginprim", &glBegin),
       def("clear", &glClear),
       def("clearcolor", &glClearColor),
       def("color3b",  &glColor3b),
@@ -146,7 +147,9 @@ extern "C"
       def("color4ui", &glColor4ui),
       def("color4us", &glColor4us),
       def("disable", &glDisable),
+      def("disable_cstate", &glDisableClientState),
       def("enable", &glEnable),
+      def("enable_cstate", &glEnableClientState),
       def("endprim", &glEnd),
       def("finish", &glFinish),
       def("flush", &glFlush),
@@ -174,18 +177,27 @@ extern "C"
     register_to(L, "gl", "getpv", &lua_glGetp);
 
     object gl = globals(L)["gl"];
-    gl["COLOR_CLEAR_VALUE"] = GL_COLOR_CLEAR_VALUE;
-    gl["CURRENT_COLOR"]     = GL_CURRENT_COLOR;
-    gl["LINE_LOOP"]         = GL_LINE_LOOP;
-    gl["LINE_STRIP"]        = GL_LINE_STRIP;
-    gl["LINES"]             = GL_LINES;
-    gl["POINTS"]            = GL_POINTS;
-    gl["POLYGON"]           = GL_POLYGON;
-    gl["QUAD_STRIP"]        = GL_QUAD_STRIP;
-    gl["QUADS"]             = GL_QUADS;
-    gl["TRIANGLE_FAN"]      = GL_TRIANGLE_FAN;
-    gl["TRIANGLE_STRIP"]    = GL_TRIANGLE_STRIP;
-    gl["TRIANGLES"]         = GL_TRIANGLES;
+    gl["COLOR_ARRAY"]         = GL_COLOR_ARRAY;
+    gl["COLOR_CLEAR_VALUE"]   = GL_COLOR_CLEAR_VALUE;
+    gl["CURRENT_COLOR"]       = GL_CURRENT_COLOR;
+    gl["EDGE_FLAG_ARRAY"]     = GL_EDGE_FLAG_ARRAY;
+    gl["FALSE"]               = GL_FALSE;
+    gl["INDEX_ARRAY"]         = GL_INDEX_ARRAY;
+    gl["LINE_LOOP"]           = GL_LINE_LOOP;
+    gl["LINE_STRIP"]          = GL_LINE_STRIP;
+    gl["LINES"]               = GL_LINES;
+    gl["NORMAL_ARRAY"]        = GL_NORMAL_ARRAY;
+    gl["POINTS"]              = GL_POINTS;
+    gl["POLYGON"]             = GL_POLYGON;
+    gl["QUAD_STRIP"]          = GL_QUAD_STRIP;
+    gl["QUADS"]               = GL_QUADS;
+    gl["TEXTURE_COORD_ARRAY"] = GL_TEXTURE_COORD_ARRAY;
+    gl["TRIANGLE_FAN"]        = GL_TRIANGLE_FAN;
+    gl["TRIANGLE_STRIP"]      = GL_TRIANGLE_STRIP;
+    gl["TRIANGLES"]           = GL_TRIANGLES;
+    gl["TRUE"]                = GL_TRUE;
+    gl["VERTEX_ARRAY"]        = GL_VERTEX_ARRAY;
+    */
   }
 }
 

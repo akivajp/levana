@@ -100,7 +100,7 @@ namespace levana
   appli::appli()
   {
     wxGetApp().OnInit();
-    name_set("Levana Application");
+    setname("Levana Application");
   }
 
   appli::~appli()
@@ -136,26 +136,26 @@ namespace levana
 
 
   // name property base
-  const char *appli::name_get()
+  const char *appli::getname()
   {
     const std::string name =
       (const char *)wxGetApp().GetAppName().mb_str(wxConvUTF8);
     return name.c_str();
   }
-  void appli::name_set(const char *name)
+  void appli::setname(const char *name)
   {
     wxGetApp().SetAppName(wxString(name, wxConvUTF8));
   }
 
 
   // top window property base
-  frame *appli::top_get()
+  frame *appli::gettop()
   {
-    return frame::get_top();
+    return frame::gettop();
   }
-  void appli::top_set(frame *top)
+  void appli::settop(frame *top)
   {
-    frame::set_top(top);
+    frame::settop(top);
   }
 
   // static method

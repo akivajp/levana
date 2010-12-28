@@ -16,7 +16,6 @@
 
 namespace levana
 {
-
   typedef std::map<int, std::map<int, luabind::object> > func_map;
 
   template <typename T>

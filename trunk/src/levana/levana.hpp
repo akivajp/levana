@@ -15,6 +15,7 @@
 #include "cfg.hpp"
 #include "draw.hpp"
 #include "entry.hpp"
+#include "event.hpp"
 #include "frame.hpp"
 #include "gl.hpp"
 #include "taskbar.hpp"

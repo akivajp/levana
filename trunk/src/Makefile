@@ -7,7 +7,7 @@ SLIB = liblevana.a
 PCH = prec.h.gch
 WX_CXXFLAGS=`wx-config --cxxflags`
 WX_LIBS = `wx-config --libs std gl`
-CXXFLAGS = $(WX_CXXFLAGS) -fPIC
+CXXFLAGS = $(WX_CXXFLAGS) -fPIC -g
 LIBS = $(WX_LIBS) -llua -lluabind
 
 all: pch tags bin lib
@@ -44,8 +44,8 @@ $(DLIB): $(OBJS)
 main.o: main.cpp levana/app.hpp
 app.o: app.cpp levana/app.hpp
 draw.o: draw.cpp levana/draw.hpp levana/frame.hpp
-entry.o: entry.cpp $(SRC:%.cpp=levana/%.hpp)
-frame.o: frame.cpp levana/frame.hpp connect.hpp levana/icon.hpp
+entry.o: entry.cpp $(SRC:%.cpp=levana/%.hpp) levana/event.hpp
+frame.o: frame.cpp levana/frame.hpp connect.hpp levana/icon.hpp levana/event.hpp
 gl.o: gl.cpp levana/gl.hpp
 icon.o: icon.cpp levana/icon.hpp
 menu.o: menu.cpp levana/menu.hpp levana/icon.hpp
