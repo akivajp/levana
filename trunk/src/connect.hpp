@@ -10,6 +10,7 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
+#include "levana/event.hpp"
 #include "wx/wx.h"
 #include <luabind/luabind.hpp>
 #include <map>
@@ -21,19 +22,20 @@ namespace levana
   template <typename T>
   inline void ProcEvent(T *handler, wxEvent &evt)
   {
+    event e(&evt);
     std::map<int, luabind::object> id_map;
     std::map<int, luabind::object>::iterator i;
     id_map = handler->fmap[evt.GetEventType()];
     i = id_map.find(-1);
     if (i != id_map.end() && luabind::type(i->second) == LUA_TFUNCTION)
     {
-      i->second();
+      i->second(e);
       return;
     }
     i = id_map.find(evt.GetId());
     if (i != id_map.end() && luabind::type(i->second) == LUA_TFUNCTION)
     {
-      i->second();
+      i->second(e);
       return;
     }
   }

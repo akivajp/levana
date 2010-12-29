@@ -1,26 +1,33 @@
 CXXFLAGS = `/usr/mingw32/usr/bin/wx-config --cxxflags` -I/usr/mingw32/usr/include
-LIBS = -L/usr/mingw32/usr/lib `/usr/mingw32/usr/bin/wx-config --libs` -llua -lluabind -static
+LIBS = -L/usr/mingw32/usr/lib `/usr/mingw32/usr/bin/wx-config --libs std gl` -llua -lluabind -static
 CXX=mingw32-g++
-VERSION=0.1.2
-PACK_DIR=levana-$(VERSION)
+WINDRES=mingw32-windres
+OUT=levana.exe
+DLIB=levana.dll
+VERSION=0.2.1
+PACK_DIR=levana-win32-$(VERSION)
 
 all: build
 
 build:
-	cd src && make pch lib bin CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)" LIBS="$(LIBS)"
+	cd src && make pch lib win-bin \
+		CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)" LIBS="$(LIBS)" \
+		WINDRES=$(WINDRES) \
+		OUT=$(OUT) DLIB=$(DLIB)
 	install -d $(PACK_DIR)
 	install -d $(PACK_DIR)/lev
 	install lev/* $(PACK_DIR)/lev/
-	install src/a.out $(PACK_DIR)/levana.exe
-	install COPYRIGHT $(PACK_DIR)/COPYRIGHT.txt
-	install MANUAL.ja $(PACK_DIR)/MANUAL.ja.txt
-	install README.ja $(PACK_DIR)/README.ja.txt
-	install entry.lua $(PACK_DIR)/entry.txt
+	install src/$(OUT) $(PACK_DIR)/$(OUT)
+	install COPYRIGHT  $(PACK_DIR)/COPYRIGHT.txt
+	install MANUAL.ja  $(PACK_DIR)/MANUAL.ja.txt
+	install README.ja  $(PACK_DIR)/README.ja.txt
+	install entry.lua  $(PACK_DIR)/entry.txt
 	unix2dos $(PACK_DIR)/*.txt $(PACK_DIR)/lev/*
 
 clean:
 	cd src && make clean
 
-distclean: clean
+distclean:
+	cd src && make distclean
 	rm -rf $(PACK_DIR)
 

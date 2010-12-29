@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     lua_setfield(L, -2, "levana");
     lua_pop(L, 2);
 
-    appli::entry(argc, argv);
+    application::entry(argc, argv);
     // run entry program
     for (int i = 0; i < len; i++)
     {
@@ -56,7 +56,7 @@ int main(int argc, char **argv)
     lua_setfield(L, -2, "levana");
     lua_pop(L, 2);
 
-    appli::entry(argc, argv);
+    application::entry(argc, argv);
     if (luaL_dofile(L, argv[1]))
     {
       wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));

@@ -13,16 +13,17 @@
 #include "menu.hpp"
 #include "icon.hpp"
 #include "event.hpp"
+#include <string>
 
 namespace luabind { class object; }
 
 namespace levana
 {
 
-  class frame : public ctrl
+  class frame : public control
   {
     public:
-      inline frame() : ctrl() {}
+      inline frame() : control(), status(NULL) {}
       frame(frame *parent, int id, const char *title,
             int x = -1, int y = -1, int w = -1, int h = -1,
             long style = -1, const char *name = "frame");
@@ -37,6 +38,9 @@ namespace levana
 //      static void setonmenu(frame *f, int id, luabind::object lua_func);
       bool show(bool showing);
       bool show_true() { return show(true); }
+      // statusbar property
+      const char *getstatus();
+      void setstatus(const char *str_status);
       // title property
       const char *gettitle();
       void settitle(const char *title);
@@ -47,6 +51,7 @@ namespace levana
       bool create(frame *parent, int id, const char *title,
                   int x = -1, int y = -1, int w = -1, int h = -1,
                   long style = -1, const char *name = "frame");
+      const char *status;
   };
 
 }

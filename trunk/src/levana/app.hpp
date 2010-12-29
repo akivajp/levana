@@ -11,15 +11,17 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
+#include "event.hpp"
 #include "frame.hpp"
+#include <luabind/luabind.hpp>
 
 namespace levana
 {
-  class appli
+  class application : public control
   {
     public:
-      appli();
-      ~appli();
+      application();
+      ~application();
       int  autoloop();
       int  msgbox(const char *msg, const char *caption);
       int  msgbox_msg(const char *msg) { return msgbox(msg, "Message"); }
@@ -30,6 +32,8 @@ namespace levana
       // top property
       frame *gettop();
       void   settop(frame *top);
+      // onkeydown callback
+      void setonkeydown(luabind::object lua_func);
       // static method
       static bool entry(int argc, char **argv);
   };

@@ -45,7 +45,7 @@ namespace levana
 
   frame::frame(frame *parent, int id, const char *title,
                int x, int y, int w, int h, long style, const char *name)
-    : ctrl()
+    : control(), status(NULL)
   {
     bool success = this->create(parent, id, title, x, y, w, h, style, name);
     if (!success)
@@ -123,6 +123,29 @@ namespace levana
   bool frame::show(bool showing)
   {
     return ((wxFrame *)_obj)->Show(showing);
+  }
+
+  // statusbar property
+  const char * frame::getstatus()
+  {
+    return status;
+  }
+
+  void frame::setstatus(const char *str_status)
+  {
+    wxStatusBar *sb = ((myFrame *)_obj)->GetStatusBar();
+    status = str_status;
+    if     (status == NULL && sb == NULL) { return; }
+    if     (status == NULL && sb != NULL) { delete sb; }
+    else if(status != NULL && sb == NULL)
+    {
+      ((myFrame *)_obj)->CreateStatusBar();
+      ((myFrame *)_obj)->SetStatusText(wxString(str_status, wxConvUTF8));
+    }
+    else // if (status != NULL && sb != NULL)
+    {
+      ((myFrame *)_obj)->SetStatusText(wxString(str_status, wxConvUTF8));
+    }
   }
 
   // title property

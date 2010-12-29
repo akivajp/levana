@@ -12,7 +12,7 @@ if lev then
 else
   require 'levana'
 
-  app = levana.appli()
+  app = levana.application()
   lev = {}
 
   function _(str)

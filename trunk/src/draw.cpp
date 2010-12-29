@@ -14,7 +14,7 @@
 
 namespace levana
 {
-  draw::draw(ctrl *parent, int width, int height)
+  draw::draw(control *parent, int width, int height) : control()
   {
     try {
       wxWindow *p = NULL;
@@ -26,21 +26,33 @@ namespace levana
     }
     this->use();
     glViewport(0, 0, width, height);
-    glLoadIdentity();
-    glOrtho(0, width, height, 0, -1.0, 1.0);
   }
 
   void draw::clear()
   {
-//    ((wxGLCanvas *)_obj)->SetCurrent();
-//    glClearColor(0,0,0,0);
     glClear(GL_COLOR_BUFFER_BIT);
-//    glFlush();
   }
 
   void draw::flush()
   {
     glFlush();
+  }
+
+  void draw::line(int x1, int y1, int x2, int y2)
+  {
+    glBegin(GL_LINES);
+      glVertex2i(x1, y1);
+      glVertex2i(x2, y2);
+    glEnd();
+  }
+
+  void draw::set2d()
+  {
+    int w, h;
+    ((wxGLCanvas *)_obj)->GetSize(&w, &h);
+    this->use();
+    glLoadIdentity();
+    glOrtho(0, w, h, 0, -1, 1);
   }
 
   void draw::use()

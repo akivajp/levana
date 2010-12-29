@@ -13,7 +13,7 @@
 
 namespace levana
 {
-  void sizer::addctrl(ctrl *c, int proportion, int flag, int border)
+  void sizer::addctrl(control *c, int proportion, int flag, int border)
   {
     ((wxSizer *)_obj)->Add((wxWindow*)c->_obj, proportion, flag, border);
   }
@@ -26,12 +26,12 @@ namespace levana
     ((wxSizer *)_obj)->Add(width, height, proportion, flag, border);
   }
 
-  void sizer::fit(ctrl *c)
+  void sizer::fit(control *c)
   {
     ((wxSizer *)_obj)->Fit((wxWindow*)c->_obj);
   }
 
-  void sizer::fitinside(ctrl *c)
+  void sizer::fitinside(control *c)
   {
     ((wxSizer *)_obj)->FitInside((wxWindow *)c->_obj);
   }

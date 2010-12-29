@@ -12,10 +12,20 @@
 
 namespace levana
 {
-  bool ctrl::exists()
+  bool control::exists()
   {
     if (wxWindow::FindWindowById(this->id)) { return true; }
     return false;
+  }
+
+  int event::getkey() const
+  {
+    return ((wxKeyEvent *)_obj)->GetKeyCode();
+  }
+
+  void event::skip()
+  {
+    ((wxEvent *)_obj)->Skip(true);
   }
 }
 

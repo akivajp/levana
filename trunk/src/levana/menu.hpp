@@ -15,25 +15,23 @@
 namespace levana
 {
 
-  class menu : public ctrl
+  class menu : public control
   {
     public:
       menu();
       menu(const char *title);
       ~menu();
       int append(int id, const char *str, const char *help_str = "");
-      static int append(menu *m, int id, const char *str, const char *help_str = "");
       friend class systray;
       friend class menubar;
   };
 
-  class menubar : public ctrl
+  class menubar : public control
   {
     public:
       menubar();
       ~menubar();
       bool append(menu *m, const char *title);
-      static bool append(menubar *mb, menu *m, const char *title);
       friend class frame;
   };
 

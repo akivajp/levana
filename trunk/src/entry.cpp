@@ -38,7 +38,7 @@ namespace levana
           argv[j] = new char[len + 1];
           strcpy(argv[j++], ss.str().c_str());
         }
-        appli::entry(argc, argv);
+        application::entry(argc, argv);
         atexit(final_release);
         for (int i = 0; i < argc; i++) { delete argv[i]; }
         delete argv;
@@ -50,7 +50,7 @@ namespace levana
     }
     else
     {
-      appli::entry(0, NULL);
+      application::entry(0, NULL);
       atexit(final_release);
     }
     return 0;
@@ -78,34 +78,41 @@ extern "C" {
         ]
     ];
 
-    // application management
+    // event class, and its derived ones
     module(L, "levana")
     [
-      class_<appli>("appli")
-        .def(constructor<>())
-        .def("autoloop", &appli::autoloop)
-        .def("msgbox", &appli::msgbox)
-        .def("msgbox", &appli::msgbox_msg)
-        .def("yield", &appli::yield)
-        .property("name", &appli::getname, &appli::setname)
-        .property("top",  &appli::gettop,  &appli::settop)
+      // base class
+      class_<event>("event")
+        .def("getkey", &event::getkey)
+        .def("skip", &event::skip)
     ];
 
     // GUI control, event handling
     module(L, "levana")
     [
       // base class
-      class_<ctrl>("ctrl")
-        .def("connect", &ctrl::connect)
-        .def("exists", &ctrl::exists)
-        .def("setonmenu", &ctrl::setonmenu),
+      class_<control>("control")
+        .def("connect", &control::connect)
+        .def("exists", &control::exists)
+        .def("setonkeydown", &control::setonkeydown)
+        .def("setonmenu", &control::setonmenu),
       // derived classes
-      class_<draw, ctrl>("draw")
+      class_<application, control>("application")
+        .def(constructor<>())
+        .def("autoloop", &application::autoloop)
+        .def("msgbox", &application::msgbox)
+        .def("msgbox", &application::msgbox_msg)
+        .def("yield", &application::yield)
+        .property("name", &application::getname, &application::setname)
+        .property("top",  &application::gettop,  &application::settop),
+      class_<draw, control>("draw")
         .def(constructor<frame*, int, int>())
         .def("clear", &draw::clear)
         .def("flush", &draw::flush)
+        .def("line",  &draw::line)
+        .def("set2d", &draw::set2d)
         .def("using", &draw::use),
-      class_<frame, ctrl>("frame")
+      class_<frame, control>("frame")
         .def(constructor<frame*, int, const char*, int, int, int, int,
                          long, const char*>())
         .def("close", &frame::close)
@@ -114,33 +121,35 @@ extern "C" {
         .def("setmenubar", (void(frame::*)(menubar *))&frame::setmenubar)
         .def("show", &frame::show)
         .def("show", &frame::show_true)
+        .property("status", &frame::getstatus, &frame::setstatus)
         .property("title", &frame::gettitle, &frame::settitle)
         .scope
         [
           def("setmenubar", (void(*)(frame*, menubar*))&frame::setmenubar)
         ],
-      class_<menu, ctrl>("menu")
+      class_<htmlview, control>("htmlview")
+        .def(constructor<control*, int, int>())
+        .def("loadpage", &htmlview::loadpage)
+        .def("setpage", &htmlview::setpage),
+      class_<menu, control>("menu")
         .def(constructor<>())
         .def(constructor<const char *>())
-        .def("append", (int(menu::*)(int, const char*, const char *))&menu::append)
         .scope
         [
-          def("append", (int(*)(menu*, int, const char*, const char *))&menu::append)
+          def("append", &menu::append)
         ],
-      class_<menubar, ctrl>("menubar")
+      class_<menubar, control>("menubar")
         .def(constructor<>())
-        .def("append", (bool(menubar::*)(menu*, const char *))&menubar::append)
         .scope
         [
-          def("append", (bool(*)(menubar*, menu*, const char *))&menubar::append)
+          def("append", &menubar::append)
         ],
-      class_<systray, ctrl>("systray")
+      class_<systray, control>("systray")
         .def(constructor<>())
         .def("seticon", &systray::seticon)
-        .def("setmenu", (void(systray::*)(menu*))&systray::setmenu)
         .scope
         [
-          def("setmenu", (void(*)(systray*, menu*))&systray::setmenu)
+          def("setmenu", &systray::setmenu)
         ]
     ];
 
@@ -149,8 +158,11 @@ extern "C" {
       class_<icon>("icon")
         .def(constructor<>())
         .def(constructor<const char *>())
-        .def("levana_icon", &icon::levana_icon)
         .def("load_xpm", &icon::load_xpm)
+        .scope
+        [
+          def("levana_icon", &icon::levana_icon)
+        ]
     ];
     luaopen_gl(L);
     return 1;

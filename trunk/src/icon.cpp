@@ -11,7 +11,6 @@
 #include "levana/icon.hpp"
 
 #include "resource/levana.xpm"
-#include "resource/levana2.xpm"
 
 namespace levana
 {
@@ -57,12 +56,6 @@ namespace levana
   {
     static icon levana(levana_xpm);
     return levana;
-  }
-
-  const icon& icon::levana_icon2()
-  {
-    static icon levana2(levana2_xpm);
-    return levana2;
   }
 }
 

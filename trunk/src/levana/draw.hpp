@@ -15,12 +15,14 @@
 
 namespace levana
 {
-  class draw : public ctrl
+  class draw : public control
   {
     public:
-      draw(ctrl *parent, int width, int height);
+      draw(control *parent, int width, int height);
       void clear();
       void flush();
+      void line(int x1, int y1, int x2, int y2);
+      void set2d();
       void use();
   };
 }

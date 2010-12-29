@@ -18,6 +18,7 @@
 #include "event.hpp"
 #include "frame.hpp"
 #include "gl.hpp"
+#include "gui.hpp"
 #include "sizer.hpp"
 #include "taskbar.hpp"
 

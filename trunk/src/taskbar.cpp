@@ -34,7 +34,7 @@ namespace levana
       virtual wxMenu *CreatePopupMenu() { return menu; }
   };
 
-  systray::systray() : ctrl()
+  systray::systray() : control()
   {
     try {
       _obj = new myTaskBarIcon();
@@ -42,7 +42,7 @@ namespace levana
     catch (...) {
       throw "systray: allocation error";
     }
-    this->seticon(icon::levana_icon2(), "Levana Application");
+    this->seticon(icon::levana_icon(), "Levana Application");
   }
 
   systray::~systray()
@@ -60,10 +60,6 @@ namespace levana
   {
     myTaskBarIcon *tray = (myTaskBarIcon *)_obj;
     tray->SetRClickMenu((wxMenu *)m->_obj);
-  }
-  void systray::setmenu(systray *st, menu *m)
-  {
-    st->setmenu(m);
   }
 
   void systray::setonmenu(int id, luabind::object lua_func)

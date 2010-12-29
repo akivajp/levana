@@ -18,14 +18,13 @@ namespace luabind { class object; }
 
 namespace levana
 {
-  class systray : public ctrl
+  class systray : public control
   {
     public:
       systray();
       ~systray();
       bool seticon(const icon& i, const char *tooltip = "");
       void setmenu(menu *m);
-      static void setmenu(systray *st, menu *m);
       void setonmenu(int id, luabind::object lua_func);
   };
 }

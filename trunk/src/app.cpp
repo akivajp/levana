@@ -11,6 +11,7 @@
 #include "prec.h"
 #include "levana/app.hpp"
 #include "levana/frame.hpp"
+#include "connect.hpp"
 
 #include <string>
 
@@ -29,6 +30,16 @@ namespace levana
       virtual int OnExit(void);
       bool Yield();
       inline wxEventLoop *GetEventLoop() { return m_mainLoop; }
+      // Common Connect Interface
+      inline void Connect(int id, wxEventType eventType, luabind::object lua_func)
+      {
+        levana::Connect(this, id, eventType, lua_func);
+      }
+      void ProcEvent(wxEvent &event)
+      {
+        levana::ProcEvent(this, event);
+      }
+      func_map fmap;
     private:
       char **argv_utf8;
   };
@@ -78,6 +89,7 @@ namespace levana
     m_mainLoop = new wxEventLoop();
     wxEventLoop::SetActive(m_mainLoop);
     wxInitAllImageHandlers();
+    wxFileSystem::AddHandler(new wxInternetFSHandler);
     return true;
   }
 
@@ -97,25 +109,25 @@ DECLARE_APP(levana::myApp);
 
 namespace levana
 {
-  appli::appli()
+  application::application() : control()
   {
     wxGetApp().OnInit();
     setname("Levana Application");
   }
 
-  appli::~appli()
+  application::~application()
   {
     wxGetApp().OnExit();
   }
 
-  int appli::autoloop()
+  int application::autoloop()
   {
     return wxGetApp().AutoLoop();
 //    return wxGetApp().OnRun();
   }
 
 
-  int appli::msgbox(const char *msg, const char *caption)
+  int application::msgbox(const char *msg, const char *caption)
   {
     int result;
     wxString new_msg(msg, wxConvUTF8);
@@ -125,37 +137,42 @@ namespace levana
     return result;
   }
 
-  bool appli::yield()
+  bool application::yield()
   {
     return wxGetApp().Yield();
   }
 
 
   // name property base
-  const char *appli::getname()
+  const char *application::getname()
   {
     const std::string name =
       (const char *)wxGetApp().GetAppName().mb_str(wxConvUTF8);
     return name.c_str();
   }
-  void appli::setname(const char *name)
+  void application::setname(const char *name)
   {
     wxGetApp().SetAppName(wxString(name, wxConvUTF8));
   }
 
 
   // top window property base
-  frame *appli::gettop()
+  frame *application::gettop()
   {
     return frame::gettop();
   }
-  void appli::settop(frame *top)
+  void application::settop(frame *top)
   {
     frame::settop(top);
   }
 
+  void application::setonkeydown(luabind::object lua_func)
+  {
+    wxGetApp().Connect(-1, wxEVT_KEY_DOWN, lua_func);
+  }
+
   // static method
-  bool appli::entry(int argc, char **argv)
+  bool application::entry(int argc, char **argv)
   {
     static bool entried = false;
     if (entried) { return false; }
