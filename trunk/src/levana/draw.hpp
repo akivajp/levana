@@ -23,6 +23,7 @@ namespace levana
       void flush();
       void line(int x1, int y1, int x2, int y2);
       void set2d();
+      void swap();
       void use();
   };
 }

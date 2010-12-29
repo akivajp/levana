@@ -55,6 +55,11 @@ namespace levana
     glOrtho(0, w, h, 0, -1, 1);
   }
 
+  void draw::swap()
+  {
+    return ((wxGLCanvas *)_obj)->SwapBuffers();
+  }
+
   void draw::use()
   {
     ((wxGLCanvas *)_obj)->SetCurrent();

@@ -58,6 +58,16 @@ namespace levana
 
 }
 
+
+static inline void register_to(lua_State *L, luabind::object to, const char *funcname, lua_CFunction func)
+{
+  lua_pushcfunction(L, func);
+  luabind::object f(luabind::from_stack(L, -1));
+  lua_pop(L, 1);
+  to[funcname] = f;
+}
+
+
 extern "C" {
   extern int luaopen_levana(lua_State *L)
   {
@@ -73,10 +83,11 @@ extern "C" {
       class_<cfg>("cfg")
         .enum_("constants")
         [
-          value("default", levana::cfg::DEFAULT),
-          value("fixed",   levana::cfg::FIXED)
+          value("default", cfg::DEFAULT),
+          value("fixed",   cfg::FIXED)
         ]
     ];
+    register_to(L, globals(L)["levana"]["cfg"], "frame_style", &cfg::frame_style);
 
     // event class, and its derived ones
     module(L, "levana")
@@ -111,6 +122,7 @@ extern "C" {
         .def("flush", &draw::flush)
         .def("line",  &draw::line)
         .def("set2d", &draw::set2d)
+        .def("swap", &draw::swap)
         .def("using", &draw::use),
       class_<frame, control>("frame")
         .def(constructor<frame*, int, const char*, int, int, int, int,

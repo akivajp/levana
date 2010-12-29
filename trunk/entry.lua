@@ -1,30 +1,35 @@
-require 'lev/all'
+require 'lev/std'
+require 'lev/gl'
 
-function init()
-  frm = lev.frame()
-  local mb = lev.menubar()
-  local file = lev.menu()
-  file:append {str = '&Exit', func = function() frm:close() end}
-  mb:append(file, '&File')
+frm = lev.frame()
+draw = lev.draw(frm, 640, 480)
+frm:fit()
+frm:show()
 
-  local tray = lev.systray()
-  local sysmenu = lev.menu()
-  sysmenu:append {str = '&Test', func = function() frm:close() end}
-  tray:setmenu(sysmenu)
-
-  frm = lev.frame()
-  frm:setmenubar(mb)
-  html = levana.htmlview(frm, 640, 480)
-  frm:fit()
---  html:loadpage("http://www.google.co.jp/")
-  frm:show()
-  frm.status = 'OK'
-end
-
-init()
-app:setonkeydown(function(evt) app:msgbox(tostring(evt:getkey()) .. ' keypress') end)
+draw:using()
+gl.newlist(1, gl.COMPILE)
+gl.beginprim(gl.QUADS)
+  gl.color3ub(255, 0, 0)
+  gl.vertex2d(-0.5, -0.5)
+  gl.color3ub(0, 255, 0)
+  gl.vertex2d(-0.5, 0.5)
+  gl.color3ub(255, 255, 0)
+  gl.vertex2d(0.5, 0.5)
+  gl.color3ub(0, 0, 255)
+  gl.vertex2d(0.5, -0.5)
+gl.endprim()
+gl.endlist()
 
 while frm:exists() do
+  draw:using()
+  gl.clearcolor(0, 0, 0, 0)
+  gl.clear(gl.COLOR_BUFFER_BIT)
+  gl.loadidentity()
+  gl.scaled(1.2, 1.5, 0)
+  gl.calllist(1)
+  gl.flush()
+  draw:swap()
+  frm.status = string.format("Used Memory: %d KB", collectgarbage("count"))
   app:yield()
 end
 

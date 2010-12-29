@@ -12,8 +12,8 @@
 #include "levana/gl.hpp"
 #include <wx/glcanvas.h>
 #include <luabind/luabind.hpp>
+#include <GL/glu.h>
 
-/*
 template <typename T>
 class gl
 {
@@ -105,15 +105,14 @@ static int lua_glGetp(lua_State *L)
   table.push(L);
   return 1;
 }
-*/
 
 
-static inline void register_to(lua_State *L, const char *lib, const char *funcname, lua_CFunction func)
+static inline void register_to(lua_State *L, luabind::object &to, const char *funcname, lua_CFunction func)
 {
-  lua_getglobal(L, lib);
   lua_pushcfunction(L, func);
-  lua_setfield(L, -2, funcname);
+  luabind::object f(luabind::from_stack(L, -1));
   lua_pop(L, 1);
+  to[funcname] = f;
 }
 
 
@@ -123,63 +122,83 @@ extern "C"
   extern int luaopen_gl(lua_State *L)
   {
     using namespace luabind;
-    /*
-    luabind::open(L);
-    module(L, "gl")
-    [
-      def("beginprim", &glBegin),
-      def("clear", &glClear),
-      def("clearcolor", &glClearColor),
-      def("color3b",  &glColor3b),
-      def("color3d",  &glColor3d),
-      def("color3f",  &glColor3f),
-      def("color3i",  &glColor3i),
-      def("color3s",  &glColor3s),
-      def("color3ub", &glColor3ub),
-      def("color3ui", &glColor3ui),
-      def("color3us", &glColor3us),
-      def("color4b",  &glColor4b),
-      def("color4d",  &glColor4d),
-      def("color4f",  &glColor4f),
-      def("color4i",  &glColor4i),
-      def("color4s",  &glColor4s),
-      def("color4ub", &glColor4ub),
-      def("color4ui", &glColor4ui),
-      def("color4us", &glColor4us),
-      def("disable", &glDisable),
-      def("disable_cstate", &glDisableClientState),
-      def("enable", &glEnable),
-      def("enable_cstate", &glEnableClientState),
-      def("endprim", &glEnd),
-      def("finish", &glFinish),
-      def("flush", &glFlush),
-      def("rectd", &glRectd),
-      def("rectf", &glRectf),
-      def("recti", &glRecti),
-      def("rects", &glRects),
-      def("vertex2d", &glVertex2d),
-      def("vertex2f", &glVertex2f),
-      def("vertex2i", &glVertex2i),
-      def("vertex2s", &glVertex2s),
-      def("vertex3d", &glVertex3d),
-      def("vertex3f", &glVertex3f),
-      def("vertex3i", &glVertex3i),
-      def("vertex3s", &glVertex3s),
-      def("vertex4d", &glVertex4d),
-      def("vertex4f", &glVertex4f),
-      def("vertex4i", &glVertex4i),
-      def("vertex4s", &glVertex4s)
-    ];
-    register_to(L, "gl", "getbv", &lua_glGetb);
-    register_to(L, "gl", "getdv", &lua_glGetd);
-    register_to(L, "gl", "getfv", &lua_glGetf);
-    register_to(L, "gl", "getiv", &lua_glGeti);
-    register_to(L, "gl", "getpv", &lua_glGetp);
 
-    object gl = globals(L)["gl"];
+    luabind::open(L);
+    module(L, "levana")
+    [
+      namespace_("gl")
+      [
+        def("beginprim", (void(*)(unsigned int))&glBegin),
+        def("calllist", (void(*)(unsigned int))&glCallList),
+        def("clear", (void(*)(unsigned int))&glClear),
+        def("clearcolor", (void(*)(float,float,float,float))&glClearColor),
+        def("color3d",  (void(*)(double,double,double))&glColor3d),
+        def("color3f",  (void(*)(float,float,float))&glColor3f),
+        def("color3ub", (void(*)(unsigned char,unsigned char,unsigned char))&glColor3ub),
+        def("color4d",  (void(*)(double,double,double,double))&glColor4d),
+        def("color4f",  (void(*)(float,float,float,float))&glColor4f),
+        def("color4ub", (void(*)(unsigned char,unsigned char,
+                                 unsigned char,unsigned char))&glColor4ub),
+        def("deletelists", (void(*)(unsigned int, int))&glDeleteLists),
+        def("disable", (void(*)(unsigned int))&glDisable),
+        def("disable_cstate", (void(*)(unsigned int))&glDisableClientState),
+        def("enable", (void(*)(unsigned int))&glEnable),
+        def("enable_cstate", (void(*)(unsigned int))&glEnableClientState),
+        def("endlist", (void(*)())&glEndList),
+        def("endprim", (void(*)())&glEnd),
+        def("finish", (void(*)())&glFinish),
+        def("flush", (void(*)())&glFlush),
+        def("frustum", (void(*)(GLdouble,GLdouble,GLdouble,GLdouble,GLdouble,GLdouble))&glFrustum),
+        def("genlists", (unsigned int(*)(int))&glGenLists),
+        def("islist", (GLboolean(*)(unsigned int))&glIsList),
+        def("loadidentity", (void(*)())&glLoadIdentity),
+        def("lookat", (void(*)(double,double,double,double,double,
+                               double,double,double,double))&gluLookAt),
+        def("newlist", (void(*)(unsigned int,unsigned int))&glNewList),
+        def("ortho", (void(*)(double,double,double,double,double,double))&glOrtho),
+        def("perspective", (void(*)(double,double,double,double))&gluPerspective),
+        def("popmatrix", (void(*)())&glPopMatrix),
+        def("pushmatrix", (void(*)())&glPushMatrix),
+        def("rectd", (void(*)(double,double,double,double))&glRectd),
+        def("rectf", (void(*)(float,float,float,float))&glRectf),
+        def("recti", (void(*)(int,int,int,int))&glRecti),
+        def("rects", (void(*)(short int,short int,short int,short int))&glRects),
+        def("rotated", (void(*)(double,double,double,double))&glRotated),
+        def("rotatef", (void(*)(float,float,float,float))&glRotatef),
+        def("scaled", (void(*)(double,double,double))&glScaled),
+        def("scalef", (void(*)(float,float,float))&glScalef),
+        def("translated", (void(*)(double,double,double))&glTranslated),
+        def("translatef", (void(*)(float,float,float))&glTranslatef),
+        def("vertex2d", (void(*)(double,double))&glVertex2d),
+        def("vertex2f", (void(*)(float,float))&glVertex2f),
+        def("vertex2i", (void(*)(int,int))&glVertex2i),
+        def("vertex2s", (void(*)(short int,short int))&glVertex2s),
+        def("vertex3d", (void(*)(double,double,double))&glVertex3d),
+        def("vertex3f", (void(*)(float,float,float))&glVertex3f),
+        def("vertex3i", (void(*)(int,int,int))&glVertex3i),
+        def("vertex3s", (void(*)(short int,short int,short int))&glVertex3s),
+        def("vertex4d", (void(*)(double,double,double,double))&glVertex4d),
+        def("vertex4f", (void(*)(float,float,float,float))&glVertex4f),
+        def("vertex4i", (void(*)(int,int,int,int))&glVertex4i),
+        def("vertex4s", (void(*)(short int,short int,short int,short int))&glVertex4s),
+        def("viewport", (void(*)(int,int,int,int))&glViewport)
+      ]
+    ];
+
+    object gl = globals(L)["levana"]["gl"];
+    register_to(L, gl, "getb", &lua_glGetb);
+    register_to(L, gl, "getd", &lua_glGetd);
+    register_to(L, gl, "getf", &lua_glGetf);
+    register_to(L, gl, "geti", &lua_glGeti);
+    register_to(L, gl, "getp", &lua_glGetp);
+
+    gl["ACCUM_BUFFER_BIT"]    = GL_ACCUM_BUFFER_BIT;
     gl["COLOR_ARRAY"]         = GL_COLOR_ARRAY;
+    gl["COLOR_BUFFER_BIT"]    = GL_COLOR_BUFFER_BIT;
     gl["COLOR_CLEAR_VALUE"]   = GL_COLOR_CLEAR_VALUE;
+    gl["COMPILE"]             = GL_COMPILE;
     gl["CURRENT_COLOR"]       = GL_CURRENT_COLOR;
+    gl["DEPTH_BUFFER_BIT"]    = GL_DEPTH_BUFFER_BIT;
     gl["EDGE_FLAG_ARRAY"]     = GL_EDGE_FLAG_ARRAY;
     gl["FALSE"]               = GL_FALSE;
     gl["INDEX_ARRAY"]         = GL_INDEX_ARRAY;
@@ -191,13 +210,13 @@ extern "C"
     gl["POLYGON"]             = GL_POLYGON;
     gl["QUAD_STRIP"]          = GL_QUAD_STRIP;
     gl["QUADS"]               = GL_QUADS;
+    gl["STENCIL_BUFFER_BIT"]  = GL_STENCIL_BUFFER_BIT;
     gl["TEXTURE_COORD_ARRAY"] = GL_TEXTURE_COORD_ARRAY;
     gl["TRIANGLE_FAN"]        = GL_TRIANGLE_FAN;
     gl["TRIANGLE_STRIP"]      = GL_TRIANGLE_STRIP;
     gl["TRIANGLES"]           = GL_TRIANGLES;
     gl["TRUE"]                = GL_TRUE;
     gl["VERTEX_ARRAY"]        = GL_VERTEX_ARRAY;
-    */
   }
 }
 

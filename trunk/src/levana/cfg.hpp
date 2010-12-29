@@ -10,11 +10,14 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
+#include <lua.h>
+
 namespace levana
 {
   class cfg
   {
     public:
+      static int frame_style(lua_State *L);
       enum config
       {
         DEFAULT = -1,
