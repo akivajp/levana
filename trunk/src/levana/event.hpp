@@ -10,8 +10,8 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
+#include <luabind/luabind.hpp>
 #include "base.hpp"
-#include <map>
 
 namespace luabind { class object; }
 

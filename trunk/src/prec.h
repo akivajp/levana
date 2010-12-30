@@ -16,6 +16,7 @@ extern "C" {
 #include <lualib.h>
 #include <lauxlib.h>
 }
+#include <luabind/luabind.hpp>
 
 #include <wx/wx.h>
 #include <wx/evtloop.h>
@@ -23,7 +24,6 @@ extern "C" {
 #include <wx/glcanvas.h>
 #include <wx/taskbar.h>
 #include <wx/wxhtml.h>
-#include <luabind/luabind.hpp>
 
 #include <map>
 #include <string>
