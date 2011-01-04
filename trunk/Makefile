@@ -5,7 +5,16 @@ DLIB = levana.so
 SLIB = liblevana.a
 LUA_VERSION = 5.1
 
-all: build bin lib
+none:
+	@echo "Please do"
+	@echo "  make PLATFORM"
+	@echo "where PLATFORM is one of these:"
+	@echo "  linux mac mingw"
+
+linux: build bin lib
+
+mac:
+	make -f make/Makefile.macosx build
 
 mingw:
 	make -f Makefile.mingw build

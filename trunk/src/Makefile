@@ -9,6 +9,7 @@ WX_CXXFLAGS=`wx-config --cxxflags`
 WX_LIBS = `wx-config --libs std gl` -lGLU
 CXXFLAGS = $(WX_CXXFLAGS) -fPIC
 LIBS = $(WX_LIBS) -llua -lluabind
+SHARED= -shared
 
 all: pch tags bin lib
 
@@ -43,7 +44,7 @@ $(SLIB): $(OBJS)
 	ranlib $(SLIB)
 
 $(DLIB): $(OBJS)
-	$(CXX) -shared -o $(DLIB) $(OBJS) $(LIBS)
+	$(CXX) $(SHARED) -o $(DLIB) $(OBJS) $(LIBS)
 
 app.o: app.cpp levana/app.hpp
 cfg.o: cfg.cpp levana/cfg.hpp

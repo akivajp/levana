@@ -1,20 +1,19 @@
 CXXFLAGS = `wx-config --cxxflags` -I/opt/local/include
 #LIBS = `wx-config --libs std gl` -llua -lluabind -static
-LIBS = `wx-config --libs std gl` -llua -lluabind
+LIBS = `wx-config --libs std gl` -llua -lluabind -static
+SHARED = -dynamiclib
 OUT=a.out
 DLIB=levana.so
 SLIB=liblevana.a
 CXX=g++-4.2
 VERSION=0.2.2
-PACK_DIR=levana-macosx-$(VERSION)
+PACK_DIR=levana-$(VERSION).app
 
 all: build
 
 build:
-	cd src && make pch bin CXXFLAGS="$(CXXFLAGS)" LIBS="$(LIBS)" \
+	cd src && make pch lib bin CXXFLAGS="$(CXXFLAGS)" LIBS="$(LIBS)" \
 		CXX=$(CXX) OUT=$(OUT) DLIB=$(DLIB)
-#	cd src && make pch lib bin CXXFLAGS="$(CXXFLAGS)" LIBS="$(LIBS)" \
-#		CXX=$(CXX) OUT=$(OUT) DLIB=$(DLIB)
 	install -d $(PACK_DIR)
 	install -d $(PACK_DIR)/lev
 	install -d $(PACK_DIR)/doc
