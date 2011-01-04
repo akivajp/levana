@@ -6,26 +6,28 @@ OUT=a.out
 DLIB=levana.so
 SLIB=liblevana.a
 CXX=g++-4.2
-PACK_DIR=levana-$(VERSION).app
+PACK_DIR=levana-macosx-$(VERSION)
+BUNDLE=$(PACK_DIR)/levana.app
 
 all: build
 
 build:
 	cd src && make pch lib bin CXXFLAGS="$(CXXFLAGS)" LIBS="$(LIBS)" \
 		CXX=$(CXX) OUT=$(OUT) DLIB=$(DLIB) SHARED=$(SHARED)
-	install -d $(PACK_DIR)/Contents/MacOS
-	install -d $(PACK_DIR)/Contents/doc
-	install -d $(PACK_DIR)/Resources
+	install -d $(BUNDLE)
+	install -d $(BUNDLE)/Contents/MacOS
+	install -d $(BUNDLE)/Contents/Resources
+	install -d $(BUNDLE)/Contents/doc
+	install make/Info.plist $(BUNDLE)/Contents/Info.plist
+	install make/levana.sh $(BUNDLE)/Contents/MacOS/levana.sh
+	install src/resource/levana.ico $(BUNDLE)/Contents/Resources/levana.icns
+	install src/$(OUT) $(BUNDLE)/Contents/MacOS/levana
+	install COPYRIGHT  $(BUNDLE)/Contents/doc/COPYRIGHT.txt
+	install MANUAL.ja  $(BUNDLE)/Contents/doc/MANUAL.ja.txt
+	install README.ja  $(BUNDLE)/Contents/doc/README.ja.txt
 	install -d $(PACK_DIR)/lev
 	install lev/* $(PACK_DIR)/lev/
-	install src/resource/Info.plist $(PACK_DIR)/Contents/Info.plist
-	install src/resource/levana.ico $(PACK_DIR)/Resources/levana.icns
-	install src/$(OUT) $(PACK_DIR)/Contents/MacOS/levana
-	install COPYRIGHT  $(PACK_DIR)/Contents/doc/COPYRIGHT.txt
-	install MANUAL.ja  $(PACK_DIR)/Contents/doc/MANUAL.ja.txt
-	install README.ja  $(PACK_DIR)/Contents/doc/README.ja.txt
-	install entry.lua  $(PACK_DIR)/Contents/MacOS/entry.lua
-#	unix2dos $(PACK_DIR)/*.txt $(PACK_DIR)/lev/*
+	install entry.lua  $(PACK_DIR)/entry.lua
 
 clean:
 	cd src && make clean
