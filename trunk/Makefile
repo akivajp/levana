@@ -19,7 +19,8 @@ mac:
 		VERSION=$(VERSION)
 
 mingw:
-	make -f Makefile.mingw build
+	make -f make/Makefile.mingw build
+		VERSION=$(VERSION)
 
 build:
 	cd src && make all

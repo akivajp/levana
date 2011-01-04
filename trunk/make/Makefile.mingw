@@ -4,7 +4,6 @@ CXX=mingw32-g++
 WINDRES=mingw32-windres
 OUT=levana.exe
 DLIB=levana.dll
-VERSION=0.2.2
 PACK_DIR=levana-win32-$(VERSION)
 
 all: build

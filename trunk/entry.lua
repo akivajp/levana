@@ -28,7 +28,7 @@ while frm:exists() do
   gl.scaled(1.2, 1.5, 0)
   gl.calllist(1)
   gl.flush()
-  draw:swap()
+--  draw:swap()
   frm.status = string.format("Used Memory: %d KB", collectgarbage("count"))
   app:yield()
 end
