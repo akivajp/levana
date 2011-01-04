@@ -1,4 +1,5 @@
 PREFIX=/tmp
+VERSION=0.2.2
 OUT = a.out
 BIN = levana
 DLIB = levana.so
@@ -14,7 +15,8 @@ none:
 linux: build bin lib
 
 mac:
-	make -f make/Makefile.macosx build
+	make -f make/Makefile.macosx build \
+		VERSION=$(VERSION)
 
 mingw:
 	make -f Makefile.mingw build

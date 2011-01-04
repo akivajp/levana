@@ -1,0 +1,36 @@
+CXXFLAGS = `wx-config --cxxflags` -I/opt/local/include
+#LIBS = `wx-config --libs std gl` -llua -lluabind -static
+LIBS = `wx-config --libs std gl` -llua -lluabind
+SHARED = -dynamiclib
+OUT=a.out
+DLIB=levana.so
+SLIB=liblevana.a
+CXX=g++-4.2
+PACK_DIR=levana-$(VERSION).app
+
+all: build
+
+build:
+	cd src && make pch lib bin CXXFLAGS="$(CXXFLAGS)" LIBS="$(LIBS)" \
+		CXX=$(CXX) OUT=$(OUT) DLIB=$(DLIB) SHARED=$(SHARED)
+	install -d $(PACK_DIR)/Contents/MacOS
+	install -d $(PACK_DIR)/Contents/doc
+	install -d $(PACK_DIR)/Resources
+	install -d $(PACK_DIR)/lev
+	install lev/* $(PACK_DIR)/lev/
+	install src/resource/Info.plist $(PACK_DIR)/Contents/Info.plist
+	install src/resource/levana.ico $(PACK_DIR)/Resources/levana.icns
+	install src/$(OUT) $(PACK_DIR)/Contents/MacOS/levana
+	install COPYRIGHT  $(PACK_DIR)/Contents/doc/COPYRIGHT.txt
+	install MANUAL.ja  $(PACK_DIR)/Contents/doc/MANUAL.ja.txt
+	install README.ja  $(PACK_DIR)/Contents/doc/README.ja.txt
+	install entry.lua  $(PACK_DIR)/Contents/MacOS/entry.lua
+#	unix2dos $(PACK_DIR)/*.txt $(PACK_DIR)/lev/*
+
+clean:
+	cd src && make clean
+
+distclean:
+	cd src && make distclean
+	rm -rf $(PACK_DIR)
+
