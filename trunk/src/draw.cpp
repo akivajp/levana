@@ -16,10 +16,12 @@ namespace levana
 {
   draw::draw(control *parent, int width, int height) : control()
   {
+    int attribs[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, None };
     try {
       wxWindow *p = NULL;
       if (parent) { p = (wxWindow *)parent->_obj; }
-      _obj = new wxGLCanvas(p, -1, wxDefaultPosition, wxSize(width, height));
+      _obj = new wxGLCanvas(p, -1, wxDefaultPosition, wxSize(width, height),
+                            0, wxGLCanvasName, attribs);
     }
     catch(...) {
       throw "draw: allocation error";
@@ -57,7 +59,7 @@ namespace levana
 
   void draw::swap()
   {
-    return ((wxGLCanvas *)_obj)->SwapBuffers();
+    ((wxGLCanvas *)_obj)->SwapBuffers();
   }
 
   void draw::use()

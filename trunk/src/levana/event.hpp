@@ -30,9 +30,12 @@ namespace levana
       { throw "control: derived setonkeydown method has not been implemented"; }
       virtual void setonmenu(int id, luabind::object lua_func)
       { throw "control: derived setonmenu method has not been implemented"; }
+
+      // friend classes
       friend class draw;
       friend class frame;
       friend class htmlview;
+      friend class player;
       friend class sizer;
     private:
       int id;

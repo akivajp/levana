@@ -15,21 +15,55 @@
 int main(int argc, char **argv)
 {
   using namespace levana;
-  if (argc == 1)
+
+  const int len = 3;
+  const char *entry[] = {"entry.lc", "entry.lua", "entry.txt"};
+  bool done_something = false;
+
+  // initializing lua statement
+  lua_State *L = lua_open();
+  luaL_openlibs(L);
+
+  // levana library registration
+  lua_getglobal(L, "package");
+  lua_getfield(L, -1, "preload");
+  lua_pushcfunction(L, &luaopen_levana);
+  lua_setfield(L, -2, "levana");
+  lua_pop(L, 2);
+
+  // levana entry
+  application::entry(argc, argv);
+
+  for (int i = 1; i < argc; i++)
   {
-    const int len = 3;
-    const char *entry[] = {"entry.lc", "entry.lua", "entry.txt"};
-    lua_State *L = lua_open();
-    luaL_openlibs(L);
+    switch(argv[i][0])
+    {
+      case '-':
+        if (argv[i][1] == 'e' && argc > i + 1)
+        {
+          i++;
+          if (luaL_dostring(L, argv[i]))
+          {
+            wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
+            exit(-1);
+          }
+          done_something = true;
+        }
+        break;
+      default:
+        if (luaL_dofile(L, argv[i]))
+        {
+          wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
+          exit(-1);
+        }
+        done_something = true;
+        break;
+    }
+  }
 
-    // levana library registration
-    lua_getglobal(L, "package");
-    lua_getfield(L, -1, "preload");
-    lua_pushcfunction(L, &luaopen_levana);
-    lua_setfield(L, -2, "levana");
-    lua_pop(L, 2);
-
-    application::entry(argc, argv);
+  if (done_something == false)
+  {
+    // nothing was done
     // run entry program
     for (int i = 0; i < len; i++)
     {
@@ -43,27 +77,7 @@ int main(int argc, char **argv)
     }
     wxMessageBox(_("Usage: create \"entry.txt\" file and put in the same directory with the program"), _("About usage"));
   }
-  else
-  {
-    // argc >= 2
-    lua_State *L = lua_open();
-    luaL_openlibs(L);
 
-    // levana library registration
-    lua_getglobal(L, "package");
-    lua_getfield(L, -1, "preload");
-    lua_pushcfunction(L, &luaopen_levana);
-    lua_setfield(L, -2, "levana");
-    lua_pop(L, 2);
-
-    application::entry(argc, argv);
-    if (luaL_dofile(L, argv[1]))
-    {
-      wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
-      exit(-1);
-    }
-    return 0;
-  }
   return 0;
 }
 

@@ -6,6 +6,8 @@ DLIB = levana.so
 SLIB = liblevana.a
 LUA_VERSION = 5.1
 
+all: linux
+
 none:
 	@echo "Please do"
 	@echo "  make PLATFORM"

@@ -1,21 +1,13 @@
 -----------------------------------------------------------------------------
--- Name:        lev/std.lua
--- Purpose:     script file including standard libraries
+-- Name:        lev/app.lua
+-- Purpose:     application management
 -- Author:      Akiva Miura <akiva.miura@gmail.com>
--- Created:     12/01/2010
+-- Created:     01/05/2011
 -- Copyright:   (C) 2010 Akiva Miura
 -- Licence:     MIT License
 -----------------------------------------------------------------------------
 
-require 'lev/app'
-require 'lev/gui'
-require 'lev/media'
+require 'levana'
 
-function _(str)
-  return str
-end
-
-cfg = levana.cfg
-
-collectgarbage()
+app = levana.application()
 

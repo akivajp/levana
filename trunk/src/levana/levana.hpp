@@ -19,6 +19,7 @@
 #include "frame.hpp"
 #include "gl.hpp"
 #include "gui.hpp"
+#include "media.hpp"
 #include "sizer.hpp"
 #include "taskbar.hpp"
 

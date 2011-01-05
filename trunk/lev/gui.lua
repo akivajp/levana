@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------
--- Name:        lev/wrap.lua
--- Purpose:     levana library re-wrapping for flexible use
+-- Name:        lev/gui.lua
+-- Purpose:     gui control management
 -- Author:      Akiva Miura <akiva.miura@gmail.com>
 -- Created:     12/28/2010
 -- Copyright:   (C) 2010 Akiva Miura
@@ -9,17 +9,9 @@
 
 require 'levana'
 
-app = levana.application()
-
-if not(lev) then
-  lev = {}
+if not(gui) then
+  gui = {}
 end
-
-function _(str)
-  return str
-end
-
-cfg = levana.cfg
 
 -------------------------------------------------------------------
 -- begin 'draw' class rewrapping
@@ -38,7 +30,7 @@ function draw:__init(...)
   levana.draw.__init(self, c.parent, c.w, c.h)
 end
 
-lev.draw = draw
+gui.draw = draw
 draw = nil
 -- end 'draw' class rewrapping
 -------------------------------------------------------------------
@@ -76,7 +68,7 @@ function frame:setmenubar(mb)
   end
 end
 
-lev.frame = frame
+gui.frame = frame
 frame = nil
 -- end of 'frame' class rewrapping
 -------------------------------------------------------------------
@@ -101,7 +93,7 @@ function menu:append(conf)
   return id
 end
 
-lev.menu = menu
+gui.menu = menu
 menu = nil
 -- end of 'menu' class rewrapping
 -------------------------------------------------------------------
@@ -121,7 +113,7 @@ function menubar:append(menu, title)
 end
 
 
-lev.menubar = menubar
+gui.menubar = menubar
 menubar = nil
 -- end of 'menubar' class rewrapping
 -------------------------------------------------------------------
@@ -146,7 +138,7 @@ function systray:setmenu(m)
   end
 end
 
-lev.systray = systray
+gui.systray = systray
 systray = nil
 -- end of 'systray' class rewrapping
 -------------------------------------------------------------------

@@ -143,6 +143,11 @@ extern "C" {
         .def(constructor<control*, int, int>())
         .def("loadpage", &htmlview::loadpage)
         .def("setpage", &htmlview::setpage),
+      class_<player, control>("player")
+        .def(constructor<control*,int,const char*,int,int>())
+        .def("load", &player::load)
+        .def("play", &player::play)
+        .def("playing", &player::playing),
       class_<menu, control>("menu")
         .def(constructor<>())
         .def(constructor<const char *>())

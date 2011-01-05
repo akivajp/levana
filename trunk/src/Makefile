@@ -1,12 +1,13 @@
 CXX = g++
-SRC = app.cpp cfg.cpp draw.cpp entry.cpp event.cpp frame.cpp gl.cpp gui.cpp icon.cpp menu.cpp sizer.cpp taskbar.cpp
+SRC = app.cpp cfg.cpp draw.cpp entry.cpp event.cpp frame.cpp \
+      gl.cpp gui.cpp icon.cpp media.cpp menu.cpp sizer.cpp taskbar.cpp
 OBJS = $(SRC:%.cpp=%.o)
 OUT = a.out
 DLIB = levana.so
 SLIB = liblevana.a
 PCH = prec.h.gch
 WX_CXXFLAGS=`wx-config --cxxflags`
-WX_LIBS = `wx-config --libs std gl` -lGLU
+WX_LIBS = `wx-config --libs std,media,gl` -lGLU
 CXXFLAGS = $(WX_CXXFLAGS) -fPIC
 LIBS = $(WX_LIBS) -llua -lluabind
 SHARED= -shared
@@ -56,6 +57,7 @@ gl.o: gl.cpp levana/gl.hpp
 gui.o: gui.cpp levana/gui.hpp
 icon.o: icon.cpp levana/icon.hpp
 main.o: main.cpp levana/app.hpp
+media.o: media.cpp levana/media.hpp
 menu.o: menu.cpp levana/menu.hpp levana/icon.hpp
 sizer.o: sizer.cpp levana/sizer.hpp
 taskbar.o: taskbar.cpp levana/taskbar.hpp
