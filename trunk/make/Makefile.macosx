@@ -1,6 +1,6 @@
-CXXFLAGS = `wx-config --cxxflags` -I/opt/local/include
+CXXFLAGS = `/usr/bin/wx-config --cxxflags` -I/opt/local/include
 #LIBS = `wx-config --libs std gl` -llua -lluabind -static
-LIBS = `wx-config --libs std gl` -llua -lluabind
+LIBS = `/usr/bin/wx-config --libs std gl` -L/opt/local/lib -llua -lluabind -framework OpenGL
 SHARED = -dynamiclib
 OUT=a.out
 DLIB=levana.so
@@ -16,17 +16,17 @@ build:
 		CXX=$(CXX) OUT=$(OUT) DLIB=$(DLIB) SHARED=$(SHARED)
 	install -d $(BUNDLE)
 	install -d $(BUNDLE)/Contents/MacOS
+	install -d $(BUNDLE)/Contents/MacOS/lev
 	install -d $(BUNDLE)/Contents/Resources
 	install -d $(BUNDLE)/Contents/doc
-	install make/Info.plist $(BUNDLE)/Contents/Info.plist
-	install make/levana.sh $(BUNDLE)/Contents/MacOS/levana.sh
-	install src/resource/levana.ico $(BUNDLE)/Contents/Resources/levana.icns
+	install make/Info.plist $(BUNDLE)/Contents
+	install make/levana.sh $(BUNDLE)/Contents/MacOS
+	install src/resource/levana.icns $(BUNDLE)/Contents/Resources
 	install src/$(OUT) $(BUNDLE)/Contents/MacOS/levana
+	install lev/* $(BUNDLE)/Contents/MacOS/lev
 	install COPYRIGHT  $(BUNDLE)/Contents/doc/COPYRIGHT.txt
 	install MANUAL.ja  $(BUNDLE)/Contents/doc/MANUAL.ja.txt
 	install README.ja  $(BUNDLE)/Contents/doc/README.ja.txt
-	install -d $(PACK_DIR)/lev
-	install lev/* $(PACK_DIR)/lev/
 	install entry.lua  $(PACK_DIR)/entry.lua
 
 clean:

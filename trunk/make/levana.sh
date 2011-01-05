@@ -17,6 +17,7 @@ CON_DIR=`dirname $BIN_DIR`
 APP_DIR=`dirname $CON_DIR`
 WORK_DIR=`dirname $APP_DIR`
 cd $BIN_DIR
+export LUA_PATH=${BIN_DIR}/?.lua
 ./levana
 #./levana $BIN_DIR/entry.lua
 exit 0

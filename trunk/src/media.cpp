@@ -11,6 +11,8 @@
 #include "prec.h"
 #include "levana/media.hpp"
 
+class wxMediaCtrl;
+
 namespace levana
 {
 

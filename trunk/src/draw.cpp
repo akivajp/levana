@@ -16,7 +16,7 @@ namespace levana
 {
   draw::draw(control *parent, int width, int height) : control()
   {
-    int attribs[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, None };
+    int attribs[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, 0 };
     try {
       wxWindow *p = NULL;
       if (parent) { p = (wxWindow *)parent->_obj; }

@@ -1,5 +1,5 @@
 /* XPM */
-static char * levana_xpm[] = {
+static const char * levana_xpm[] = {
 "24 24 137 2",
 "  	c None",
 ". 	c #949494",
