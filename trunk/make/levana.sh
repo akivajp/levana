@@ -12,6 +12,11 @@ then
   DIR=""
 fi
 
+echo $0 > ~/Downloads/out.txt
+echo $1 >> ~/Downloads/out.txt
+echo $2 >> ~/Downloads/out.txt
+echo $3 >> ~/Downloads/out.txt
+
 BIN_DIR=${PWD}${DIR}
 CON_DIR=`dirname $BIN_DIR`
 APP_DIR=`dirname $CON_DIR`

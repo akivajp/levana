@@ -11,7 +11,7 @@
 #include "prec.h"
 #include "levana/media.hpp"
 #include <string>
-//#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 
 class wxMediaCtrl;
@@ -76,9 +76,11 @@ namespace levana
 
   bool player::loadlocal(const char *filename)
   {
-    std::string path = boost::filesystem::current_path().string();
-    path = path + "/" + filename;
-    return ((wxMediaCtrl *)_obj)->Load(wxString(path.c_str(), wxConvUTF8));
+    namespace fs = boost::filesystem;
+    fs::path path = fs::current_path();
+    std::string full = path.string().c_str();
+    full = full + "/" + filename;
+    return ((wxMediaCtrl *)_obj)->Load(wxString(full.c_str(), wxConvUTF8));
   }
 
   bool player::loaduri(const char *uri)
