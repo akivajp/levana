@@ -17,6 +17,7 @@ extern "C" {
 #include <lauxlib.h>
 }
 #include <luabind/luabind.hpp>
+#include <luabind/operator.hpp>
 
 #include <wx/wx.h>
 #include <wx/evtloop.h>

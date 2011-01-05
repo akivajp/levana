@@ -3,13 +3,15 @@ require 'lev/std'
 frm = gui.frame()
 snd = gui.frame()
 player = media.player {parent = snd, w = 100, h = 100}
-player:load("/home/akiva/levana/kami.mp3")
+--player:loadlocal("./kami.mp3")
+player:loaduri('http://o-life.jp/f/090421_t10_13_4_r___-.mp3')
 frm:fit()
 frm:show()
 
 player:play()
-while not(player:playing()) do end
-while player:playing() do
+player.volume = 0.5
+while frm.isvalid do
+  frm.status = tostring(player.volume)
   app:yield()
 end
 

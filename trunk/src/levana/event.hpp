@@ -25,11 +25,11 @@ namespace levana
     public:
       virtual void connect(int type, luabind::object lua_func)
       { throw "control: derived connect method has not been implemented"; }
-      bool exists();
       virtual void setonkeydown(luabind::object lua_func)
       { throw "control: derived setonkeydown method has not been implemented"; }
       virtual void setonmenu(int id, luabind::object lua_func)
       { throw "control: derived setonmenu method has not been implemented"; }
+      bool isvalid();
 
       // friend classes
       friend class draw;

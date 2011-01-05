@@ -20,6 +20,7 @@
 #include "gl.hpp"
 #include "gui.hpp"
 #include "media.hpp"
+#include "prim.hpp"
 #include "sizer.hpp"
 #include "taskbar.hpp"
 

@@ -10,20 +10,23 @@
 
 #include "prec.h"
 #include "levana/media.hpp"
+#include <string>
+//#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
 
 class wxMediaCtrl;
 
 namespace levana
 {
 
-  player::player(control *parent, int id, const char *uri, int width, int height) : control()
+  player::player(control *parent, int id, const char *filepath, int width, int height) : control()
   {
     try {
       wxWindow *p = NULL;
       wxString file;
       if (parent) { p = (wxWindow *)parent->_obj; }
-      if (uri == NULL) { file = wxEmptyString; }
-      else { file = wxString(uri, wxConvUTF8); }
+      if (filepath == NULL) { file = wxEmptyString; }
+      else { file = wxString(filepath, wxConvUTF8); }
       _obj = new wxMediaCtrl(p, id, file, wxDefaultPosition, wxSize(width, height));
     }
     catch (...) {
@@ -39,9 +42,53 @@ namespace levana
     }
   }
 
-  bool player::load(const char *filename)
+  size player::getbestsize()
   {
-    return ((wxMediaCtrl *)_obj)->Load(wxString(filename, wxConvUTF8));
+    wxSize sz = ((wxMediaCtrl *)_obj)->GetBestSize();
+    return size(sz.GetWidth(), sz.GetHeight());
+  }
+
+  double player::getvolume()
+  {
+    return ((wxMediaCtrl *)_obj)->GetVolume();
+  }
+
+  bool player::ispaused()
+  {
+    if ( ((wxMediaCtrl *)_obj)->GetState() == wxMEDIASTATE_PAUSED )
+    { return true; }
+    return false;
+  }
+
+  bool player::isplaying()
+  {
+    if ( ((wxMediaCtrl *)_obj)->GetState() == wxMEDIASTATE_PLAYING )
+    { return true; }
+    return false;
+  }
+
+  bool player::isstopped()
+  {
+    if ( ((wxMediaCtrl *)_obj)->GetState() == wxMEDIASTATE_STOPPED )
+    { return true; }
+    return false;
+  }
+
+  bool player::loadlocal(const char *filename)
+  {
+    std::string path = boost::filesystem::current_path().string();
+    path = path + "/" + filename;
+    return ((wxMediaCtrl *)_obj)->Load(wxString(path.c_str(), wxConvUTF8));
+  }
+
+  bool player::loaduri(const char *uri)
+  {
+    return ((wxMediaCtrl *)_obj)->LoadURI(wxString(uri, wxConvUTF8));
+  }
+
+  bool player::pause()
+  {
+    return ((wxMediaCtrl *)_obj)->Pause();
   }
 
   bool player::play()
@@ -49,12 +96,14 @@ namespace levana
     return ((wxMediaCtrl *)_obj)->Play();
   }
 
-  bool player::playing()
+  bool player::setvolume(double vol)
   {
-    if ( ((wxMediaCtrl *)_obj)->GetState() == wxMEDIASTATE_PLAYING)
-    { return true; }
-    return false;
+    return ((wxMediaCtrl *)_obj)->SetVolume(vol);
   }
 
+  bool player::stop()
+  {
+    return ((wxMediaCtrl *)_obj)->Stop();
+  }
 }
 

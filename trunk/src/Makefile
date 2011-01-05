@@ -1,6 +1,7 @@
 CXX = g++
 SRC = app.cpp cfg.cpp draw.cpp entry.cpp event.cpp frame.cpp \
-      gl.cpp gui.cpp icon.cpp media.cpp menu.cpp sizer.cpp taskbar.cpp
+      gl.cpp gui.cpp icon.cpp media.cpp menu.cpp prim.cpp \
+      sizer.cpp taskbar.cpp
 OBJS = $(SRC:%.cpp=%.o)
 OUT = a.out
 DLIB = levana.so
@@ -9,7 +10,7 @@ PCH = prec.h.gch
 WX_CXXFLAGS=`wx-config --cxxflags`
 WX_LIBS = `wx-config --libs std,media,gl` -lGLU
 CXXFLAGS = $(WX_CXXFLAGS) -fPIC
-LIBS = $(WX_LIBS) -llua -lluabind
+LIBS = $(WX_LIBS) -llua -lluabind -lboost_filesystem
 SHARED= -shared
 
 all: pch tags bin lib
@@ -59,6 +60,7 @@ icon.o: icon.cpp levana/icon.hpp
 main.o: main.cpp levana/app.hpp
 media.o: media.cpp levana/media.hpp
 menu.o: menu.cpp levana/menu.hpp levana/icon.hpp
+prim.o: prim.cpp levana/prim.hpp
 sizer.o: sizer.cpp levana/sizer.hpp
 taskbar.o: taskbar.cpp levana/taskbar.hpp
 %.o: %.cpp

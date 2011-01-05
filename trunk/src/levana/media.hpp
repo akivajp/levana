@@ -12,6 +12,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "event.hpp"
+#include "prim.hpp"
 
 namespace levana
 {
@@ -19,11 +20,19 @@ namespace levana
   class player : public control
   {
     public:
-      player(control *parent, int id, const char *uri = "", int width = -1, int height = -1);
+      player(control *parent, int id, const char *filepath = "", int width = -1, int height = -1);
       ~player();
-      bool load(const char *filename);
+      size getbestsize();
+      double getvolume();
+      bool ispaused();
+      bool isplaying();
+      bool isstopped();
+      bool loadlocal(const char *filename);
+      bool loaduri(const char *uri);
+      bool pause();
       bool play();
-      bool playing();
+      bool setvolume(double vol);
+      bool stop();
   };
 
 }

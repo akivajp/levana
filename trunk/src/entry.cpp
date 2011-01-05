@@ -104,9 +104,9 @@ extern "C" {
       // base class
       class_<control>("control")
         .def("connect", &control::connect)
-        .def("exists", &control::exists)
         .def("setonkeydown", &control::setonkeydown)
-        .def("setonmenu", &control::setonmenu),
+        .def("setonmenu", &control::setonmenu)
+        .property("isvalid", &control::isvalid),
       // derived classes
       class_<application, control>("application")
         .def(constructor<>())
@@ -145,9 +145,14 @@ extern "C" {
         .def("setpage", &htmlview::setpage),
       class_<player, control>("player")
         .def(constructor<control*,int,const char*,int,int>())
-        .def("load", &player::load)
+        .def("loadlocal", &player::loadlocal)
+        .def("loaduri", &player::loaduri)
         .def("play", &player::play)
-        .def("playing", &player::playing),
+        .property("bestsize", &player::getbestsize)
+        .property("ispaused", &player::ispaused)
+        .property("isplaying", &player::isplaying)
+        .property("isstopped", &player::isstopped)
+        .property("volume", &player::getvolume, &player::setvolume),
       class_<menu, control>("menu")
         .def(constructor<>())
         .def(constructor<const char *>())
@@ -168,6 +173,28 @@ extern "C" {
         [
           def("setmenu", &systray::setmenu)
         ]
+    ];
+
+    // primitives
+    module(L, "levana")
+    [
+      class_<vector>("vector")
+        .def(constructor<>())
+        .def(constructor<int,int>())
+        .def(constructor<int,int,int>())
+        .def(self + vector())
+        .property("x", &vector::getx, &vector::setx)
+        .property("y", &vector::gety, &vector::sety)
+        .property("z", &vector::getz, &vector::setz),
+      class_<size>("size")
+        .def(constructor<int,int>())
+        .def(constructor<int,int,int>())
+        .property("d", &size::geth, &size::setd)
+        .property("depth", &size::geth, &size::setd)
+        .property("h", &size::geth, &size::seth)
+        .property("hehgt", &size::geth, &size::seth)
+        .property("w", &size::getw, &size::setw)
+        .property("width", &size::getw, &size::setw)
     ];
 
     module(L, "levana")

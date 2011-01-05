@@ -12,7 +12,7 @@
 
 namespace levana
 {
-  bool control::exists()
+  bool control::isvalid()
   {
     if (wxWindow::FindWindowById(this->id)) { return true; }
     return false;

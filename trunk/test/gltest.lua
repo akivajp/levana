@@ -20,7 +20,7 @@ gl.beginprim(gl.QUADS)
 gl.endprim()
 gl.endlist()
 
-while frm:exists() do
+while frm.isvalid do
   draw:using()
   gl.clearcolor(0, 0, 0, 0)
   gl.clear(gl.COLOR_BUFFER_BIT)
