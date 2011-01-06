@@ -24,18 +24,14 @@ namespace levana
   {
     public:
       inline frame() : control(), status(NULL) {}
-      frame(frame *parent, int id, const char *title,
-            int x = -1, int y = -1, int w = -1, int h = -1,
-            long style = -1, const char *name = "frame");
+      frame(frame *parent, const char *title, int w = -1, int h = -1, long style = -1);
       ~frame();
       bool close(bool force);
       bool close_noforce() { return close(false); }
       void fit();
       void seticon(const icon &i);
       void setmenubar(menubar *mb);
-      static void setmenubar(frame *f, menubar *mb);
       void setonmenu(int id, luabind::object lua_func);
-//      static void setonmenu(frame *f, int id, luabind::object lua_func);
       bool show(bool showing);
       bool show_true() { return show(true); }
       // statusbar property
@@ -48,9 +44,6 @@ namespace levana
       static frame *gettop();
       static void settop(frame *top);
     private:
-      bool create(frame *parent, int id, const char *title,
-                  int x = -1, int y = -1, int w = -1, int h = -1,
-                  long style = -1, const char *name = "frame");
       const char *status;
   };
 

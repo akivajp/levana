@@ -20,7 +20,7 @@ namespace levana
   class player : public control
   {
     public:
-      player(control *parent, int id, const char *filepath = "", int width = -1, int height = -1);
+      player(control *parent, int width = -1, int height = -1);
       ~player();
       size getbestsize();
       double getvolume();

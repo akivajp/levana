@@ -106,16 +106,21 @@ extern "C" {
         .def("connect", &control::connect)
         .def("setonkeydown", &control::setonkeydown)
         .def("setonmenu", &control::setonmenu)
-        .property("isvalid", &control::isvalid),
+        .property("isvalid", &control::isvalid)
+        .property("sizer", &control::getsizer, &control::setsizer),
       // derived classes
       class_<application, control>("application")
         .def(constructor<>())
         .def("autoloop", &application::autoloop)
-        .def("msgbox", &application::msgbox)
-        .def("msgbox", &application::msgbox_msg)
+        .def("autoloop", &application::autoloop_with)
         .def("yield", &application::yield)
         .property("name", &application::getname, &application::setname)
-        .property("top",  &application::gettop,  &application::settop),
+        .property("top",  &application::gettop,  &application::settop)
+        .scope
+        [
+          def("msgbox", &application::msgbox),
+          def("msgbox", &application::msgbox_nocap)
+        ],
       class_<draw, control>("draw")
         .def(constructor<frame*, int, int>())
         .def("clear", &draw::clear)
@@ -125,26 +130,25 @@ extern "C" {
         .def("swap", &draw::swap)
         .def("using", &draw::use),
       class_<frame, control>("frame")
-        .def(constructor<frame*, int, const char*, int, int, int, int,
-                         long, const char*>())
+        .def(constructor<frame*, const char*, int, int, long>())
         .def("close", &frame::close)
         .def("close", &frame::close_noforce)
         .def("fit", &frame::fit)
-        .def("setmenubar", (void(frame::*)(menubar *))&frame::setmenubar)
         .def("show", &frame::show)
         .def("show", &frame::show_true)
         .property("status", &frame::getstatus, &frame::setstatus)
         .property("title", &frame::gettitle, &frame::settitle)
         .scope
         [
-          def("setmenubar", (void(*)(frame*, menubar*))&frame::setmenubar)
+          def("setmenubar", &frame::setmenubar)
         ],
       class_<htmlview, control>("htmlview")
         .def(constructor<control*, int, int>())
         .def("loadpage", &htmlview::loadpage)
-        .def("setpage", &htmlview::setpage),
+        .def("setpage", &htmlview::setpage)
+        .def("totext", &htmlview::totext),
       class_<player, control>("player")
-        .def(constructor<control*,int,const char*,int,int>())
+        .def(constructor<control*,int,int>())
         .def("loadlocal", &player::loadlocal)
         .def("loaduri", &player::loaduri)
         .def("play", &player::play)
@@ -172,7 +176,29 @@ extern "C" {
         .scope
         [
           def("setmenu", &systray::setmenu)
-        ]
+        ],
+      class_<text, control>("text")
+        .def(constructor<control*,int,int,const char*>())
+        .property("value", &text::getvalue, &text::setvalue)
+    ];
+
+    // sizers
+    module(L, "levana")
+    [
+      class_<sizer>("sizer")
+        .def("fit", &sizer::fit)
+        .def("fitinside", &sizer::fitinside)
+        .def("layout", &sizer::layout)
+        .scope
+        [
+          def("add", &sizer::addctrl),
+          def("add", &sizer::addsizer),
+          def("addspace", &sizer::addspace)
+        ],
+      class_<hsizer, sizer>("hsizer")
+        .def(constructor<>()),
+      class_<vsizer, sizer>("vsizer")
+        .def(constructor<>())
     ];
 
     // primitives

@@ -74,15 +74,6 @@ namespace levana
     argv_utf8 = NULL;
   }
 
-  int myApp::AutoLoop()
-  {
-    while(this->GetTopWindow())
-    {
-      this->Yield();
-    }
-    return 0;
-  }
-
   bool myApp::OnInit(void)
   {
     set_argv();
@@ -120,21 +111,46 @@ namespace levana
     wxGetApp().OnExit();
   }
 
-  int application::autoloop()
+  void application::autoloop()
   {
-    return wxGetApp().AutoLoop();
-//    return wxGetApp().OnRun();
+    while (wxGetApp().GetTopWindow())
+    {
+      wxGetApp().Yield();
+    }
+  }
+  void application::autoloop_with(frame *frm)
+  {
+    while (frm->isvalid())
+    {
+      wxGetApp().Yield();
+    }
   }
 
-
-  int application::msgbox(const char *msg, const char *caption)
+  const char *application::getname()
   {
-    int result;
-    wxString new_msg(msg, wxConvUTF8);
-    wxString new_caption(caption, wxConvUTF8);
-    result = wxMessageBox(new_msg, new_caption);
-    this->yield();
-    return result;
+    const std::string name =
+      (const char *)wxGetApp().GetAppName().mb_str(wxConvUTF8);
+    return name.c_str();
+  }
+
+  frame *application::gettop()
+  {
+    return frame::gettop();
+  }
+
+  void application::setname(const char *name)
+  {
+    wxGetApp().SetAppName(wxString(name, wxConvUTF8));
+  }
+
+  void application::setonkeydown(luabind::object lua_func)
+  {
+    wxGetApp().Connect(-1, wxEVT_KEY_DOWN, lua_func);
+  }
+
+  void application::settop(frame *top)
+  {
+    frame::settop(top);
   }
 
   bool application::yield()
@@ -143,35 +159,7 @@ namespace levana
   }
 
 
-  // name property base
-  const char *application::getname()
-  {
-    const std::string name =
-      (const char *)wxGetApp().GetAppName().mb_str(wxConvUTF8);
-    return name.c_str();
-  }
-  void application::setname(const char *name)
-  {
-    wxGetApp().SetAppName(wxString(name, wxConvUTF8));
-  }
-
-
-  // top window property base
-  frame *application::gettop()
-  {
-    return frame::gettop();
-  }
-  void application::settop(frame *top)
-  {
-    frame::settop(top);
-  }
-
-  void application::setonkeydown(luabind::object lua_func)
-  {
-    wxGetApp().Connect(-1, wxEVT_KEY_DOWN, lua_func);
-  }
-
-  // static method
+  // static methods
   bool application::entry(int argc, char **argv)
   {
     static bool entried = false;
@@ -179,6 +167,16 @@ namespace levana
     if (!wxEntryStart(argc, argv)) { return false; }
     entried = true;
     return true;
+  }
+
+  int application::msgbox(const char *msg, const char *caption)
+  {
+    int result;
+    wxString new_msg(msg, wxConvUTF8);
+    wxString new_caption(caption, wxConvUTF8);
+    result = wxMessageBox(new_msg, new_caption);
+    wxGetApp().Yield();
+    return result;
   }
 
 }

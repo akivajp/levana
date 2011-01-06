@@ -21,13 +21,8 @@ namespace levana
   {
     public:
       inline myFrame() : wxFrame(), fmap() {}
-
-      inline myFrame(wxWindow* parent, wxWindowID id, const wxString &title,
-              const wxPoint &pos = wxDefaultPosition,
-              const wxSize &size = wxDefaultSize,
-              long style = wxDEFAULT_FRAME_STYLE,
-              const wxString& name = wxT("frame"))
-        : wxFrame(parent, id, title, pos, size, style, name), fmap()
+      inline myFrame(wxWindow* parent, const wxString title, int height, int width, long style = wxDEFAULT_FRAME_STYLE)
+        : wxFrame(parent, -1, title, wxDefaultPosition, wxSize(height, width), style), fmap()
       {}
 
       // Common Connect Interface
@@ -43,13 +38,18 @@ namespace levana
   };
 
 
-  frame::frame(frame *parent, int id, const char *title,
-               int x, int y, int w, int h, long style, const char *name)
+  frame::frame(frame *parent, const char *title, int w, int h, long style)
     : control(), status(NULL)
   {
-    bool success = this->create(parent, id, title, x, y, w, h, style, name);
-    if (!success)
-    {
+    try {
+      wxWindow *p = NULL;
+      if (style == -1) { style = wxDEFAULT_FRAME_STYLE; }
+      if (parent) { p = (wxWindow *)parent->_obj; }
+      _obj = new myFrame(p, wxString(title, wxConvUTF8), w, h, style);
+      this->id = ((myFrame *)_obj)->GetId();
+      seticon(icon::levana_icon());
+    }
+    catch (...) {
       throw "frame: allocation error";
     }
   }
@@ -71,27 +71,6 @@ namespace levana
     return false;
   }
 
-  bool frame::create(frame *parent, int id, const char *title,
-                     int x, int y, int w, int h, long style, const char *name)
-  {
-    if (_obj) { this->close(true); }
-    wxWindow *p;
-    wxPoint pos(x, y);
-    wxSize  size(w, h);
-    wxFrame *parent_frm = NULL;
-    if (x == -1 && y == -1) { pos  = wxDefaultPosition; }
-    if (w == -1 && h == -1) { size = wxDefaultSize; }
-    if (style == -1) { style = wxDEFAULT_FRAME_STYLE; }
-    if (parent != NULL) { parent_frm = (wxFrame *)parent->_obj; }
-
-    _obj = new myFrame(parent_frm, id, wxString(title, wxConvUTF8),
-                         pos, size, style, wxString(name, wxConvUTF8));
-    if (!_obj) { return false; }
-    this->seticon(icon::levana_icon());
-    this->id = ((myFrame *)_obj)->GetId();
-    return true;
-  }
-
   void frame::fit()
   {
     ((myFrame *)_obj)->Fit();
@@ -106,19 +85,11 @@ namespace levana
   {
     ((wxFrame *)_obj)->SetMenuBar((wxMenuBar *)mb->_obj);
   }
-  void frame::setmenubar(frame *f, menubar *mb)
-  {
-    f->setmenubar(mb);
-  }
 
   void frame::setonmenu(int id, luabind::object lua_func)
   {
     ((myFrame *)_obj)->Connect(id, wxEVT_COMMAND_MENU_SELECTED, lua_func);
   }
-//  void frame::setonmenu(frame *f, int id, luabind::object lua_func)
-//  {
-//    f->setonmenu(id, lua_func);
-//  }
 
   bool frame::show(bool showing)
   {

@@ -19,10 +19,12 @@ class 'player' (levana.player)
 
 function player:__init(conf)
   local c = conf
-  if (c.uri == nil) then c.uri = "" end
-  if (c.w == nil) then c.w = -1 end
-  if (c.h == nil) then c.h = -1 end
-  levana.player.__init(self, c.parent, -1, c.uri, c.w, c.h)
+  c = c or {}
+  if (type(c) ~= 'table') then c.p = c end
+  c.p = c.parent or c.p or nil
+  c.w = c.width  or c.w or -1
+  c.h = c.height or c.h or -1
+  levana.player.__init(self, c.p, c.w, c.h)
 end
 
 media.player = player

@@ -22,20 +22,18 @@ namespace levana
     public:
       application();
       ~application();
-      int  autoloop();
-      int  msgbox(const char *msg, const char *caption);
-      int  msgbox_msg(const char *msg) { return msgbox(msg, "Message"); }
-      bool yield();
-      // name property
+      void autoloop();
+      void autoloop_with(frame *frm);
       const char* getname();
-      void setname(const char *name);
-      // top property
       frame *gettop();
-      void   settop(frame *top);
-      // onkeydown callback
+      void setname(const char *name);
       void setonkeydown(luabind::object lua_func);
+      void settop(frame *top);
+      bool yield();
       // static method
       static bool entry(int argc, char **argv);
+      static int msgbox(const char *msg, const char *caption);
+      static inline int msgbox_nocap(const char *msg) { return msgbox(msg, "Message"); }
   };
 }
 

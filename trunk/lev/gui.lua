@@ -9,9 +9,9 @@
 
 require 'levana'
 
-if not(gui) then
-  gui = {}
-end
+gui = gui or {}
+
+gui.msgbox = levana.application.msgbox
 
 -------------------------------------------------------------------
 -- begin 'draw' class rewrapping
@@ -42,17 +42,20 @@ class 'frame' (levana.frame)
 
 function frame:__init(conf)
   local c = conf
-  if (c == nil) then c = {} end
-  if (c.id == nil) then c.id = -1 end
-  if (c.title == nil) then c.title = "Levana Application" end
-  if (c.x == nil) then c.x = -1 end
-  if (c.y == nil) then c.y = -1 end
-  if (c.w == nil) then c.w = -1 end
-  if (c.h == nil) then c.h = -1 end
-  if (c.style == nil) then c.style = {} end
-  if (c.name == nil) then c.name = "frame" end
-  c.style = levana.cfg.frame_style(unpack(c.style))
-  levana.frame.__init(self, c.parent, c.id, c.title,c.x, c.y, c.w, c.h, c.style, c.name)
+  c = c or {}
+  c.p = c.parent or c.p or nil
+  c.t = c.title  or c.t or "Levana Application"
+  c.h = c.height or c.h or -1
+  c.w = c.width  or c.w or -1
+  c.s = c.style  or c.s
+  if (c.s == nil) then
+    c.s = -1
+  elseif (type(c.s) == 'table') then
+    c.s = levana.cfg.frame_style(unpack(c.s))
+  else
+    c.s = levana.cfg.frame_style(c.s)
+  end
+  levana.frame.__init(self, c.p, c.t, c.w, c.h, c.s)
 end
 
 function frame:setmenubar(mb)
@@ -120,6 +123,42 @@ menubar = nil
 
 
 -------------------------------------------------------------------
+-- begin 'sizer' classes rewrapping
+class 'sizer' (levana.sizer)
+gui.hsizer = levana.hsizer
+gui.vsizer = levana.vsizer
+
+function sizer:add(...)
+  local c = ...
+  c = c or {}
+  if (type(c) == 'userdata') then
+    c = {}
+    c.o, c.p, c.f, c.b = ...
+  end
+
+  c.o = c.o or c.object or c.control or c.ctrl or c.c or
+        c.sizer or c.s or nil
+  c.p = c.proportion or c.prop or c.p or 0
+  c.f = c.flag or c.f or 0
+  c.b = c.border or c.b or 0
+
+  if c.o then
+    levana.sizer.add(self, c.o, c.p, c.f, c.b)
+  else
+    c.w = c.width  or c.w or 10
+    c.h = c.height or c.h or 10
+    levana.sizer.addspace(self, c.w, c.h, c.p, c.f, c.b)
+  end
+end
+
+gui.sizer = sizer
+gui.hsizer.add = sizer.add
+gui.vsizer.add = sizer.add
+sizer = nil
+-- end of 'sizer' classes rewrapping
+-------------------------------------------------------------------
+
+-------------------------------------------------------------------
 -- begin 'systray' class rewrapping
 class 'systray' (levana.systray)
 
@@ -141,6 +180,26 @@ end
 gui.systray = systray
 systray = nil
 -- end of 'systray' class rewrapping
+-------------------------------------------------------------------
+
+
+-------------------------------------------------------------------
+-- begin 'text' class rewrapping
+class 'text' (levana.text)
+
+function text:__init(conf)
+  local c = conf
+  c = c or {}
+  c.p = c.parent or c.p
+  c.w = c.width  or c.w or -1
+  c.h = c.height or c.h or -1
+  c.v = c.value  or c.v or ""
+  levana.text.__init(self, c.p, c.w, c.h, c.v)
+end
+
+gui.text = text
+text = nil
+-- end of 'text' class rewrapping
 -------------------------------------------------------------------
 
 collectgarbage()

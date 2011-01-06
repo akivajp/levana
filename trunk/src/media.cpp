@@ -19,15 +19,12 @@ class wxMediaCtrl;
 namespace levana
 {
 
-  player::player(control *parent, int id, const char *filepath, int width, int height) : control()
+  player::player(control *parent, int width, int height) : control()
   {
     try {
       wxWindow *p = NULL;
-      wxString file;
       if (parent) { p = (wxWindow *)parent->_obj; }
-      if (filepath == NULL) { file = wxEmptyString; }
-      else { file = wxString(filepath, wxConvUTF8); }
-      _obj = new wxMediaCtrl(p, id, file, wxDefaultPosition, wxSize(width, height));
+      _obj = new wxMediaCtrl(p, -1, wxEmptyString, wxDefaultPosition, wxSize(width, height));
     }
     catch (...) {
       throw "control: allocation error";

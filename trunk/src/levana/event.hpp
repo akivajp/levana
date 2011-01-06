@@ -17,6 +17,8 @@ namespace luabind { class object; }
 
 namespace levana
 {
+  class sizer;
+
   class control : public base
   {
     protected:
@@ -29,7 +31,9 @@ namespace levana
       { throw "control: derived setonkeydown method has not been implemented"; }
       virtual void setonmenu(int id, luabind::object lua_func)
       { throw "control: derived setonmenu method has not been implemented"; }
+      sizer *getsizer();
       bool isvalid();
+      void setsizer(sizer *s);
 
       // friend classes
       friend class draw;
@@ -37,6 +41,7 @@ namespace levana
       friend class htmlview;
       friend class player;
       friend class sizer;
+      friend class text;
     private:
       int id;
   };

@@ -18,6 +18,16 @@ namespace levana
       ~htmlview();
       bool loadpage(const char *url);
       bool setpage(const char *src);
+      const char *totext();
+  };
+
+  class text: public control
+  {
+    public:
+      text(control *parent, int width, int height, const char *value = "");
+      ~text();
+      const char* getvalue();
+      void setvalue(const char *value);
   };
 }
 

@@ -1,17 +1,14 @@
 require 'lev/std'
 
 frm = gui.frame()
-snd = gui.frame()
-player = media.player {parent = snd, w = 100, h = 100}
-player:loadlocal("./kami.mp3")
---player:loaduri('http://o-life.jp/f/090421_t10_13_4_r___-.mp3')
-frm:fit()
-frm:show()
+sizer = gui.vsizer()
+frm.sizer = sizer
+txt = gui.text({p = frm})
+sizer:add(txt,1)
+txt = gui.text({p = frm})
+sizer:add(txt,1)
+sizer:fit(frm)
 
-player:play()
-player.volume = 0.5
-while frm.isvalid do
-  frm.status = tostring(player.volume)
-  app:yield()
-end
+frm:show()
+app:autoloop(frm)
 

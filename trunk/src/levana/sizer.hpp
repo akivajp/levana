@@ -11,10 +11,11 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "base.hpp"
-#include "event.hpp"
 
 namespace levana
 {
+  class control;
+
   class sizer : public base
   {
     protected:
@@ -27,6 +28,9 @@ namespace levana
       void fit(control *c);
       void fitinside(control *c);
       void layout();
+
+      // friend classes
+      friend class control;
   };
 
   class hsizer : public sizer
