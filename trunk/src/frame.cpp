@@ -20,21 +20,13 @@ namespace levana
   class myFrame : public wxFrame
   {
     public:
-      inline myFrame() : wxFrame(), fmap() {}
+      inline myFrame() : wxFrame() {}
       inline myFrame(wxWindow* parent, const wxString title, int height, int width, long style = wxDEFAULT_FRAME_STYLE)
-        : wxFrame(parent, -1, title, wxDefaultPosition, wxSize(height, width), style), fmap()
+        : wxFrame(parent, -1, title, wxDefaultPosition, wxSize(height, width), style)
       {}
-
+    private:
       // Common Connect Interface
-      inline void Connect(int id, wxEventType eventType, luabind::object lua_func)
-      {
-        levana::Connect(this, id, eventType, lua_func);
-      }
-      void ProcEvent(wxEvent &event)
-      {
-        levana::ProcEvent(this, event);
-      }
-      func_map fmap;
+      DECLARE_CONNECT();
   };
 
 

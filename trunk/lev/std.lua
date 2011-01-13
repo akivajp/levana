@@ -8,14 +8,13 @@
 -----------------------------------------------------------------------------
 
 require 'lev/app'
+require 'lev/cfg'
 require 'lev/gui'
 require 'lev/media'
 
 function _(str)
   return str
 end
-
-cfg = levana.cfg
 
 collectgarbage()
 

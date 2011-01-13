@@ -19,10 +19,13 @@ void final_release()
 namespace levana
 {
 
-  int lua_entry(luabind::object table)
+  int lua_entry(lua_State *L)
   {
+    using namespace luabind;
+    object table = globals(L)["arg"];
     int argc = 0;
     char **argv = NULL;
+
     if (luabind::type(table) == LUA_TTABLE)
     {
       try {
@@ -38,7 +41,7 @@ namespace levana
           argv[j] = new char[len + 1];
           strcpy(argv[j++], ss.str().c_str());
         }
-        application::entry(argc, argv);
+        application::entry(L, argc, argv);
         atexit(final_release);
         for (int i = 0; i < argc; i++) { delete argv[i]; }
         delete argv;
@@ -50,7 +53,7 @@ namespace levana
     }
     else
     {
-      application::entry(0, NULL);
+      application::entry(L, 0, NULL);
       atexit(final_release);
     }
     return 0;
@@ -75,7 +78,7 @@ extern "C" {
     using namespace luabind;
 
     luabind::open(L);
-    lua_entry(globals(L)["arg"]);
+    lua_entry(L);
 
     // constants
     module(L, "levana")
@@ -234,7 +237,7 @@ extern "C" {
           def("levana_icon", &icon::levana_icon)
         ]
     ];
-    luaopen_gl(L);
+    register_to(L, globals(L)["package"]["preload"], "gl", luaopen_gl);
     return 1;
   }
 }

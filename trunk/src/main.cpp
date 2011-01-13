@@ -22,7 +22,19 @@ int main(int argc, char **argv)
 
   // initializing lua statement
   lua_State *L = lua_open();
-  luaL_openlibs(L);
+  // open basic libs
+//  luaL_openlibs(L);
+  lua_pushcfunction(L, &luaopen_base);
+  lua_pushstring(L, "");
+  lua_call(L, 1, 0);
+  lua_pushcfunction(L, &luaopen_package);
+  lua_pushstring(L, LUA_LOADLIBNAME);
+  lua_call(L, 1, 0);
+  lua_getglobal(L, "package");
+
+//  lua_getfield(L, -1, "preload");
+//  lua_pushcfunction(L, &luaopen_debug);
+//  lua_pop(L, 2);
 
   // levana library registration
   lua_getglobal(L, "package");
@@ -32,7 +44,7 @@ int main(int argc, char **argv)
   lua_pop(L, 2);
 
   // levana entry
-  application::entry(argc, argv);
+  application::entry(L, argc, argv);
 
   for (int i = 1; i < argc; i++)
   {

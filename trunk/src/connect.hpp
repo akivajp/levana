@@ -15,17 +15,29 @@
 #include <luabind/luabind.hpp>
 #include <map>
 
+
+#define DECLARE_CONNECT() \
+    public:\
+      inline void Connect(int id, wxEventType eventType, luabind::object lua_func)\
+      {\
+        levana::Connect(this, id, eventType, lua_func);\
+      }\
+      void ProcEvent(wxEvent &event)\
+      {\
+        levana::ProcEvent(this, event);\
+      }\
+      std::map<int, std::map<int, luabind::object> > _fmap;
+
+
 namespace levana
 {
-  typedef std::map<int, std::map<int, luabind::object> > func_map;
-
   template <typename T>
   inline void ProcEvent(T *handler, wxEvent &evt)
   {
     event e(&evt);
     std::map<int, luabind::object> id_map;
     std::map<int, luabind::object>::iterator i;
-    id_map = handler->fmap[evt.GetEventType()];
+    id_map = handler->_fmap[evt.GetEventType()];
     i = id_map.find(-1);
     if (i != id_map.end() && luabind::type(i->second) == LUA_TFUNCTION)
     {
@@ -43,7 +55,7 @@ namespace levana
   template <typename T>
   inline void Connect(T *handler, int id, wxEventType eventType, luabind::object lua_func)
   {
-    handler->fmap[eventType][id] = lua_func;
+    handler->_fmap[eventType][id] = lua_func;
     ((wxEvtHandler *)handler)->Connect(id, eventType, (wxObjectEventFunction)&T::ProcEvent);
   }
 }

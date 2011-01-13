@@ -13,6 +13,7 @@
 #include "levana/frame.hpp"
 #include "connect.hpp"
 
+#include <lua.h>
 #include <string>
 
 int lua_main(int argc, char **argv);
@@ -30,19 +31,14 @@ namespace levana
       virtual int OnExit(void);
       bool Yield();
       inline wxEventLoop *GetEventLoop() { return m_mainLoop; }
-      // Common Connect Interface
-      inline void Connect(int id, wxEventType eventType, luabind::object lua_func)
-      {
-        levana::Connect(this, id, eventType, lua_func);
-      }
-      void ProcEvent(wxEvent &event)
-      {
-        levana::ProcEvent(this, event);
-      }
-      func_map fmap;
+      static lua_State *L;
     private:
       char **argv_utf8;
+      // Common Connect Interface
+      DECLARE_CONNECT();
   };
+  lua_State* myApp::L = NULL;
+
 
   void myApp::set_argv()
   {
@@ -160,13 +156,19 @@ namespace levana
 
 
   // static methods
-  bool application::entry(int argc, char **argv)
+  bool application::entry(lua_State *L, int argc, char **argv)
   {
     static bool entried = false;
     if (entried) { return false; }
     if (!wxEntryStart(argc, argv)) { return false; }
+    myApp::L = L;
     entried = true;
     return true;
+  }
+
+  lua_State* application::getL()
+  {
+    return myApp::L;
   }
 
   int application::msgbox(const char *msg, const char *caption)

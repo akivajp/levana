@@ -31,7 +31,8 @@ namespace levana
       void settop(frame *top);
       bool yield();
       // static method
-      static bool entry(int argc, char **argv);
+      static bool entry(lua_State *L, int argc, char **argv);
+      static lua_State* getL();
       static int msgbox(const char *msg, const char *caption);
       static inline int msgbox_nocap(const char *msg) { return msgbox(msg, "Message"); }
   };
