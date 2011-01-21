@@ -22,6 +22,11 @@ namespace levana
     return s;
   }
 
+  bool control::isshown()
+  {
+    return ((wxWindow *)_obj)->IsShown();
+  }
+
   bool control::isvalid()
   {
     if (wxWindow::FindWindowById(this->id)) { return true; }
@@ -33,7 +38,13 @@ namespace levana
     ((wxWindow *)_obj)->SetSizer((wxSizer *)s->_obj);
   }
 
+  bool control::setshown(bool showing)
+  {
+    return ((wxWindow *)_obj)->Show(showing);
+  }
 
+
+  // event methods
   int event::getkey() const
   {
     return ((wxKeyEvent *)_obj)->GetKeyCode();

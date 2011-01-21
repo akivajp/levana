@@ -41,6 +41,12 @@ namespace levana
     ((wxSizer *)_obj)->Layout();
   }
 
+  // lua cfunctions
+  int sizer::ladd(lua_State *L)
+  {
+    return 0;
+  }
+
   hsizer::hsizer() : sizer()
   {
     try {

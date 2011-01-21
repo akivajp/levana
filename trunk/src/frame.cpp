@@ -83,10 +83,6 @@ namespace levana
     ((myFrame *)_obj)->Connect(id, wxEVT_COMMAND_MENU_SELECTED, lua_func);
   }
 
-  bool frame::show(bool showing)
-  {
-    return ((wxFrame *)_obj)->Show(showing);
-  }
 
   // statusbar property
   const char * frame::getstatus()

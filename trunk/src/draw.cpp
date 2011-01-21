@@ -14,7 +14,7 @@
 
 namespace levana
 {
-  draw::draw(control *parent, int width, int height) : control()
+  canvas::canvas(control *parent, int width, int height) : control()
   {
     int attribs[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, 0 };
     try {
@@ -24,23 +24,23 @@ namespace levana
                             0, wxGLCanvasName, attribs);
     }
     catch(...) {
-      throw "draw: allocation error";
+      throw "canvas: allocation error";
     }
     this->use();
     glViewport(0, 0, width, height);
   }
 
-  void draw::clear()
+  void canvas::clear()
   {
     glClear(GL_COLOR_BUFFER_BIT);
   }
 
-  void draw::flush()
+  void canvas::flush()
   {
     glFlush();
   }
 
-  void draw::line(int x1, int y1, int x2, int y2)
+  void canvas::line(int x1, int y1, int x2, int y2)
   {
     glBegin(GL_LINES);
       glVertex2i(x1, y1);
@@ -48,7 +48,7 @@ namespace levana
     glEnd();
   }
 
-  void draw::set2d()
+  void canvas::set2d()
   {
     int w, h;
     ((wxGLCanvas *)_obj)->GetSize(&w, &h);
@@ -57,12 +57,12 @@ namespace levana
     glOrtho(0, w, h, 0, -1, 1);
   }
 
-  void draw::swap()
+  void canvas::swap()
   {
     ((wxGLCanvas *)_obj)->SwapBuffers();
   }
 
-  void draw::use()
+  void canvas::use()
   {
     ((wxGLCanvas *)_obj)->SetCurrent();
   }

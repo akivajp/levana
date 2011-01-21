@@ -7,17 +7,31 @@
 -- Licence:     MIT License
 -----------------------------------------------------------------------------
 
+-- dependency
 require 'levana'
+local _G = _G
+local class = class
+local levana = levana
 
-gui = gui or {}
+-- modulize
+module 'gui'
 
-gui.msgbox = levana.application.msgbox
+-- class definer
+local class = function(name)
+  local deriver = class(name)
+  _M[name] = _G[name]
+  _G[name] = nil
+  return deriver
+end
+
+-- porting
+msgbox = levana.application.msgbox
 
 -------------------------------------------------------------------
--- begin 'draw' class rewrapping
-class 'draw' (levana.draw)
+-- begin 'canvas' class rewrapping
+class 'canvas' (levana.canvas)
 
-function draw:__init(...)
+function canvas:__init(...)
   local c
   if (#{...} > 1) then
     c = {}
@@ -27,12 +41,10 @@ function draw:__init(...)
   end
   if (c.w == nil) then c.w = -1 end
   if (c.h == nil) then c.h = -1 end
-  levana.draw.__init(self, c.parent, c.w, c.h)
+  levana.canvas.__init(self, c.parent, c.w, c.h)
 end
 
-gui.draw = draw
-draw = nil
--- end 'draw' class rewrapping
+-- end 'canvas' class rewrapping
 -------------------------------------------------------------------
 
 
@@ -40,9 +52,8 @@ draw = nil
 -- begin 'frame' class rewrapping
 class 'frame' (levana.frame)
 
-function frame:__init(conf)
-  local c = conf
-  c = c or {}
+function frame:__init(...)
+  local c = levana.util.merge({}, levana.cfg.defaults, ...)
   c.p = c.parent or c.p or nil
   c.t = c.title  or c.t or "Levana Application"
   c.h = c.height or c.h or -1
@@ -71,8 +82,6 @@ function frame:setmenubar(mb)
   end
 end
 
-gui.frame = frame
-frame = nil
 -- end of 'frame' class rewrapping
 -------------------------------------------------------------------
 
@@ -96,8 +105,6 @@ function menu:append(conf)
   return id
 end
 
-gui.menu = menu
-menu = nil
 -- end of 'menu' class rewrapping
 -------------------------------------------------------------------
 
@@ -115,9 +122,6 @@ function menubar:append(menu, title)
   table.insert(self.menus, menu)
 end
 
-
-gui.menubar = menubar
-menubar = nil
 -- end of 'menubar' class rewrapping
 -------------------------------------------------------------------
 
@@ -125,13 +129,13 @@ menubar = nil
 -------------------------------------------------------------------
 -- begin 'sizer' classes rewrapping
 class 'sizer' (levana.sizer)
-gui.hsizer = levana.hsizer
-gui.vsizer = levana.vsizer
+hsizer = levana.hsizer
+vsizer = levana.vsizer
 
 function sizer:add(...)
   local c = ...
   c = c or {}
-  if (type(c) == 'userdata') then
+  if (_G.type(c) == 'userdata') then
     c = {}
     c.o, c.p, c.f, c.b = ...
   end
@@ -151,10 +155,9 @@ function sizer:add(...)
   end
 end
 
-gui.sizer = sizer
-gui.hsizer.add = sizer.add
-gui.vsizer.add = sizer.add
-sizer = nil
+hsizer.add = sizer.add
+vsizer.add = sizer.add
+
 -- end of 'sizer' classes rewrapping
 -------------------------------------------------------------------
 
@@ -177,8 +180,6 @@ function systray:setmenu(m)
   end
 end
 
-gui.systray = systray
-systray = nil
 -- end of 'systray' class rewrapping
 -------------------------------------------------------------------
 
@@ -197,10 +198,6 @@ function text:__init(conf)
   levana.text.__init(self, c.p, c.w, c.h, c.v)
 end
 
-gui.text = text
-text = nil
 -- end of 'text' class rewrapping
 -------------------------------------------------------------------
-
-collectgarbage()
 

@@ -23,6 +23,7 @@
 #include "prim.hpp"
 #include "sizer.hpp"
 #include "taskbar.hpp"
+#include "util.hpp"
 
 #endif // _LEVANA_HPP
 

@@ -11,6 +11,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "base.hpp"
+#include <lua.h>
 
 namespace levana
 {
@@ -28,7 +29,8 @@ namespace levana
       void fit(control *c);
       void fitinside(control *c);
       void layout();
-
+      // lua cfunctions
+      static int ladd(lua_State *L);
       // friend classes
       friend class control;
   };

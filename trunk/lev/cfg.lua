@@ -7,32 +7,26 @@
 -- Licence:     MIT License
 -----------------------------------------------------------------------------
 
-cfg = cfg or {}
-cfg.frame_style = levana.cfg.frame_style
+-- dependency
+require 'levana'
+local _G = _G
+local class  = class
+local levana = levana
 
-function cfg.h(h, conf)
-  local c = conf or {}
-  c.h = h
-  return c
-end
+-- modulize
+module 'cfg'
 
-function cfg.height(height, conf)
-  local c = conf or {}
-  c.h = height
-  c.height = height
-  return c
-end
+defaults = {
+  h = -1,
+  w = -1,
+  winh = 480,
+  winw = 640,
+  x = -1,
+  y = -1,
+}
 
-function cfg.w(w, conf)
-  local c = conf or {}
-  c.w = w
-  return c
-end
+frame_style = levana.cfg.frame_style
 
-function cfg.width(width, conf)
-  local c = conf or {}
-  c.w = width
-  c.width = width
-  return c
+function merge(target, ...)
 end
 

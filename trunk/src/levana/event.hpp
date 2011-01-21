@@ -32,11 +32,15 @@ namespace levana
       virtual void setonmenu(int id, luabind::object lua_func)
       { throw "control: derived setonmenu method has not been implemented"; }
       sizer *getsizer();
+      inline bool hide() { return setshown(false); }
+      bool isshown();
       bool isvalid();
       void setsizer(sizer *s);
+      bool setshown(bool showing);
+      inline bool show() { return setshown(true); }
 
       // friend classes
-      friend class draw;
+      friend class canvas;
       friend class frame;
       friend class htmlview;
       friend class player;

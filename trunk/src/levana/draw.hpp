@@ -15,10 +15,10 @@
 
 namespace levana
 {
-  class draw : public control
+  class canvas : public control
   {
     public:
-      draw(control *parent, int width, int height);
+      canvas(control *parent, int width, int height);
       void clear();
       void flush();
       void line(int x1, int y1, int x2, int y2);

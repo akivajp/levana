@@ -14,17 +14,15 @@
 
 namespace levana
 {
-  class cfg
+  namespace cfg
   {
-    public:
-      static int frame_style(lua_State *L);
-      enum config
-      {
-        DEFAULT = -1,
-        FIXED   =  1,
-      };
-    private:
-      inline cfg() {}
+    int frame_style(lua_State *L);
+    int luaopen_cfg(lua_State *L);
+    enum config
+    {
+      DEFAULT = -1,
+      FIXED   =  1,
+    };
   };
 }
 

@@ -1,5 +1,6 @@
 CXXFLAGS = `/usr/bin/wx-config --cxxflags` -I/opt/local/include
-LIBS = `/usr/bin/wx-config --libs std gl` -L/opt/local/lib -llua -lluabind -framework OpenGL -lboost_filesystem-mt -lboost_system-mt
+#LIBS = `/usr/bin/wx-config --libs std gl` -L/opt/local/lib -llua -lluabind -framework OpenGL -lboost_filesystem-mt -lboost_system-mt
+LIBS = `/usr/bin/wx-config --libs std gl` -L/opt/local/lib -llua -lluabind -framework OpenGL
 SHARED = -dynamiclib
 OUT=a.out
 DLIB=levana.so

@@ -9,27 +9,48 @@
 
 #include "prec.h"
 #include "levana/cfg.hpp"
+
+#include <luabind/luabind.hpp>
+#include <string>
 #include <wx/wx.h>
 
 namespace levana
 {
-  int cfg::frame_style(lua_State *L)
+  namespace cfg
   {
-    int n = lua_gettop(L);
-    lua_Integer style = wxDEFAULT_FRAME_STYLE;
-    for (int i = 1; i <= n; i++)
+    int frame_style(lua_State *L)
     {
-      switch( luaL_checkinteger(L, i) )
+      int n = lua_gettop(L);
+      lua_Integer style = wxDEFAULT_FRAME_STYLE;
+      for (int i = 1; i <= n; i++)
       {
-        case cfg::FIXED:
-          style = style & ~wxRESIZE_BORDER;
-          break;
-        default:
-          break;
+        switch( luaL_checkinteger(L, i) )
+        {
+          case cfg::FIXED:
+            style = style & ~wxRESIZE_BORDER;
+            break;
+          default:
+            break;
+        }
       }
+      lua_pushinteger(L, style);
+      return 1;
     }
-    lua_pushinteger(L, style);
-    return 1;
+
+    int luaopen_cfg(lua_State *L)
+    {
+      using namespace luabind;
+
+      module(L, "levana")
+      [
+        namespace_("cfg")
+      ];
+
+      object cfg(globals(L)["levana"]["cfg"]);
+      cfg["default"] = cfg::DEFAULT;
+      cfg["fixed"]   = cfg::FIXED;
+      return 1;
+    }
   }
 }
 

@@ -32,8 +32,6 @@ namespace levana
       void seticon(const icon &i);
       void setmenubar(menubar *mb);
       void setonmenu(int id, luabind::object lua_func);
-      bool show(bool showing);
-      bool show_true() { return show(true); }
       // statusbar property
       const char *getstatus();
       void setstatus(const char *str_status);

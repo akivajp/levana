@@ -80,17 +80,15 @@ extern "C" {
     luabind::open(L);
     lua_entry(L);
 
-    // constants
+    // configuration
+    register_to(L, globals(L)["package"]["preload"], "cfg", &cfg::luaopen_cfg);
+
+    // usable functions
     module(L, "levana")
     [
-      class_<cfg>("cfg")
-        .enum_("constants")
-        [
-          value("default", cfg::DEFAULT),
-          value("fixed",   cfg::FIXED)
-        ]
+      namespace_("util")
     ];
-    register_to(L, globals(L)["levana"]["cfg"], "frame_style", &cfg::frame_style);
+    register_to(L, globals(L)["levana"]["util"], "merge", &util::merge);
 
     // event class, and its derived ones
     module(L, "levana")
@@ -107,8 +105,11 @@ extern "C" {
       // base class
       class_<control>("control")
         .def("connect", &control::connect)
+        .def("hide", &control::hide)
         .def("setonkeydown", &control::setonkeydown)
         .def("setonmenu", &control::setonmenu)
+        .def("show", &control::show)
+        .property("isshown", &control::isshown, &control::setshown)
         .property("isvalid", &control::isvalid)
         .property("sizer", &control::getsizer, &control::setsizer),
       // derived classes
@@ -124,21 +125,19 @@ extern "C" {
           def("msgbox", &application::msgbox),
           def("msgbox", &application::msgbox_nocap)
         ],
-      class_<draw, control>("draw")
+      class_<canvas, control>("canvas")
         .def(constructor<frame*, int, int>())
-        .def("clear", &draw::clear)
-        .def("flush", &draw::flush)
-        .def("line",  &draw::line)
-        .def("set2d", &draw::set2d)
-        .def("swap", &draw::swap)
-        .def("using", &draw::use),
+        .def("clear", &canvas::clear)
+        .def("flush", &canvas::flush)
+        .def("line",  &canvas::line)
+        .def("set2d", &canvas::set2d)
+        .def("swap", &canvas::swap)
+        .def("using", &canvas::use),
       class_<frame, control>("frame")
         .def(constructor<frame*, const char*, int, int, long>())
         .def("close", &frame::close)
         .def("close", &frame::close_noforce)
         .def("fit", &frame::fit)
-        .def("show", &frame::show)
-        .def("show", &frame::show_true)
         .property("status", &frame::getstatus, &frame::setstatus)
         .property("title", &frame::gettitle, &frame::settitle)
         .scope
