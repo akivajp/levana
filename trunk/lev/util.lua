@@ -13,6 +13,7 @@ local getmetatable = getmetatable
 local ipairs       = ipairs
 local setfenv      = setfenv
 local setmetatable = setmetatable
+local table = table
 
 module 'util'
 
@@ -75,7 +76,7 @@ function using(...)
     -- setup was already done, changing looking up preference
     if #{...} == 0 then
       meta.__lookup = {}
-      return
+      return env
     end
     for i,val in ipairs({...}) do
       find_and_remove(meta.__lookup, val)
