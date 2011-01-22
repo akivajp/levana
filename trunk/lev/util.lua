@@ -7,22 +7,22 @@
 -- Licence:     MIT License
 -----------------------------------------------------------------------------
 
--- dependency
-local getfenv      = getfenv
-local getmetatable = getmetatable
-local ipairs       = ipairs
-local setfenv      = setfenv
-local setmetatable = setmetatable
-local table = table
+-- usage:
+--   * using() : clearing the lookup setting
+--   * using(...) : adding tables to the lookup setting where ... is a list of tables
 
+-- dependency
+local _G = _G
+
+-- modulizing
 module 'util'
 
 
 -- find "value" from "t" and remove first one
 local find_and_remove = function(t, value)
-  for i,j in ipairs(t) do
+  for i,j in _G.ipairs(t) do
     if (j == value) then
-      table.remove(t, i)
+      _G.table.remove(t, i)
       return
     end
   end
@@ -32,8 +32,8 @@ end
 -- return new order-reversed table of "t"
 local reverse = function(t, ...)
   local r = {}
-  for i,val in ipairs(t) do
-    table.insert(r, 1, val)
+  for i,val in _G.ipairs(t) do
+    _G.table.insert(r, 1, val)
   end
   return r
 end
@@ -41,11 +41,11 @@ end
 
 -- looking up of "varnames"
 local lookup = function(env, varname)
-  meta = getmetatable(env)
+  meta = _G.getmetatable(env)
   if meta.__owner[varname] ~= nil then
     return meta.__owner[varname]
   end
-  for i,t in ipairs(meta.__lookup) do
+  for i,t in _G.ipairs(meta.__lookup) do
     if t[varname] ~= nil then
       return t[varname]
     end
@@ -60,7 +60,7 @@ end
 
 -- subtituting the new value
 local substitute = function(env, key, value)
-  meta = getmetatable(env)
+  meta = _G.getmetatable(env)
   meta.__owner[key] = value
 end
 
@@ -68,19 +68,19 @@ end
 -- like "using directive"
 function using(...)
   -- getting environment of the caller and its metatable
-  local env  = getfenv(2)
-  local meta = getmetatable(env) or {}
+  local env  = _G.getfenv(2)
+  local meta = _G.getmetatable(env) or {}
   -- getting the caller itself
-  local f = setfenv(2, env)
+  local f = _G.setfenv(2, env)
   if (meta.__caller == f) then
     -- setup was already done, changing looking up preference
     if #{...} == 0 then
       meta.__lookup = {}
       return env
     end
-    for i,val in ipairs({...}) do
+    for i,val in _G.ipairs({...}) do
       find_and_remove(meta.__lookup, val)
-      table.insert(meta.__lookup, 1, val)
+      _G.table.insert(meta.__lookup, 1, val)
     end
     return env
   end
@@ -94,8 +94,12 @@ function using(...)
   newmeta.__newindex = substitute
   newmeta.__owner = meta.__owner or env
   newmeta.__parent = env
-  setmetatable(newenv, newmeta)
-  setfenv(2, newenv)
+  _G.setmetatable(newenv, newmeta)
+  _G.setfenv(2, newenv)
   return newenv
 end
+
+
+-- enabling to call using without module prefix
+_G.using = using
 
