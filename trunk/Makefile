@@ -2,8 +2,8 @@ PREFIX=/tmp
 VERSION=0.2.2
 OUT = a.out
 BIN = levana
-DLIB = levana.so
-SLIB = liblevana.a
+DLIB = lev.so
+SLIB = liblev.a
 LUA_VERSION = 5.1
 
 all: linux

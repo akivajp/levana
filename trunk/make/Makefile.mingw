@@ -3,7 +3,7 @@ LIBS = -L/usr/mingw32/usr/lib `/usr/mingw32/usr/bin/wx-config --libs std gl` -lg
 CXX=mingw32-g++
 WINDRES=mingw32-windres
 OUT=levana.exe
-DLIB=levana.dll
+DLIB=lev.dll
 PACK_DIR=levana-win32-$(VERSION)
 
 all: build

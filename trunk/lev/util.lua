@@ -10,6 +10,7 @@
 -- usage:
 --   * using() : clearing the lookup setting
 --   * using(...) : adding tables to the lookup setting where ... is a list of tables
+--   * using(nil, ...) : clearing and resetting the lookup tables
 
 -- dependency
 local _G = _G
@@ -74,8 +75,13 @@ function using(...)
   local f = _G.setfenv(2, env)
   if (meta.__caller == f) then
     -- setup was already done, changing looking up preference
-    if #{...} == 0 then
-      meta.__lookup = {}
+    if (...) == nil then
+      -- 1st arg is nil, resetting looking up setting
+      if #{...} >= 2 then
+        meta.__lookup = reverse({_G.select(2, ...)})
+      else
+        meta.__lookup = {}
+      end
       return env
     end
     for i,val in _G.ipairs({...}) do
