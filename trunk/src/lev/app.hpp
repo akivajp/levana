@@ -2,7 +2,7 @@
 #define _APP_HPP
 
 /////////////////////////////////////////////////////////////////////////////
-// Name:        src/levana/app.hpp
+// Name:        src/lev/app.hpp
 // Purpose:     header for application managing class
 // Author:      Akiva Miura <akiva.miura@gmail.com>
 // Modified by:
@@ -15,7 +15,7 @@
 #include "frame.hpp"
 #include <luabind/luabind.hpp>
 
-namespace levana
+namespace lev
 {
   class application : public control
   {

@@ -10,7 +10,7 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
-#include "levana/event.hpp"
+#include "lev/event.hpp"
 #include "wx/wx.h"
 #include <luabind/luabind.hpp>
 #include <map>
@@ -20,16 +20,16 @@
     public:\
       inline void Connect(int id, wxEventType eventType, luabind::object lua_func)\
       {\
-        levana::Connect(this, id, eventType, lua_func);\
+        lev::Connect(this, id, eventType, lua_func);\
       }\
       void ProcEvent(wxEvent &event)\
       {\
-        levana::ProcEvent(this, event);\
+        lev::ProcEvent(this, event);\
       }\
       std::map<int, std::map<int, luabind::object> > _fmap;
 
 
-namespace levana
+namespace lev
 {
   template <typename T>
   inline void ProcEvent(T *handler, wxEvent &evt)

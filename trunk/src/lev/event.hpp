@@ -2,7 +2,7 @@
 #define _EVENT_HPP
 
 /////////////////////////////////////////////////////////////////////////////
-// Name:        src/levana/connect.cpp
+// Name:        src/lev/connect.cpp
 // Purpose:     header for event call back handling
 // Author:      Akiva Miura <akiva.miura@gmail.com>
 // Created:     12/28/2010
@@ -10,19 +10,18 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
-#include <luabind/luabind.hpp>
 #include "base.hpp"
 
 namespace luabind { class object; }
 
-namespace levana
+namespace lev
 {
   class sizer;
 
   class control : public base
   {
     protected:
-      inline control() : base(), id(0) {}
+      inline control() : base(), _id(0) {}
       inline ~control() {}
     public:
       virtual void connect(int type, luabind::object lua_func)
@@ -47,15 +46,14 @@ namespace levana
       friend class sizer;
       friend class text;
     private:
-      int id;
+      int _id;
   };
 
 
   class event : public base
   {
     public:
-      inline event(void *e) : base() { _obj = e; }
-      inline ~event() {}
+      event(void *e);
       int getkey() const;
       void skip();
   };

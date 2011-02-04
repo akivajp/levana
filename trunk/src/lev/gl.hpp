@@ -2,7 +2,7 @@
 #define _GL_HPP
 
 /////////////////////////////////////////////////////////////////////////////
-// Name:        src/levana/gl.hpp
+// Name:        src/lev/gl.hpp
 // Purpose:     header for OpenGL-Lua binding
 // Author:      Akiva Miura <akiva.miura@gmail.com>
 // Modified by:

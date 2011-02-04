@@ -2,7 +2,7 @@
 #define _DRAW_HPP
 
 /////////////////////////////////////////////////////////////////////////////
-// Name:        src/levana/draw.hpp
+// Name:        src/lev/draw.hpp
 // Purpose:     header for drawing features
 // Author:      Akiva Miura <akiva.miura@gmail.com>
 // Modified by:
@@ -12,19 +12,23 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "event.hpp"
+#include "image.hpp"
 
-namespace levana
+namespace lev
 {
   class canvas : public control
   {
     public:
       canvas(control *parent, int width, int height);
+      void blendmode(bool enable);
       void clear();
+      void clearcolor(unsigned char r, unsigned char g, unsigned char b);
+      bool drawbitmap(bitmap *bmp, int x, int y);
       void flush();
       void line(int x1, int y1, int x2, int y2);
       void set2d();
+      void setcurrent();
       void swap();
-      void use();
   };
 }
 

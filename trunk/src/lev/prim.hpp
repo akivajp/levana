@@ -2,7 +2,7 @@
 #define _PRIM_HPP
 
 /////////////////////////////////////////////////////////////////////////////
-// Name:        src/levana/prim.hpp
+// Name:        src/lev/prim.hpp
 // Purpose:     header for primitive expressions
 // Author:      Akiva Miura <akiva.miura@gmail.com>
 // Created:     01/05/2011
@@ -10,7 +10,7 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
-namespace levana
+namespace lev
 {
   class vector
   {

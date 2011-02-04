@@ -2,7 +2,7 @@
 #define _MENU_HPP
 
 /////////////////////////////////////////////////////////////////////////////
-// Name:        src/levana/frame.hpp
+// Name:        src/lev/frame.hpp
 // Purpose:     header for menu and menubar handling
 // Author:      Akiva Miura <akiva.miura@gmail.com>
 // Created:     12/02/2010
@@ -12,7 +12,7 @@
 
 #include "event.hpp"
 
-namespace levana
+namespace lev
 {
 
   class menu : public control
@@ -20,7 +20,6 @@ namespace levana
     public:
       menu();
       menu(const char *title);
-      ~menu();
       int append(int id, const char *str, const char *help_str = "");
       friend class systray;
       friend class menubar;
@@ -30,7 +29,6 @@ namespace levana
   {
     public:
       menubar();
-      ~menubar();
       bool append(menu *m, const char *title);
       friend class frame;
   };

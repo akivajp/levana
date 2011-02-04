@@ -1,15 +1,16 @@
-#ifndef _LEVANA_HPP
-#define _LEVANA_HPP
+#ifndef _LEV_HPP
+#define _LEV_HPP
 
 /////////////////////////////////////////////////////////////////////////////
-// Name:        levana/levana.hpp
-// Purpose:     levana central header including the most often used ones
+// Name:        lev/lev.hpp
+// Purpose:     lev central header including the most often used ones
 // Author:      Akiva Miura <akiva.miura@gmail.com>
 // Modified by:
 // Created:     12/01/2010
-// Copyright:   (c) Akiva Miura
+// Copyright:   (c) 2010-2011 Akiva Miura
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
+
 
 #include "app.hpp"
 #include "cfg.hpp"
@@ -19,10 +20,13 @@
 #include "frame.hpp"
 #include "gl.hpp"
 #include "gui.hpp"
+#include "image.hpp"
 #include "media.hpp"
 #include "prim.hpp"
 #include "sizer.hpp"
 #include "taskbar.hpp"
+#include "util.hpp"
 
-#endif // _LEVANA_HPP
+
+#endif // _LEV_HPP
 

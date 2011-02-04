@@ -2,7 +2,7 @@
 #define _FRAME_HPP
 
 /////////////////////////////////////////////////////////////////////////////
-// Name:        src/levana/frame.hpp
+// Name:        src/lev/frame.hpp
 // Purpose:     header for frame managing class
 // Author:      Akiva Miura <akiva.miura@gmail.com>
 // Created:     12/01/2010
@@ -17,7 +17,7 @@
 
 namespace luabind { class object; }
 
-namespace levana
+namespace lev
 {
 
   class frame : public control
@@ -25,7 +25,6 @@ namespace levana
     public:
       inline frame() : control(), status(NULL) {}
       frame(frame *parent, const char *title, int w = -1, int h = -1, long style = -1);
-      ~frame();
       bool close(bool force);
       bool close_noforce() { return close(false); }
       void fit();

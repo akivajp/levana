@@ -2,7 +2,7 @@
 #define _CFG_HPP
 
 /////////////////////////////////////////////////////////////////////////////
-// Name:        src/levana/cfg.hpp
+// Name:        src/lev/cfg.hpp
 // Purpose:     header defining constant values
 // Author:      Akiva Miura <akiva.miura@gmail.com>
 // Created:     12/23/2010
@@ -12,7 +12,7 @@
 
 #include <lua.h>
 
-namespace levana
+namespace lev
 {
   namespace cfg
   {

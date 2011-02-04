@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        src/levana/gui.hpp
+// Name:        src/lev/gui.hpp
 // Purpose:     header for GUI controls
 // Author:      Akiva Miura <akiva.miura@gmail.com>
 // Created:     12/06/2010
@@ -9,13 +9,12 @@
 
 #include "event.hpp"
 
-namespace levana
+namespace lev
 {
   class htmlview: public control
   {
     public:
       htmlview(control *parent, int width, int height);
-      ~htmlview();
       bool loadpage(const char *url);
       bool setpage(const char *src);
       const char *totext();
@@ -25,7 +24,6 @@ namespace levana
   {
     public:
       text(control *parent, int width, int height, const char *value = "");
-      ~text();
       const char* getvalue();
       void setvalue(const char *value);
   };

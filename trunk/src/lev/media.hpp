@@ -2,7 +2,7 @@
 #define _MEDIA_HPP
 
 /////////////////////////////////////////////////////////////////////////////
-// Name:        src/levana/media.hpp
+// Name:        src/lev/media.hpp
 // Purpose:     header for media controls
 // Author:      Akiva Miura <akiva.miura@gmail.com>
 // Modified by:
@@ -14,14 +14,13 @@
 #include "event.hpp"
 #include "prim.hpp"
 
-namespace levana
+namespace lev
 {
 
   class player : public control
   {
     public:
       player(control *parent, int width = -1, int height = -1);
-      ~player();
       size getbestsize();
       double getvolume();
       bool ispaused();

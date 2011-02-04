@@ -2,7 +2,7 @@
 #define _SIZER_HPP
 
 /////////////////////////////////////////////////////////////////////////////
-// Name:        src/levana/sizer.hpp
+// Name:        src/lev/sizer.hpp
 // Purpose:     header for sizer object handling
 // Author:      Akiva Miura <akiva.miura@gmail.com>
 // Created:     12/17/2010
@@ -13,7 +13,7 @@
 #include "base.hpp"
 #include <lua.h>
 
-namespace levana
+namespace lev
 {
   class control;
 
@@ -21,7 +21,6 @@ namespace levana
   {
     protected:
       inline sizer() : base() {}
-      inline ~sizer() {}
     public:
       void addctrl(control *c, int proportion = 0, int flag = 0, int border = 0);
       void addsizer(sizer *s, int proportion = 0, int flag = 0, int border = 0);
@@ -39,14 +38,12 @@ namespace levana
   {
     public:
       hsizer();
-      ~hsizer();
   };
 
   class vsizer : public sizer
   {
     public:
       vsizer();
-      ~vsizer();
   };
 }
 

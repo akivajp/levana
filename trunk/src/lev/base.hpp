@@ -2,7 +2,7 @@
 #define _BASE_HPP
 
 /////////////////////////////////////////////////////////////////////////////
-// Name:        src/levana/app.hpp
+// Name:        src/lev/app.hpp
 // Purpose:     header for base class of the all
 // Author:      Akiva Miura <akiva.miura@gmail.com>
 // Modified by:
@@ -11,14 +11,22 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
-namespace levana
+#include <boost/shared_ptr.hpp>
+
+namespace lev
 {
   class base
   {
     public:
-      inline base() : _obj(0) {}
+      enum type
+      {
+        LEV_TBASE
+      };
+      inline base() {}
+      inline virtual type gettype() const { return LEV_TBASE; }
+      inline virtual bool isvalid() const { return bool(_obj); }
     protected:
-      void *_obj;
+      boost::shared_ptr<void> _obj;
   };
 }
 
