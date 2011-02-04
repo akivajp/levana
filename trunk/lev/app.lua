@@ -8,7 +8,7 @@
 -----------------------------------------------------------------------------
 
 -- dependency
-require 'levana'
+require 'lev'
 
-app = levana.application()
+app = lev.application()
 

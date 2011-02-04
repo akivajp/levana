@@ -30,6 +30,7 @@ extern "C" {
 
 #include <map>
 #include <string>
+#include <boost/shared_ptr.hpp>
 
 #endif // _PREC_H
 

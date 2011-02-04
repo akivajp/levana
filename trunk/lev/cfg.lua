@@ -8,10 +8,9 @@
 -----------------------------------------------------------------------------
 
 -- dependency
-require 'levana'
-local _G = _G
-local class  = class
-local levana = levana
+require 'lev'
+lev.load_cfg()
+local lev = lev
 
 -- modulize
 module 'cfg'
@@ -25,8 +24,5 @@ defaults = {
   y = -1,
 }
 
-frame_style = levana.cfg.frame_style
-
-function merge(target, ...)
-end
+frame_style = lev.cfg.frame_style
 

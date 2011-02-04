@@ -8,10 +8,14 @@
 -----------------------------------------------------------------------------
 
 -- dependency
-require 'levana'
+require 'lev'
+require 'lev/cfg'
+require 'lev/util'
+
 local _G = _G
 local class = class
-local levana = levana
+local lev = lev
+local util = util
 
 -- modulize
 module 'gui'
@@ -25,23 +29,18 @@ local class = function(name)
 end
 
 -- porting
-msgbox = levana.application.msgbox
+msgbox = lev.application.msgbox
 
 -------------------------------------------------------------------
 -- begin 'canvas' class rewrapping
-class 'canvas' (levana.canvas)
+class 'canvas' (lev.canvas)
 
 function canvas:__init(...)
-  local c
-  if (#{...} > 1) then
-    c = {}
-    c.parent, c.w, c.h = ...
-  else
-    c = conf
-  end
-  if (c.w == nil) then c.w = -1 end
-  if (c.h == nil) then c.h = -1 end
-  levana.canvas.__init(self, c.parent, c.w, c.h)
+  local c = util.merge(...)
+  c.p = c.p or c.parent
+  c.w = c.w or c.width or -1
+  c.h = c.h or c.height or -1
+  lev.canvas.__init(self, c.p, c.w, c.h)
 end
 
 -- end 'canvas' class rewrapping
@@ -50,10 +49,10 @@ end
 
 -------------------------------------------------------------------
 -- begin 'frame' class rewrapping
-class 'frame' (levana.frame)
+class 'frame' (lev.frame)
 
 function frame:__init(...)
-  local c = levana.util.merge({}, levana.cfg.defaults, ...)
+  local c = util.merge({}, lev.cfg.defaults, ...)
   c.p = c.parent or c.p or nil
   c.t = c.title  or c.t or "Levana Application"
   c.h = c.height or c.h or -1
@@ -62,15 +61,15 @@ function frame:__init(...)
   if (c.s == nil) then
     c.s = -1
   elseif (type(c.s) == 'table') then
-    c.s = levana.cfg.frame_style(unpack(c.s))
+    c.s = lev.cfg.frame_style(unpack(c.s))
   else
-    c.s = levana.cfg.frame_style(c.s)
+    c.s = lev.cfg.frame_style(c.s)
   end
-  levana.frame.__init(self, c.p, c.t, c.w, c.h, c.s)
+  lev.frame.__init(self, c.p, c.t, c.w, c.h, c.s)
 end
 
 function frame:setmenubar(mb)
-  levana.frame.setmenubar(self, mb)
+  lev.frame.setmenubar(self, mb)
   if (mb.menus) then
     for i, menu in pairs(mb.menus) do
       for id, func in pairs(menu.items) do
@@ -88,10 +87,10 @@ end
 
 -------------------------------------------------------------------
 -- begin 'menu' class rewrapping
-class 'menu' (levana.menu)
+class 'menu' (lev.menu)
 
 function menu:__init(title)
-  levana.menu.__init(self, title)
+  lev.menu.__init(self, title)
   self.items = {}
 end
 
@@ -99,7 +98,7 @@ function menu:append(conf)
   local c = conf
   if (c.id == nil)       then c.id = -1 end
   if (c.help_str == nil) then c.help_str = '' end
-  local id = levana.menu.append(self, c.id, c.str, c.help_str)
+  local id = lev.menu.append(self, c.id, c.str, c.help_str)
 --    if (c.func) then self:setonmenu(id, c.func) end
   self.items[id] = c.func
   return id
@@ -110,15 +109,15 @@ end
 
 -------------------------------------------------------------------
 -- begin 'menubar' class rewrapping
-class 'menubar' (levana.menubar)
+class 'menubar' (lev.menubar)
 
 function menubar:__init()
-  levana.menubar.__init(self)
+  lev.menubar.__init(self)
   self.menus = {}
 end
 
 function menubar:append(menu, title)
-  levana.menubar.append(self, menu, title)
+  lev.menubar.append(self, menu, title)
   table.insert(self.menus, menu)
 end
 
@@ -128,9 +127,9 @@ end
 
 -------------------------------------------------------------------
 -- begin 'sizer' classes rewrapping
-class 'sizer' (levana.sizer)
-hsizer = levana.hsizer
-vsizer = levana.vsizer
+class 'sizer' (lev.sizer)
+hsizer = lev.hsizer
+vsizer = lev.vsizer
 
 function sizer:add(...)
   local c = ...
@@ -147,11 +146,11 @@ function sizer:add(...)
   c.b = c.border or c.b or 0
 
   if c.o then
-    levana.sizer.add(self, c.o, c.p, c.f, c.b)
+    lev.sizer.add(self, c.o, c.p, c.f, c.b)
   else
     c.w = c.width  or c.w or 10
     c.h = c.height or c.h or 10
-    levana.sizer.addspace(self, c.w, c.h, c.p, c.f, c.b)
+    lev.sizer.addspace(self, c.w, c.h, c.p, c.f, c.b)
   end
 end
 
@@ -163,14 +162,14 @@ vsizer.add = sizer.add
 
 -------------------------------------------------------------------
 -- begin 'systray' class rewrapping
-class 'systray' (levana.systray)
+class 'systray' (lev.systray)
 
 function systray:__init()
-  levana.systray.__init(self)
+  lev.systray.__init(self)
 end
 
 function systray:setmenu(m)
-  levana.systray.setmenu(self, m)
+  lev.systray.setmenu(self, m)
   if m.items then
     for id, func in pairs(m.items) do
       if func then
@@ -186,7 +185,7 @@ end
 
 -------------------------------------------------------------------
 -- begin 'text' class rewrapping
-class 'text' (levana.text)
+class 'text' (lev.text)
 
 function text:__init(conf)
   local c = conf
@@ -195,7 +194,7 @@ function text:__init(conf)
   c.w = c.width  or c.w or -1
   c.h = c.height or c.h or -1
   c.v = c.value  or c.v or ""
-  levana.text.__init(self, c.p, c.w, c.h, c.v)
+  lev.text.__init(self, c.p, c.w, c.h, c.v)
 end
 
 -- end of 'text' class rewrapping

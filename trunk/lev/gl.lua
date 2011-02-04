@@ -7,8 +7,8 @@
 -- Licence:     MIT License
 -----------------------------------------------------------------------------
 
-require 'levana'
+require 'lev'
 require 'gl'
 
-gl = levana.gl
+gl = lev.gl
 
