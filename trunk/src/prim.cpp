@@ -7,9 +7,9 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
-#include "levana/prim.hpp"
+#include "lev/prim.hpp"
 
-namespace levana
+namespace lev
 {
 }
 

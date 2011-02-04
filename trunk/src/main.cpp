@@ -9,12 +9,12 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "prec.h"
-#include "levana/entry.hpp"
-#include "levana/app.hpp"
+#include "lev/entry.hpp"
+#include "lev/app.hpp"
 
 int main(int argc, char **argv)
 {
-  using namespace levana;
+  using namespace lev;
 
   const int len = 3;
   const char *entry[] = {"entry.lc", "entry.lua", "entry.txt"};
@@ -30,16 +30,20 @@ int main(int argc, char **argv)
   lua_pushstring(L, LUA_LOADLIBNAME);
   lua_call(L, 1, 0);
 
-  // levana library registration
+  // lev library registration
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "preload");
   lua_pushcfunction(L, &luaopen_debug);
   lua_setfield(L, -2, "debug");
-  lua_pushcfunction(L, &luaopen_levana);
-  lua_setfield(L, -2, "levana");
+  lua_pushcfunction(L, &luaopen_lev);
+  lua_setfield(L, -2, "lev");
+  lua_pushcfunction(L, &luaopen_os);
+  lua_setfield(L, -2, "os");
+  lua_pushcfunction(L, &luaopen_string);
+  lua_setfield(L, -2, "string");
   lua_pop(L, 2);
 
-  // levana entry
+  // lev entry
   application::entry(L, argc, argv);
 
   for (int i = 1; i < argc; i++)

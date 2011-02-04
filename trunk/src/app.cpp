@@ -9,8 +9,8 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "prec.h"
-#include "levana/app.hpp"
-#include "levana/frame.hpp"
+#include "lev/app.hpp"
+#include "lev/frame.hpp"
 #include "connect.hpp"
 
 #include <lua.h>
@@ -18,7 +18,7 @@
 
 int lua_main(int argc, char **argv);
 
-namespace levana
+namespace lev
 {
   class myApp : public wxApp
   {
@@ -92,9 +92,9 @@ namespace levana
   }
 }
 
-DECLARE_APP(levana::myApp);
+DECLARE_APP(lev::myApp);
 
-namespace levana
+namespace lev
 {
   application::application() : control()
   {
@@ -183,5 +183,5 @@ namespace levana
 
 }
 
-IMPLEMENT_APP_NO_MAIN(levana::myApp);
+IMPLEMENT_APP_NO_MAIN(lev::myApp);
 

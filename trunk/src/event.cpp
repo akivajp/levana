@@ -8,51 +8,59 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "prec.h"
-#include "levana/event.hpp"
-#include "levana/sizer.hpp"
+#include "lev/event.hpp"
+#include "lev/sizer.hpp"
 
-namespace levana
+namespace lev
 {
   sizer *control::getsizer()
   {
-    wxSizer *sz = ((wxWindow *)_obj)->GetSizer();
+    /*
+    wxSizer *sz = ((wxWindow *)_obj.get())->GetSizer();
     if (sz == NULL) { return NULL; }
     sizer *s = new sizer();
     s->_obj = sz;
     return s;
+    */
   }
 
   bool control::isshown()
   {
-    return ((wxWindow *)_obj)->IsShown();
+    return ((wxWindow *)_obj.get())->IsShown();
   }
 
   bool control::isvalid()
   {
-    if (wxWindow::FindWindowById(this->id)) { return true; }
+    if (wxWindow::FindWindowById(_id)) { return true; }
     return false;
   }
 
   void control::setsizer(sizer *s)
   {
-    ((wxWindow *)_obj)->SetSizer((wxSizer *)s->_obj);
+    ((wxWindow *)_obj.get())->SetSizer((wxSizer *)s->_obj.get());
   }
 
   bool control::setshown(bool showing)
   {
-    return ((wxWindow *)_obj)->Show(showing);
+    return ((wxWindow *)_obj.get())->Show(showing);
   }
 
 
   // event methods
+  event::event(void *e) : base()
+  {
+    _obj = boost::shared_ptr<void>((wxEvent *)e);
+  }
+
+
   int event::getkey() const
   {
-    return ((wxKeyEvent *)_obj)->GetKeyCode();
+    return ((wxKeyEvent *)_obj.get())->GetKeyCode();
   }
 
   void event::skip()
   {
-    ((wxEvent *)_obj)->Skip(true);
+    ((wxEvent *)_obj.get())->Skip(true);
   }
 }
 

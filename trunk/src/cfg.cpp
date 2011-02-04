@@ -8,13 +8,13 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "prec.h"
-#include "levana/cfg.hpp"
+#include "lev/cfg.hpp"
 
 #include <luabind/luabind.hpp>
 #include <string>
 #include <wx/wx.h>
 
-namespace levana
+namespace lev
 {
   namespace cfg
   {
@@ -41,12 +41,12 @@ namespace levana
     {
       using namespace luabind;
 
-      module(L, "levana")
+      module(L, "lev")
       [
         namespace_("cfg")
       ];
 
-      object cfg(globals(L)["levana"]["cfg"]);
+      object cfg(globals(L)["lev"]["cfg"]);
       cfg["default"] = cfg::DEFAULT;
       cfg["fixed"]   = cfg::FIXED;
       return 1;

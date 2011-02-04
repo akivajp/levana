@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        src/levana/sizer.hpp
-// Purpose:     header for sizer object handling
+// Name:        src/sizer.cpp
+// Purpose:     source for sizer object handling
 // Author:      Akiva Miura <akiva.miura@gmail.com>
 // Created:     12/17/2010
 // Copyright:   (C) 2010 Akiva Miura
@@ -8,37 +8,37 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "prec.h"
-#include "levana/sizer.hpp"
-#include "levana/event.hpp"
+#include "lev/sizer.hpp"
+#include "lev/event.hpp"
 
-namespace levana
+namespace lev
 {
   void sizer::addctrl(control *c, int proportion, int flag, int border)
   {
-    ((wxSizer *)_obj)->Add((wxWindow*)c->_obj, proportion, flag, border);
+    ((wxSizer *)_obj.get())->Add((wxWindow*)c->_obj.get(), proportion, flag, border);
   }
   void sizer::addsizer(sizer *s, int proportion, int flag, int border)
   {
-    ((wxSizer *)_obj)->Add((wxSizer*)s->_obj, proportion, flag, border);
+    ((wxSizer *)_obj.get())->Add((wxSizer*)s->_obj.get(), proportion, flag, border);
   }
   void sizer::addspace(int width, int height, int proportion, int flag, int border)
   {
-    ((wxSizer *)_obj)->Add(width, height, proportion, flag, border);
+    ((wxSizer *)_obj.get())->Add(width, height, proportion, flag, border);
   }
 
   void sizer::fit(control *c)
   {
-    ((wxSizer *)_obj)->Fit((wxWindow*)c->_obj);
+    ((wxSizer *)_obj.get())->Fit((wxWindow*)c->_obj.get());
   }
 
   void sizer::fitinside(control *c)
   {
-    ((wxSizer *)_obj)->FitInside((wxWindow *)c->_obj);
+    ((wxSizer *)_obj.get())->FitInside((wxWindow *)c->_obj.get());
   }
 
   void sizer::layout()
   {
-    ((wxSizer *)_obj)->Layout();
+    ((wxSizer *)_obj.get())->Layout();
   }
 
   // lua cfunctions
@@ -47,10 +47,12 @@ namespace levana
     return 0;
   }
 
+
   hsizer::hsizer() : sizer()
   {
     try {
-      _obj = new wxBoxSizer(wxHORIZONTAL);
+      wxBoxSizer *s = new wxBoxSizer(wxHORIZONTAL);
+      _obj.reset(s);
     }
     catch (...)
     {
@@ -58,25 +60,17 @@ namespace levana
     }
   }
 
-  hsizer::~hsizer()
-  {
-    delete (wxBoxSizer *)_obj;
-  }
 
   vsizer::vsizer() : sizer()
   {
     try {
-      _obj = new wxBoxSizer(wxVERTICAL);
+      wxBoxSizer *s = new wxBoxSizer(wxVERTICAL);
+      _obj.reset(s);
     }
     catch (...)
     {
       throw "vsizer: allocation error";
     }
-  }
-
-  vsizer::~vsizer()
-  {
-    delete (wxBoxSizer *)_obj;
   }
 }
 

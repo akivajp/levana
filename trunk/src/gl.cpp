@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        src/levana/gl.hpp
+// Name:        src/gl.cpp
 // Purpose:     source for OpenGL-Lua binding
 // Author:      Akiva Miura <akiva.miura@gmail.com>
 // Modified by:
@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "prec.h"
-#include "levana/gl.hpp"
+#include "lev/gl.hpp"
 #include <wx/glcanvas.h>
 #include <luabind/luabind.hpp>
 #include <GL/glu.h>
@@ -124,7 +124,7 @@ extern "C"
     using namespace luabind;
 
     luabind::open(L);
-    module(L, "levana")
+    module(L, "lev")
     [
       namespace_("gl")
       [
@@ -185,7 +185,7 @@ extern "C"
       ]
     ];
 
-    object gl = globals(L)["levana"]["gl"];
+    object gl = globals(L)["lev"]["gl"];
     register_to(L, gl, "Getb", &lua_glGetb);
     register_to(L, gl, "Getd", &lua_glGetd);
     register_to(L, gl, "Getf", &lua_glGetf);
@@ -217,6 +217,8 @@ extern "C"
     gl["TRIANGLES"]           = GL_TRIANGLES;
     gl["TRUE"]                = GL_TRUE;
     gl["VERTEX_ARRAY"]        = GL_VERTEX_ARRAY;
+
+    return 0;
   }
 }
 

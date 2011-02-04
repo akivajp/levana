@@ -9,64 +9,59 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "prec.h"
-#include "levana/media.hpp"
+#include "lev/media.hpp"
 #include <string>
 //#include <boost/filesystem/path.hpp>
 //#include <boost/filesystem/operations.hpp>
 
 class wxMediaCtrl;
 
-namespace levana
+namespace lev
 {
 
   player::player(control *parent, int width, int height) : control()
   {
     try {
       wxWindow *p = NULL;
-      if (parent) { p = (wxWindow *)parent->_obj; }
-      _obj = new wxMediaCtrl(p, -1, wxEmptyString, wxDefaultPosition, wxSize(width, height));
+      if (parent) { p = (wxWindow *)parent->_obj.get(); }
+      wxMediaCtrl *media = new wxMediaCtrl(p, -1, wxEmptyString, wxDefaultPosition, wxSize(width, height));
+      _id = media->GetId();
+      _obj.reset(media);
     }
     catch (...) {
-      throw "control: allocation error";
+      fprintf(stderr, "control: allocation error");
     }
   }
 
-  player::~player()
-  {
-    if (_obj)
-    {
-      delete (wxMediaCtrl *)_obj;
-    }
-  }
 
   size player::getbestsize()
   {
-    wxSize sz = ((wxMediaCtrl *)_obj)->GetBestSize();
+    wxSize sz = ((wxMediaCtrl *)_obj.get())->GetBestSize();
     return size(sz.GetWidth(), sz.GetHeight());
   }
 
   double player::getvolume()
   {
-    return ((wxMediaCtrl *)_obj)->GetVolume();
+    return ((wxMediaCtrl *)_obj.get())->GetVolume();
   }
 
   bool player::ispaused()
   {
-    if ( ((wxMediaCtrl *)_obj)->GetState() == wxMEDIASTATE_PAUSED )
+    if ( ((wxMediaCtrl *)_obj.get() )->GetState() == wxMEDIASTATE_PAUSED )
     { return true; }
     return false;
   }
 
   bool player::isplaying()
   {
-    if ( ((wxMediaCtrl *)_obj)->GetState() == wxMEDIASTATE_PLAYING )
+    if ( ((wxMediaCtrl *)_obj.get() )->GetState() == wxMEDIASTATE_PLAYING )
     { return true; }
     return false;
   }
 
   bool player::isstopped()
   {
-    if ( ((wxMediaCtrl *)_obj)->GetState() == wxMEDIASTATE_STOPPED )
+    if ( ((wxMediaCtrl *)_obj.get() )->GetState() == wxMEDIASTATE_STOPPED )
     { return true; }
     return false;
   }
@@ -75,32 +70,32 @@ namespace levana
   {
     wxString cwd = wxGetCwd();
     wxString path = cwd + wxT("/") + wxString(filename, wxConvUTF8);
-    return ((wxMediaCtrl *)_obj)->Load(path);
+    return ((wxMediaCtrl *)_obj.get())->Load(path);
   }
 
   bool player::loaduri(const char *uri)
   {
-    return ((wxMediaCtrl *)_obj)->LoadURI(wxString(uri, wxConvUTF8));
+    return ((wxMediaCtrl *)_obj.get())->LoadURI(wxString(uri, wxConvUTF8));
   }
 
   bool player::pause()
   {
-    return ((wxMediaCtrl *)_obj)->Pause();
+    return ((wxMediaCtrl *)_obj.get())->Pause();
   }
 
   bool player::play()
   {
-    return ((wxMediaCtrl *)_obj)->Play();
+    return ((wxMediaCtrl *)_obj.get())->Play();
   }
 
   bool player::setvolume(double vol)
   {
-    return ((wxMediaCtrl *)_obj)->SetVolume(vol);
+    return ((wxMediaCtrl *)_obj.get())->SetVolume(vol);
   }
 
   bool player::stop()
   {
-    return ((wxMediaCtrl *)_obj)->Stop();
+    return ((wxMediaCtrl *)_obj.get())->Stop();
   }
 }
 

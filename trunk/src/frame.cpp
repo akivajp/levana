@@ -8,13 +8,15 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "prec.h"
-#include "levana/frame.hpp"
+#include "lev/frame.hpp"
 #include "connect.hpp"
 
 #include <string>
 #include <map>
 
-namespace levana
+using namespace boost;
+
+namespace lev
 {
 
   class myFrame : public wxFrame
@@ -36,9 +38,10 @@ namespace levana
     try {
       wxWindow *p = NULL;
       if (style == -1) { style = wxDEFAULT_FRAME_STYLE; }
-      if (parent) { p = (wxWindow *)parent->_obj; }
-      _obj = new myFrame(p, wxString(title, wxConvUTF8), w, h, style);
-      this->id = ((myFrame *)_obj)->GetId();
+      if (parent) { p = (wxWindow *)parent->_obj.get(); }
+      wxFrame *frm = new myFrame(p, wxString(title, wxConvUTF8), w, h, style);
+      _id = frm->GetId();
+      _obj.reset(frm);
       seticon(icon::levana_icon());
     }
     catch (...) {
@@ -46,41 +49,39 @@ namespace levana
     }
   }
 
-  frame::~frame()
-  {
-    delete (myFrame *)_obj;
-  }
 
   bool frame::close(bool force)
   {
     if (!_obj) { return false; }
-    bool result = ((wxFrame *)_obj)->Close(force);
+    bool result = ((wxWindow *)_obj.get())->Close(force);
     if (result)
     {
-      _obj = NULL;
+      _obj.reset();
       return true;
     }
     return false;
   }
 
+
   void frame::fit()
   {
-    ((myFrame *)_obj)->Fit();
+    ((myFrame *)_obj.get())->Fit();
   }
+
 
   void frame::seticon(const icon &i)
   {
-    ((wxFrame *)_obj)->SetIcon(*((wxIcon *)i._obj));
+    ((wxFrame *)_obj.get())->SetIcon(*((wxIcon *)i._obj.get()));
   }
 
   void frame::setmenubar(menubar *mb)
   {
-    ((wxFrame *)_obj)->SetMenuBar((wxMenuBar *)mb->_obj);
+    ((wxFrame *)_obj.get())->SetMenuBar((wxMenuBar *)mb->_obj.get());
   }
 
   void frame::setonmenu(int id, luabind::object lua_func)
   {
-    ((myFrame *)_obj)->Connect(id, wxEVT_COMMAND_MENU_SELECTED, lua_func);
+    ((myFrame *)_obj.get())->Connect(id, wxEVT_COMMAND_MENU_SELECTED, lua_func);
   }
 
 
@@ -90,32 +91,34 @@ namespace levana
     return status;
   }
 
+
   void frame::setstatus(const char *str_status)
   {
-    wxStatusBar *sb = ((myFrame *)_obj)->GetStatusBar();
+    wxStatusBar *sb = ((myFrame *)_obj.get())->GetStatusBar();
     status = str_status;
     if     (status == NULL && sb == NULL) { return; }
     if     (status == NULL && sb != NULL) { delete sb; }
     else if(status != NULL && sb == NULL)
     {
-      ((myFrame *)_obj)->CreateStatusBar();
-      ((myFrame *)_obj)->SetStatusText(wxString(str_status, wxConvUTF8));
+      ((myFrame *)_obj.get())->CreateStatusBar();
+      ((myFrame *)_obj.get())->SetStatusText(wxString(str_status, wxConvUTF8));
     }
     else // if (status != NULL && sb != NULL)
     {
-      ((myFrame *)_obj)->SetStatusText(wxString(str_status, wxConvUTF8));
+      ((myFrame *)_obj.get())->SetStatusText(wxString(str_status, wxConvUTF8));
     }
   }
+
 
   // title property
   const char *frame::gettitle()
   {
-    const std::string str = (const char *)((wxFrame *)_obj)->GetTitle().mb_str(wxConvUTF8);
+    const std::string str = (const char *)((wxFrame *)_obj.get())->GetTitle().mb_str(wxConvUTF8);
     return str.c_str();
   }
   void frame::settitle(const char *title)
   {
-    ((wxFrame *)_obj)->SetTitle(wxString(title, wxConvUTF8));
+    ((wxFrame *)_obj.get())->SetTitle(wxString(title, wxConvUTF8));
   }
 
   // static member functions
@@ -123,14 +126,15 @@ namespace levana
   frame *frame::gettop()
   {
     static frame top;
-    top._obj = wxTheApp->GetTopWindow();
-    if (top._obj == NULL) { return NULL; }
+    wxWindow *frm = wxTheApp->GetTopWindow();
+    if (frm == NULL) { return NULL; }
+    top._obj.reset(frm);
     return &top;
   }
 
   void frame::settop(frame *top)
   {
-    wxTheApp->SetTopWindow((wxFrame *)top->_obj);
+    wxTheApp->SetTopWindow((wxFrame *)top->_obj.get());
   }
 
 }

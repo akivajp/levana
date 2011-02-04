@@ -8,16 +8,17 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "prec.h"
-#include "levana/icon.hpp"
+#include "lev/icon.hpp"
 
 #include "resource/levana.xpm"
 
-namespace levana
+namespace lev
 {
   icon::icon(const char **bits)
   {
     try {
-      _obj = new wxIcon(bits);
+      wxIcon *icon = new wxIcon(bits);
+      _obj.reset(icon);
     }
     catch (...) {
       throw("icon: loading error");
@@ -28,27 +29,28 @@ namespace levana
   {
     // wxInitAllImageHandlers();
     try {
-      _obj = new wxIcon();
+      wxIcon *icon = new wxIcon();
       wxImage img(wxString(filename, wxConvUTF8), wxBITMAP_TYPE_ANY);
       img.Rescale(25, 25);
-      ((wxIcon *)_obj)->CopyFromBitmap(img);
+      icon->CopyFromBitmap(img);
+      _obj.reset(icon);
     }
     catch(...) {
       throw("icon: loading error");
     }
   }
 
-  icon::~icon()
-  {
-    if (_obj) { delete (wxIcon *)_obj; }
-  }
 
   bool icon::load_xpm(const char *filename)
   {
-    if (_obj) { delete (wxIcon *)_obj; }
-    _obj = new wxIcon(wxString(filename, wxConvUTF8), wxBITMAP_TYPE_XPM);
+    try {
+      wxIcon *icon = new wxIcon(wxString(filename, wxConvUTF8), wxBITMAP_TYPE_XPM);
+      _obj.reset(icon);
 //    _obj = new wxIcon(wxString(filename, wxConvUTF8));
-    if (_obj == NULL) { return false; }
+    }
+    catch (...) {
+      return false;
+    }
     return true;
   }
 

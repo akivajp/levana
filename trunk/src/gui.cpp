@@ -8,11 +8,11 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "prec.h"
-#include "levana/gui.hpp"
+#include "lev/gui.hpp"
 #include "connect.hpp"
 #include <string>
 
-namespace levana
+namespace lev
 {
   // html viewer control definitions
   class myHtmlWindow : public wxHtmlWindow
@@ -30,8 +30,10 @@ namespace levana
   {
     try {
       wxWindow *p = NULL;
-      if (parent) { p = (wxWindow *)parent->_obj; }
-      _obj = new myHtmlWindow(p, width, height);
+      if (parent) { p = (wxWindow *)parent->_obj.get(); }
+      wxHtmlWindow *html = new myHtmlWindow(p, width, height);
+      _id = html->GetId();
+      _obj.reset(html);
     }
     catch (...)
     {
@@ -39,27 +41,25 @@ namespace levana
     }
   }
 
-  htmlview::~htmlview()
-  {
-    delete (myHtmlWindow *)_obj;
-  }
 
   bool htmlview::loadpage(const char *url)
   {
-    return ((myHtmlWindow *)_obj)->LoadPage(wxString(url, wxConvUTF8));
+    return ((myHtmlWindow *)_obj.get())->LoadPage(wxString(url, wxConvUTF8));
   }
 
   bool htmlview::setpage(const char *src)
   {
-    return ((myHtmlWindow *)_obj)->SetPage(wxString(src, wxConvUTF8));
+    return ((myHtmlWindow *)_obj.get())->SetPage(wxString(src, wxConvUTF8));
   }
 
   const char* htmlview::totext()
   {
     const std::string text =
-      (const char *)((myHtmlWindow *)_obj)->ToText().mb_str(wxConvUTF8);
+      (const char *)((myHtmlWindow *)_obj.get())->ToText().mb_str(wxConvUTF8);
     return text.c_str();
   }
+
+
 
 
   // text control definitions
@@ -68,47 +68,39 @@ namespace levana
     public:
       inline myTextCtrl(wxWindow *parent, int width, int height, wxString &value) :
         wxTextCtrl(parent, -1, value, wxDefaultPosition, wxSize(width, height)) {}
+    private:
       // Common Connect Interface
-      inline void Connect(int id, wxEventType eventType, luabind::object lua_func)
-      {
-        levana::Connect(this, id, eventType, lua_func);
-      }
-      void ProcEvent(wxEvent &event)
-      {
-        levana::ProcEvent(this, event);
-      }
-      func_map fmap;
+      DECLARE_CONNECT();
   };
+
 
   text::text(control *parent, int width, int height, const char *value)
   {
     try {
       wxWindow *p = NULL;
       wxString val = wxEmptyString;
-      if (parent) { p = (wxWindow *)parent->_obj; }
+      if (parent) { p = (wxWindow *)parent->_obj.get(); }
       if (val) { val = wxString(value, wxConvUTF8); }
-      _obj = new myTextCtrl(p, width, height, val);
+      myTextCtrl *text = new myTextCtrl(p, width, height, val);
+      _id = text->GetId();
+      _obj.reset(text);
     }
     catch (...) {
       throw "text: allocation error";
     }
   }
 
-  text::~text()
-  {
-    if (_obj) { delete (wxTextCtrl *)_obj; }
-  }
 
   const char* text::getvalue()
   {
     const std::string value =
-      (const char *)((wxTextCtrl *)_obj)->GetValue().mb_str(wxConvUTF8);
+      (const char *)((wxTextCtrl *)_obj.get())->GetValue().mb_str(wxConvUTF8);
     return value.c_str();
   }
 
   void text::setvalue(const char *value)
   {
-    ((wxTextCtrl *)_obj)->SetValue(wxString(value, wxConvUTF8));
+    ((wxTextCtrl *)_obj.get())->SetValue(wxString(value, wxConvUTF8));
   }
 }
 

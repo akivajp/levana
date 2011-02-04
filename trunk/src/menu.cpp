@@ -8,15 +8,16 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "prec.h"
-#include "levana/menu.hpp"
+#include "lev/menu.hpp"
 
-namespace levana
+namespace lev
 {
 
   menu::menu() : control()
   {
     try {
-      _obj = new wxMenu();
+      wxMenu *menu = new wxMenu();
+      _obj.reset(menu);
     }
     catch(...) {
       throw "menu: allocation error";
@@ -26,23 +27,20 @@ namespace levana
   menu::menu(const char *title) : control()
   {
     try {
-      _obj = new wxMenu(wxString(title, wxConvUTF8));
+      wxMenu *menu = new wxMenu(wxString(title, wxConvUTF8));
+      _obj.reset(menu);
     }
     catch(...) {
       fprintf(stderr, "menu: allocation error");
     }
   }
 
-  menu::~menu()
-  {
-    delete (wxMenu *)_obj;
-  }
 
   int menu::append(int id, const char *str, const char *help_str)
   {
     wxString new_str(str, wxConvUTF8);
     wxString new_help(help_str, wxConvUTF8);
-    wxMenuItem *item = ((wxMenu *)_obj)->Append(id, new_str, new_help);
+    wxMenuItem *item = ((wxMenu *)_obj.get())->Append(id, new_str, new_help);
     if (item == NULL) { return 0; }
     return item->GetId();
   }
@@ -50,22 +48,19 @@ namespace levana
   menubar::menubar() : control()
   {
     try {
-      _obj = new wxMenuBar();
+      wxMenuBar *mb = new wxMenuBar();
+      _obj.reset(mb);
     }
     catch(...) {
       fprintf(stderr, "menubar: allocation error");
     }
   }
 
-  menubar::~menubar()
-  {
-    delete (wxMenuBar *)_obj;
-  }
 
   bool menubar::append(menu *m, const char *title)
   {
     wxString new_title(title, wxConvUTF8);
-    return ((wxMenuBar *)_obj)->Append((wxMenu *)m->_obj, new_title);
+    return ((wxMenuBar *)_obj.get())->Append((wxMenu *)m->_obj.get(), new_title);
   }
 }
 

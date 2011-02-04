@@ -8,15 +8,17 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "prec.h"
-#include "levana/levana.hpp"
+#include "lev/lev.hpp"
+#include "register.hpp"
 
 #include <sstream>
+#include <boost/ref.hpp>
 
 void final_release()
 {
 }
 
-namespace levana
+namespace lev
 {
 
   int lua_entry(lua_State *L)
@@ -62,55 +64,53 @@ namespace levana
 }
 
 
-static inline void register_to(lua_State *L, luabind::object to, const char *funcname, lua_CFunction func)
-{
-  lua_pushcfunction(L, func);
-  luabind::object f(luabind::from_stack(L, -1));
-  lua_pop(L, 1);
-  to[funcname] = f;
-}
-
-
 extern "C" {
-  extern int luaopen_levana(lua_State *L)
+  extern int luaopen_lev(lua_State *L)
   {
-    using namespace levana;
+    using namespace lev;
     using namespace luabind;
 
     luabind::open(L);
     lua_entry(L);
 
+    luabind::object lev = globals(L)["lev"] = newtable(L);
     // configuration
-    register_to(L, globals(L)["package"]["preload"], "cfg", &cfg::luaopen_cfg);
-
+    register_to(L, lev, "load_cfg", &cfg::luaopen_cfg);
     // usable functions
-    module(L, "levana")
+    register_to(L, lev, "load_util", &util::luaopen_util);
+
+
+    // base of all
+    module(L, "base")
     [
-      namespace_("util")
+      class_<base>("base")
+        .property("type", &base::gettype)
+        .property("isvalid", &base::isvalid)
     ];
-    register_to(L, globals(L)["levana"]["util"], "merge", &util::merge);
+
 
     // event class, and its derived ones
-    module(L, "levana")
+    module(L, "lev")
     [
       // base class
-      class_<event>("event")
+      class_<event, base>("event")
         .def("getkey", &event::getkey)
         .def("skip", &event::skip)
     ];
 
+
     // GUI control, event handling
-    module(L, "levana")
+    module(L, "lev")
     [
       // base class
-      class_<control>("control")
+      class_<control, base>("control")
         .def("connect", &control::connect)
         .def("hide", &control::hide)
         .def("setonkeydown", &control::setonkeydown)
         .def("setonmenu", &control::setonmenu)
         .def("show", &control::show)
-        .property("isshown", &control::isshown, &control::setshown)
         .property("isvalid", &control::isvalid)
+        .property("isshown", &control::isshown, &control::setshown)
         .property("sizer", &control::getsizer, &control::setsizer),
       // derived classes
       class_<application, control>("application")
@@ -127,12 +127,15 @@ extern "C" {
         ],
       class_<canvas, control>("canvas")
         .def(constructor<frame*, int, int>())
+        .def("blendmode", &canvas::blendmode)
         .def("clear", &canvas::clear)
+        .def("clearcolor", &canvas::clearcolor)
+        .def("draw", &canvas::drawbitmap)
         .def("flush", &canvas::flush)
         .def("line",  &canvas::line)
         .def("set2d", &canvas::set2d)
-        .def("swap", &canvas::swap)
-        .def("using", &canvas::use),
+        .def("setcurrent", &canvas::setcurrent)
+        .def("swap", &canvas::swap),
       class_<frame, control>("frame")
         .def(constructor<frame*, const char*, int, int, long>())
         .def("close", &frame::close)
@@ -185,7 +188,7 @@ extern "C" {
     ];
 
     // sizers
-    module(L, "levana")
+    module(L, "lev")
     [
       class_<sizer>("sizer")
         .def("fit", &sizer::fit)
@@ -204,7 +207,7 @@ extern "C" {
     ];
 
     // primitives
-    module(L, "levana")
+    module(L, "lev")
     [
       class_<vector>("vector")
         .def(constructor<>())
@@ -220,12 +223,12 @@ extern "C" {
         .property("d", &size::geth, &size::setd)
         .property("depth", &size::geth, &size::setd)
         .property("h", &size::geth, &size::seth)
-        .property("hehgt", &size::geth, &size::seth)
+        .property("height", &size::geth, &size::seth)
         .property("w", &size::getw, &size::setw)
         .property("width", &size::getw, &size::setw)
     ];
 
-    module(L, "levana")
+    module(L, "lev")
     [
       class_<icon>("icon")
         .def(constructor<>())
@@ -236,7 +239,24 @@ extern "C" {
           def("levana_icon", &icon::levana_icon)
         ]
     ];
+
+    module(L, "lev")
+    [
+      class_<bitmap>("bitmap")
+        .def(constructor<int,int>())
+        .def(constructor<const char *>())
+        .def("drawcircle", &bitmap::drawcircle)
+        .def("drawtext", &bitmap::drawtext)
+        .def("save", &bitmap::save)
+        .property("h", &bitmap::geth)
+        .property("height", &bitmap::geth)
+        .property("isvalid", &bitmap::isvalid)
+        .property("w", &bitmap::getw)
+        .property("width", &bitmap::getw)
+    ];
+
     register_to(L, globals(L)["package"]["preload"], "gl", luaopen_gl);
+
     return 1;
   }
 }
