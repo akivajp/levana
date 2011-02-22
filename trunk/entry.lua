@@ -11,9 +11,10 @@ sizer:add(txt,1)
 
 snd = gui.frame()
 player = media.player({p = snd})
-player:loadlocal("./kami.mp3")
+player:loadlocal("./kami.ogg")
+player.volume = 0.9
 player:play()
-frm.status = "volume: " .. player.volume .. "   AAA"
+frm.status = "volume: " .. player.volume
 
 frm:fit()
 frm:show()
