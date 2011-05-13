@@ -1,6 +1,0 @@
-CXXFLAGS = `wx-config --cxxflags` -I/usr/local/include -I/usr/local/include/boost-1_44
-LIBS = `wx-config --libs` -llua -lluabind -static
-
-all:
-	cd src && make pch lib bin CXXFLAGS="$(CXXFLAGS)"  LIBS="$(LIBS)"
-
