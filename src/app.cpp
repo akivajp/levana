@@ -96,7 +96,8 @@ DECLARE_APP(lev::myApp);
 
 namespace lev
 {
-  application::application() : control()
+
+  application::application()
   {
     wxGetApp().OnInit();
     setname("Levana Application");
@@ -116,9 +117,13 @@ namespace lev
   }
   void application::autoloop_with(frame *frm)
   {
-    while (frm->isvalid())
+    if (frm == NULL) { this->autoloop(); }
+    else
     {
-      wxGetApp().Yield();
+      while (frm->isvalid())
+      {
+        wxGetApp().Yield();
+      }
     }
   }
 
@@ -149,6 +154,11 @@ namespace lev
     frame::settop(top);
   }
 
+  void application::wait(int delay_in_msec)
+  {
+    wxSleep(delay_in_msec);
+  }
+
   bool application::yield()
   {
     return wxGetApp().Yield();
@@ -164,6 +174,12 @@ namespace lev
     myApp::L = L;
     entried = true;
     return true;
+  }
+
+  application *application::getapp()
+  {
+    static application app;
+    return &app;
   }
 
   lua_State* application::getL()

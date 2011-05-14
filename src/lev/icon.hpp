@@ -24,6 +24,9 @@ namespace lev
       static const icon &levana_icon();
       friend class frame;
       friend class systray;
+
+    private:
+      boost::shared_ptr<void> _obj;
   };
 }
 

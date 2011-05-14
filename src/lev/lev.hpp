@@ -24,6 +24,7 @@
 #include "media.hpp"
 #include "prim.hpp"
 #include "sizer.hpp"
+#include "sound.hpp"
 #include "taskbar.hpp"
 #include "util.hpp"
 

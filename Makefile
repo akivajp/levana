@@ -1,5 +1,5 @@
 PREFIX=/tmp
-VERSION=0.2.2
+VERSION=0.2.3
 OUT = a.out
 BIN = levana
 DLIB = lev.so
@@ -21,7 +21,7 @@ mac:
 		VERSION=$(VERSION)
 
 mingw:
-	make -f make/Makefile.mingw build
+	make -f make/Makefile.mingw build \
 		VERSION=$(VERSION)
 
 build:
@@ -49,6 +49,7 @@ clean:
 distclean:
 	cd src && make distclean
 	rm -rf bin lib
+	rm -rf levana-win32-$(VERSION)
 
 src/$(OUT): build
 src/$(DLIB): build

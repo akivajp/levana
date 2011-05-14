@@ -30,6 +30,7 @@ namespace lev
       // friend classes
       friend class canvas;
     private:
+      boost::shared_ptr<void> _obj;
   };
 }
 

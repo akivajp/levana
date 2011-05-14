@@ -19,9 +19,10 @@ namespace lev
 {
   class application : public control
   {
-    public:
+    protected:
       application();
       ~application();
+    public:
       void autoloop();
       void autoloop_with(frame *frm);
       const char* getname();
@@ -29,12 +30,16 @@ namespace lev
       void setname(const char *name);
       void setonkeydown(luabind::object lua_func);
       void settop(frame *top);
+      void wait(int delay_in_msec);
       bool yield();
       // static method
       static bool entry(lua_State *L, int argc, char **argv);
+      static application *getapp();
       static lua_State* getL();
       static int msgbox(const char *msg, const char *caption);
       static inline int msgbox_nocap(const char *msg) { return msgbox(msg, "Message"); }
+
+    private:
   };
 }
 

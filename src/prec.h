@@ -17,6 +17,7 @@ extern "C" {
 #include <lauxlib.h>
 }
 #include <luabind/luabind.hpp>
+#include <luabind/adopt_policy.hpp>
 #include <luabind/object.hpp>
 #include <luabind/operator.hpp>
 
@@ -25,6 +26,7 @@ extern "C" {
 #include <wx/fs_inet.h>
 #include <wx/glcanvas.h>
 #include <wx/mediactrl.h>
+#include <wx/sound.h>
 #include <wx/taskbar.h>
 #include <wx/wxhtml.h>
 

@@ -30,10 +30,10 @@ namespace lev
   {
     try {
       wxWindow *p = NULL;
-      if (parent) { p = (wxWindow *)parent->_obj.get(); }
+      if (parent) { p = (wxWindow *)parent->_obj; }
       wxHtmlWindow *html = new myHtmlWindow(p, width, height);
       _id = html->GetId();
-      _obj.reset(html);
+      _obj = html;
     }
     catch (...)
     {
@@ -44,18 +44,18 @@ namespace lev
 
   bool htmlview::loadpage(const char *url)
   {
-    return ((myHtmlWindow *)_obj.get())->LoadPage(wxString(url, wxConvUTF8));
+    return ((myHtmlWindow *)_obj)->LoadPage(wxString(url, wxConvUTF8));
   }
 
   bool htmlview::setpage(const char *src)
   {
-    return ((myHtmlWindow *)_obj.get())->SetPage(wxString(src, wxConvUTF8));
+    return ((myHtmlWindow *)_obj)->SetPage(wxString(src, wxConvUTF8));
   }
 
   const char* htmlview::totext()
   {
     const std::string text =
-      (const char *)((myHtmlWindow *)_obj.get())->ToText().mb_str(wxConvUTF8);
+      (const char *)((myHtmlWindow *)_obj)->ToText().mb_str(wxConvUTF8);
     return text.c_str();
   }
 
@@ -79,11 +79,11 @@ namespace lev
     try {
       wxWindow *p = NULL;
       wxString val = wxEmptyString;
-      if (parent) { p = (wxWindow *)parent->_obj.get(); }
+      if (parent) { p = (wxWindow *)parent->_obj; }
       if (val) { val = wxString(value, wxConvUTF8); }
       myTextCtrl *text = new myTextCtrl(p, width, height, val);
       _id = text->GetId();
-      _obj.reset(text);
+      _obj = text;
     }
     catch (...) {
       throw "text: allocation error";
@@ -94,13 +94,13 @@ namespace lev
   const char* text::getvalue()
   {
     const std::string value =
-      (const char *)((wxTextCtrl *)_obj.get())->GetValue().mb_str(wxConvUTF8);
+      (const char *)((wxTextCtrl *)_obj)->GetValue().mb_str(wxConvUTF8);
     return value.c_str();
   }
 
   void text::setvalue(const char *value)
   {
-    ((wxTextCtrl *)_obj.get())->SetValue(wxString(value, wxConvUTF8));
+    ((wxTextCtrl *)_obj)->SetValue(wxString(value, wxConvUTF8));
   }
 }
 

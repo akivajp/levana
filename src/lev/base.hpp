@@ -22,15 +22,13 @@ namespace lev
       {
         LEV_TBASE
       };
-      inline base() {}
-      inline virtual type gettype() const { return LEV_TBASE; }
-      inline virtual bool isvalid() const { return bool(_obj); }
     protected:
-      boost::shared_ptr<void> _obj;
+      inline base() { }
+      inline virtual ~base() { }
+    public:
+      inline virtual type gettype() const { return LEV_TBASE; }
   };
 }
-
-
 
 #endif // _BASE_HPP
 

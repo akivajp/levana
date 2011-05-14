@@ -22,9 +22,10 @@ namespace lev
 
   class frame : public control
   {
+    protected:
+      inline frame() : control(), status(NULL) { }
     public:
-      inline frame() : control(), status(NULL) {}
-      frame(frame *parent, const char *title, int w = -1, int h = -1, long style = -1);
+      virtual inline ~frame() { }
       bool close(bool force);
       bool close_noforce() { return close(false); }
       void fit();
@@ -38,6 +39,7 @@ namespace lev
       const char *gettitle();
       void settitle(const char *title);
       // static function
+      static frame *create(frame *parent, const char *title, int w = -1, int h = -1, long style = -1);
       static frame *gettop();
       static void settop(frame *top);
     private:

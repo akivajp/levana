@@ -1,3 +1,18 @@
 syntax: glob
+.pida-metadata
 .svn
+.*.swp
+bin/
+lib/
+src/*.a
+src/*.gch
+src/*.o
+src/*.out
+src/*.so
+src/tags
+
+./*.mp3
+./*.ogg
+./lev.so
+./
 

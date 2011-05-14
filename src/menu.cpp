@@ -17,7 +17,7 @@ namespace lev
   {
     try {
       wxMenu *menu = new wxMenu();
-      _obj.reset(menu);
+      _obj = menu;
     }
     catch(...) {
       throw "menu: allocation error";
@@ -28,7 +28,7 @@ namespace lev
   {
     try {
       wxMenu *menu = new wxMenu(wxString(title, wxConvUTF8));
-      _obj.reset(menu);
+      _obj = menu;
     }
     catch(...) {
       fprintf(stderr, "menu: allocation error");
@@ -40,7 +40,7 @@ namespace lev
   {
     wxString new_str(str, wxConvUTF8);
     wxString new_help(help_str, wxConvUTF8);
-    wxMenuItem *item = ((wxMenu *)_obj.get())->Append(id, new_str, new_help);
+    wxMenuItem *item = ((wxMenu *)_obj)->Append(id, new_str, new_help);
     if (item == NULL) { return 0; }
     return item->GetId();
   }
@@ -49,7 +49,7 @@ namespace lev
   {
     try {
       wxMenuBar *mb = new wxMenuBar();
-      _obj.reset(mb);
+      _obj = mb;
     }
     catch(...) {
       fprintf(stderr, "menubar: allocation error");
@@ -60,7 +60,7 @@ namespace lev
   bool menubar::append(menu *m, const char *title)
   {
     wxString new_title(title, wxConvUTF8);
-    return ((wxMenuBar *)_obj.get())->Append((wxMenu *)m->_obj.get(), new_title);
+    return ((wxMenuBar *)_obj)->Append((wxMenu *)m->_obj, new_title);
   }
 }
 

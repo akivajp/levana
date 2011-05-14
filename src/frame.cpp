@@ -32,31 +32,13 @@ namespace lev
   };
 
 
-  frame::frame(frame *parent, const char *title, int w, int h, long style)
-    : control(), status(NULL)
-  {
-    try {
-      wxWindow *p = NULL;
-      if (style == -1) { style = wxDEFAULT_FRAME_STYLE; }
-      if (parent) { p = (wxWindow *)parent->_obj.get(); }
-      wxFrame *frm = new myFrame(p, wxString(title, wxConvUTF8), w, h, style);
-      _id = frm->GetId();
-      _obj.reset(frm);
-      seticon(icon::levana_icon());
-    }
-    catch (...) {
-      throw "frame: allocation error";
-    }
-  }
-
-
   bool frame::close(bool force)
   {
     if (!_obj) { return false; }
-    bool result = ((wxWindow *)_obj.get())->Close(force);
+    bool result = ((wxWindow *)_obj)->Close(force);
     if (result)
     {
-      _obj.reset();
+      _obj = NULL;
       return true;
     }
     return false;
@@ -65,23 +47,23 @@ namespace lev
 
   void frame::fit()
   {
-    ((myFrame *)_obj.get())->Fit();
+    ((myFrame *)_obj)->Fit();
   }
 
 
   void frame::seticon(const icon &i)
   {
-    ((wxFrame *)_obj.get())->SetIcon(*((wxIcon *)i._obj.get()));
+    ((wxFrame *)_obj)->SetIcon(*((wxIcon *)i._obj.get()));
   }
 
   void frame::setmenubar(menubar *mb)
   {
-    ((wxFrame *)_obj.get())->SetMenuBar((wxMenuBar *)mb->_obj.get());
+    ((wxFrame *)_obj)->SetMenuBar((wxMenuBar *)mb->_obj);
   }
 
   void frame::setonmenu(int id, luabind::object lua_func)
   {
-    ((myFrame *)_obj.get())->Connect(id, wxEVT_COMMAND_MENU_SELECTED, lua_func);
+    ((myFrame *)_obj)->Connect(id, wxEVT_COMMAND_MENU_SELECTED, lua_func);
   }
 
 
@@ -94,18 +76,18 @@ namespace lev
 
   void frame::setstatus(const char *str_status)
   {
-    wxStatusBar *sb = ((myFrame *)_obj.get())->GetStatusBar();
+    wxStatusBar *sb = ((myFrame *)_obj)->GetStatusBar();
     status = str_status;
     if     (status == NULL && sb == NULL) { return; }
     if     (status == NULL && sb != NULL) { delete sb; }
     else if(status != NULL && sb == NULL)
     {
-      ((myFrame *)_obj.get())->CreateStatusBar();
-      ((myFrame *)_obj.get())->SetStatusText(wxString(str_status, wxConvUTF8));
+      ((myFrame *)_obj)->CreateStatusBar();
+      ((myFrame *)_obj)->SetStatusText(wxString(str_status, wxConvUTF8));
     }
     else // if (status != NULL && sb != NULL)
     {
-      ((myFrame *)_obj.get())->SetStatusText(wxString(str_status, wxConvUTF8));
+      ((myFrame *)_obj)->SetStatusText(wxString(str_status, wxConvUTF8));
     }
   }
 
@@ -113,28 +95,47 @@ namespace lev
   // title property
   const char *frame::gettitle()
   {
-    const std::string str = (const char *)((wxFrame *)_obj.get())->GetTitle().mb_str(wxConvUTF8);
+    const std::string str = (const char *)((wxFrame *)_obj)->GetTitle().mb_str(wxConvUTF8);
     return str.c_str();
   }
   void frame::settitle(const char *title)
   {
-    ((wxFrame *)_obj.get())->SetTitle(wxString(title, wxConvUTF8));
+    ((wxFrame *)_obj)->SetTitle(wxString(title, wxConvUTF8));
   }
 
   // static member functions
+  frame *frame::create(frame *parent, const char *title, int w, int h, long style)
+  {
+    frame   *newfrm = NULL;
+    wxFrame *wxfrm  = NULL;
+    try {
+      newfrm = new frame();
+      wxWindow *p = parent ? (wxWindow *)parent->_obj : NULL;
+      if (style == -1) { style = wxDEFAULT_FRAME_STYLE; }
+      wxfrm = new myFrame(p, wxString(title, wxConvUTF8), w, h, style);
+      newfrm->_id = wxfrm->GetId();
+      newfrm->_obj = wxfrm;
+      newfrm->seticon(icon::levana_icon());
+      return newfrm;
+    }
+    catch (...) {
+      delete wxfrm;
+      return NULL;
+    }
+  }
 
   frame *frame::gettop()
   {
     static frame top;
     wxWindow *frm = wxTheApp->GetTopWindow();
     if (frm == NULL) { return NULL; }
-    top._obj.reset(frm);
+    top._obj = frm;
     return &top;
   }
 
   void frame::settop(frame *top)
   {
-    wxTheApp->SetTopWindow((wxFrame *)top->_obj.get());
+    wxTheApp->SetTopWindow((wxFrame *)top->_obj);
   }
 
 }

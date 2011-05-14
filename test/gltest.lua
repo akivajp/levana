@@ -2,7 +2,7 @@ require 'lev/std'
 require 'lev/gl'
 
 frm = gui.frame()
-draw = gui.draw(frm, 640, 480)
+draw = gui.canvas(frm, 640, 480)
 frm:fit()
 frm:show()
 

@@ -22,11 +22,11 @@ namespace lev
   {
     int attribs[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, 0 };
     wxWindow *p = NULL;
-    if (parent) { p = (wxWindow *)parent->_obj.get(); }
+    if (parent) { p = (wxWindow *)parent->_obj; }
     try {
       wxGLCanvas *canvas = new wxGLCanvas(p, -1, wxDefaultPosition, wxSize(width, height),
                             0, wxGLCanvasName, attribs);
-      _obj.reset(canvas);
+      _obj = canvas;
     }
     catch(...) {
       fprintf(stderr, "canvas: allocation error");
@@ -107,7 +107,7 @@ namespace lev
   void canvas::set2d()
   {
     int w, h;
-    ((wxGLCanvas *)_obj.get())->GetSize(&w, &h);
+    ((wxGLCanvas *)_obj)->GetSize(&w, &h);
     this->setcurrent();
     glLoadIdentity();
     glOrtho(0, w, h, 0, -1, 1);
@@ -116,13 +116,13 @@ namespace lev
 
   void canvas::setcurrent()
   {
-    ((wxGLCanvas *)_obj.get())->SetCurrent();
+    ((wxGLCanvas *)_obj)->SetCurrent();
   }
 
 
   void canvas::swap()
   {
-    ((wxGLCanvas *)_obj.get())->SwapBuffers();
+    ((wxGLCanvas *)_obj)->SwapBuffers();
   }
 }
 

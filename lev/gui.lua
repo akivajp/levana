@@ -51,7 +51,8 @@ end
 -- begin 'frame' class rewrapping
 class 'frame' (lev.frame)
 
-function frame:__init(...)
+
+function frame.new(...)
   local c = util.merge({}, lev.cfg.defaults, ...)
   c.p = c.parent or c.p or nil
   c.t = c.title  or c.t or "Levana Application"
@@ -65,8 +66,9 @@ function frame:__init(...)
   else
     c.s = lev.cfg.frame_style(c.s)
   end
-  lev.frame.__init(self, c.p, c.t, c.w, c.h, c.s)
+  return lev.frame.new(c.p, c.t, c.w, c.h, c.s)
 end
+
 
 function frame:setmenubar(mb)
   lev.frame.setmenubar(self, mb)

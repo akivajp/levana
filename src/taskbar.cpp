@@ -31,7 +31,7 @@ namespace lev
   {
     try {
       myTaskBarIcon *systray = new myTaskBarIcon();
-      _obj.reset(systray);
+      _obj = systray;
       seticon(icon::levana_icon(), "Levana Application");
     }
     catch (...) {
@@ -42,19 +42,19 @@ namespace lev
 
   bool systray::seticon(const icon& i, const char *tooltip)
   {
-    myTaskBarIcon *tray = (myTaskBarIcon *)_obj.get();
+    myTaskBarIcon *tray = (myTaskBarIcon *)_obj;
     return tray->SetIcon(*((wxIcon*)i._obj.get()), wxString(tooltip, wxConvUTF8));
   }
 
   void systray::setmenu(menu *m)
   {
-    myTaskBarIcon *tray = (myTaskBarIcon *)_obj.get();
-    tray->SetRClickMenu((wxMenu *)m->_obj.get());
+    myTaskBarIcon *tray = (myTaskBarIcon *)_obj;
+    tray->SetRClickMenu((wxMenu *)m->_obj);
   }
 
   void systray::setonmenu(int id, luabind::object lua_func)
   {
-    ((myTaskBarIcon *)_obj.get())->Connect(id, wxEVT_COMMAND_MENU_SELECTED, lua_func);
+    ((myTaskBarIcon *)_obj)->Connect(id, wxEVT_COMMAND_MENU_SELECTED, lua_func);
   }
 }
 

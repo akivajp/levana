@@ -20,7 +20,8 @@ namespace lev
   class sizer : public base
   {
     protected:
-      inline sizer() : base() {}
+      sizer();
+      virtual ~sizer();
     public:
       void addctrl(control *c, int proportion = 0, int flag = 0, int border = 0);
       void addsizer(sizer *s, int proportion = 0, int flag = 0, int border = 0);
@@ -32,6 +33,10 @@ namespace lev
       static int ladd(lua_State *L);
       // friend classes
       friend class control;
+
+    protected:
+      bool _adopt;
+      void *_obj;
   };
 
   class hsizer : public sizer

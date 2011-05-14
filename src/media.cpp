@@ -23,10 +23,10 @@ namespace lev
   {
     try {
       wxWindow *p = NULL;
-      if (parent) { p = (wxWindow *)parent->_obj.get(); }
+      if (parent) { p = (wxWindow *)parent->_obj; }
       wxMediaCtrl *media = new wxMediaCtrl(p, -1, wxEmptyString, wxDefaultPosition, wxSize(width, height));
       _id = media->GetId();
-      _obj.reset(media);
+      _obj = media;
     }
     catch (...) {
       fprintf(stderr, "control: allocation error");
@@ -36,32 +36,32 @@ namespace lev
 
   size player::getbestsize()
   {
-    wxSize sz = ((wxMediaCtrl *)_obj.get())->GetBestSize();
+    wxSize sz = ((wxMediaCtrl *)_obj)->GetBestSize();
     return size(sz.GetWidth(), sz.GetHeight());
   }
 
   double player::getvolume()
   {
-    return ((wxMediaCtrl *)_obj.get())->GetVolume();
+    return ((wxMediaCtrl *)_obj)->GetVolume();
   }
 
   bool player::ispaused()
   {
-    if ( ((wxMediaCtrl *)_obj.get() )->GetState() == wxMEDIASTATE_PAUSED )
+    if ( ((wxMediaCtrl *)_obj)->GetState() == wxMEDIASTATE_PAUSED )
     { return true; }
     return false;
   }
 
   bool player::isplaying()
   {
-    if ( ((wxMediaCtrl *)_obj.get() )->GetState() == wxMEDIASTATE_PLAYING )
+    if ( ((wxMediaCtrl *)_obj)->GetState() == wxMEDIASTATE_PLAYING )
     { return true; }
     return false;
   }
 
   bool player::isstopped()
   {
-    if ( ((wxMediaCtrl *)_obj.get() )->GetState() == wxMEDIASTATE_STOPPED )
+    if ( ((wxMediaCtrl *)_obj)->GetState() == wxMEDIASTATE_STOPPED )
     { return true; }
     return false;
   }
@@ -70,32 +70,32 @@ namespace lev
   {
     wxString cwd = wxGetCwd();
     wxString path = cwd + wxT("/") + wxString(filename, wxConvUTF8);
-    return ((wxMediaCtrl *)_obj.get())->Load(path);
+    return ((wxMediaCtrl *)_obj)->Load(path);
   }
 
   bool player::loaduri(const char *uri)
   {
-    return ((wxMediaCtrl *)_obj.get())->LoadURI(wxString(uri, wxConvUTF8));
+    return ((wxMediaCtrl *)_obj)->LoadURI(wxString(uri, wxConvUTF8));
   }
 
   bool player::pause()
   {
-    return ((wxMediaCtrl *)_obj.get())->Pause();
+    return ((wxMediaCtrl *)_obj)->Pause();
   }
 
   bool player::play()
   {
-    return ((wxMediaCtrl *)_obj.get())->Play();
+    return ((wxMediaCtrl *)_obj)->Play();
   }
 
   bool player::setvolume(double vol)
   {
-    return ((wxMediaCtrl *)_obj.get())->SetVolume(vol);
+    return ((wxMediaCtrl *)_obj)->SetVolume(vol);
   }
 
   bool player::stop()
   {
-    return ((wxMediaCtrl *)_obj.get())->Stop();
+    return ((wxMediaCtrl *)_obj)->Stop();
   }
 }
 

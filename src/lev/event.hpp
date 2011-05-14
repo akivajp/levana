@@ -11,18 +11,17 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "base.hpp"
+#include "sizer.hpp"
 
 namespace luabind { class object; }
 
 namespace lev
 {
-  class sizer;
-
   class control : public base
   {
     protected:
-      inline control() : base(), _id(0) {}
-      inline ~control() {}
+      control();
+      virtual ~control();
     public:
       virtual void connect(int type, luabind::object lua_func)
       { throw "control: derived connect method has not been implemented"; }
@@ -30,6 +29,7 @@ namespace lev
       { throw "control: derived setonkeydown method has not been implemented"; }
       virtual void setonmenu(int id, luabind::object lua_func)
       { throw "control: derived setonmenu method has not been implemented"; }
+      int getid();
       sizer *getsizer();
       inline bool hide() { return setshown(false); }
       bool isshown();
@@ -45,7 +45,10 @@ namespace lev
       friend class player;
       friend class sizer;
       friend class text;
-    private:
+
+    protected:
+      sizer _sz;
+      void *_obj;
       int _id;
   };
 
@@ -56,6 +59,8 @@ namespace lev
       event(void *e);
       int getkey() const;
       void skip();
+    protected:
+      boost::shared_ptr<void> _obj;
   };
 }
 

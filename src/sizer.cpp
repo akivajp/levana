@@ -13,32 +13,49 @@
 
 namespace lev
 {
+
+  sizer::sizer() : base(), _adopt(false), _obj(NULL)
+  { }
+
+  sizer::~sizer()
+  {
+    if (_adopt)
+    {
+      delete (wxSizer *)_obj;
+    }
+    else
+    {
+      // object is in wxWidgets control
+    }
+  }
+
   void sizer::addctrl(control *c, int proportion, int flag, int border)
   {
-    ((wxSizer *)_obj.get())->Add((wxWindow*)c->_obj.get(), proportion, flag, border);
+    ((wxSizer *)_obj)->Add((wxWindow*)c->_obj, proportion, flag, border);
   }
   void sizer::addsizer(sizer *s, int proportion, int flag, int border)
   {
-    ((wxSizer *)_obj.get())->Add((wxSizer*)s->_obj.get(), proportion, flag, border);
+    ((wxSizer *)_obj)->Add((wxSizer*)s->_obj, proportion, flag, border);
+    s->_adopt = false;
   }
   void sizer::addspace(int width, int height, int proportion, int flag, int border)
   {
-    ((wxSizer *)_obj.get())->Add(width, height, proportion, flag, border);
+    ((wxSizer *)_obj)->Add(width, height, proportion, flag, border);
   }
 
   void sizer::fit(control *c)
   {
-    ((wxSizer *)_obj.get())->Fit((wxWindow*)c->_obj.get());
+    ((wxSizer *)_obj)->Fit((wxWindow*)c->_obj);
   }
 
   void sizer::fitinside(control *c)
   {
-    ((wxSizer *)_obj.get())->FitInside((wxWindow *)c->_obj.get());
+    ((wxSizer *)_obj)->FitInside((wxWindow *)c->_obj);
   }
 
   void sizer::layout()
   {
-    ((wxSizer *)_obj.get())->Layout();
+    ((wxSizer *)_obj)->Layout();
   }
 
   // lua cfunctions
@@ -52,7 +69,8 @@ namespace lev
   {
     try {
       wxBoxSizer *s = new wxBoxSizer(wxHORIZONTAL);
-      _obj.reset(s);
+      _obj = s;
+      _adopt = true;
     }
     catch (...)
     {
@@ -65,7 +83,8 @@ namespace lev
   {
     try {
       wxBoxSizer *s = new wxBoxSizer(wxVERTICAL);
-      _obj.reset(s);
+      _obj = s;
+      _adopt = true;
     }
     catch (...)
     {

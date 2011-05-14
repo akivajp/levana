@@ -1,7 +1,7 @@
 CXX = g++
 SRC = app.cpp cfg.cpp draw.cpp entry.cpp event.cpp frame.cpp \
       gl.cpp gui.cpp icon.cpp image.cpp media.cpp menu.cpp prim.cpp \
-      sizer.cpp taskbar.cpp util.cpp
+      sizer.cpp sound.cpp taskbar.cpp util.cpp
 OBJS = $(SRC:%.cpp=%.o)
 OUT = a.out
 DLIB = lev.so
@@ -10,6 +10,7 @@ PCH = prec.h.gch
 WX_CXXFLAGS=`wx-config --cxxflags`
 WX_LIBS = `wx-config --libs std,media,gl` -lGLU
 CXXFLAGS = $(WX_CXXFLAGS) -fPIC
+#LIBS = $(WX_LIBS) -llua -lluabind -lvorbisfile
 LIBS = $(WX_LIBS) -llua -lluabind
 SHARED= -shared
 

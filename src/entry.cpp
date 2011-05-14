@@ -13,6 +13,7 @@
 
 #include <sstream>
 #include <boost/ref.hpp>
+#include <luabind/adopt_policy.hpp>
 
 void final_release()
 {
@@ -85,7 +86,7 @@ extern "C" {
     [
       class_<base>("base")
         .property("type", &base::gettype)
-        .property("isvalid", &base::isvalid)
+//        .property("isvalid", &base::isvalid)
     ];
 
 
@@ -102,6 +103,7 @@ extern "C" {
     // GUI control, event handling
     module(L, "lev")
     [
+      def("getapp", &application::getapp),
       // base class
       class_<control, base>("control")
         .def("connect", &control::connect)
@@ -109,14 +111,15 @@ extern "C" {
         .def("setonkeydown", &control::setonkeydown)
         .def("setonmenu", &control::setonmenu)
         .def("show", &control::show)
+        .property("id", &control::getid)
         .property("isvalid", &control::isvalid)
         .property("isshown", &control::isshown, &control::setshown)
         .property("sizer", &control::getsizer, &control::setsizer),
       // derived classes
       class_<application, control>("application")
-        .def(constructor<>())
         .def("autoloop", &application::autoloop)
         .def("autoloop", &application::autoloop_with)
+        .def("wait", &application::wait)
         .def("yield", &application::yield)
         .property("name", &application::getname, &application::setname)
         .property("top",  &application::gettop,  &application::settop)
@@ -137,7 +140,6 @@ extern "C" {
         .def("setcurrent", &canvas::setcurrent)
         .def("swap", &canvas::swap),
       class_<frame, control>("frame")
-        .def(constructor<frame*, const char*, int, int, long>())
         .def("close", &frame::close)
         .def("close", &frame::close_noforce)
         .def("fit", &frame::fit)
@@ -145,6 +147,7 @@ extern "C" {
         .property("title", &frame::gettitle, &frame::settitle)
         .scope
         [
+          def("new", &frame::create, adopt(result) ),
           def("setmenubar", &frame::setmenubar)
         ],
       class_<htmlview, control>("htmlview")
@@ -156,7 +159,9 @@ extern "C" {
         .def(constructor<control*,int,int>())
         .def("loadlocal", &player::loadlocal)
         .def("loaduri", &player::loaduri)
+        .def("pause", &player::pause)
         .def("play", &player::play)
+        .def("stop", &player::stop)
         .property("bestsize", &player::getbestsize)
         .property("ispaused", &player::ispaused)
         .property("isplaying", &player::isplaying)
@@ -242,7 +247,7 @@ extern "C" {
 
     module(L, "lev")
     [
-      class_<bitmap>("bitmap")
+      class_<bitmap, base>("bitmap")
         .def(constructor<int,int>())
         .def(constructor<const char *>())
         .def("drawcircle", &bitmap::drawcircle)
@@ -255,8 +260,19 @@ extern "C" {
         .property("width", &bitmap::getw)
     ];
 
-    register_to(L, globals(L)["package"]["preload"], "gl", luaopen_gl);
+    module(L, "lev")
+    [
+      namespace_("media")
+      [
+        class_<sound, base>("sound")
+          .scope
+          [
+            def("play", &sound::play)
+          ]
+      ]
+    ];
 
+    register_to(L, globals(L)["package"]["preload"], "gl", luaopen_gl);
     return 1;
   }
 }
