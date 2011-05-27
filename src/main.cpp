@@ -35,6 +35,8 @@ int main(int argc, char **argv)
   lua_getfield(L, -1, "preload");
   lua_pushcfunction(L, &luaopen_debug);
   lua_setfield(L, -2, "debug");
+  lua_pushcfunction(L, &luaopen_io);
+  lua_setfield(L, -2, "io");
   lua_pushcfunction(L, &luaopen_lev);
   lua_setfield(L, -2, "lev");
   lua_pushcfunction(L, &luaopen_os);

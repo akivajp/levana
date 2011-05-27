@@ -5,6 +5,8 @@ syntax: glob
 bin/
 lib/
 src/*.a
+src/*.dll
+src/*.exe
 src/*.gch
 src/*.o
 src/*.out
@@ -13,6 +15,7 @@ src/tags
 
 ./*.mp3
 ./*.ogg
+./*.wav
 ./lev.so
-./
+./levana-win32-*
 

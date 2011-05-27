@@ -10,5 +10,5 @@
 -- dependency
 require 'lev'
 
-app = lev.getapp()
+app = lev.app.get()
 

@@ -30,7 +30,8 @@ namespace lev
       void setname(const char *name);
       void setonkeydown(luabind::object lua_func);
       void settop(frame *top);
-      void wait(int delay_in_msec);
+      bool sleep(int delay_in_msec);
+//      void wait(int delay_in_msec);
       bool yield();
       // static method
       static bool entry(lua_State *L, int argc, char **argv);

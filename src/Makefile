@@ -10,8 +10,7 @@ PCH = prec.h.gch
 WX_CXXFLAGS=`wx-config --cxxflags`
 WX_LIBS = `wx-config --libs std,media,gl` -lGLU
 CXXFLAGS = $(WX_CXXFLAGS) -fPIC
-#LIBS = $(WX_LIBS) -llua -lluabind -lvorbisfile
-LIBS = $(WX_LIBS) -llua -lluabind
+LIBS = $(WX_LIBS) -llua -lluabind -lallegro -lallegro_acodec -lallegro_audio
 SHARED= -shared
 
 all: pch tags bin lib

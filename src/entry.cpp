@@ -103,7 +103,6 @@ extern "C" {
     // GUI control, event handling
     module(L, "lev")
     [
-      def("getapp", &application::getapp),
       // base class
       class_<control, base>("control")
         .def("connect", &control::connect)
@@ -116,15 +115,18 @@ extern "C" {
         .property("isshown", &control::isshown, &control::setshown)
         .property("sizer", &control::getsizer, &control::setsizer),
       // derived classes
-      class_<application, control>("application")
+      class_<application, control>("app")
         .def("autoloop", &application::autoloop)
         .def("autoloop", &application::autoloop_with)
-        .def("wait", &application::wait)
+        .def("sleep", &application::sleep)
         .def("yield", &application::yield)
         .property("name", &application::getname, &application::setname)
+        .property("title", &application::getname, &application::setname)
         .property("top",  &application::gettop,  &application::settop)
+        .property("topwindow",  &application::gettop,  &application::settop)
         .scope
         [
+          def("get", &application::getapp),
           def("msgbox", &application::msgbox),
           def("msgbox", &application::msgbox_nocap)
         ],
@@ -262,17 +264,43 @@ extern "C" {
 
     module(L, "lev")
     [
-      namespace_("media")
+      namespace_("sound")
       [
-        class_<sound, base>("sound")
+        class_<channel, base>("channel")
+          .def("clean", &channel::clean)
+          .def("load", &channel::load)
+          .def("open", &channel::open)
+          .def("pause", &channel::pause)
+          .def("play", &channel::play)
+          .property("id", &channel::get_id)
+          .property("is_playing", &channel::get_playing, &channel::set_playing)
+          .property("isplaying", &channel::get_playing, &channel::set_playing)
+          .property("is_valid", &channel::is_valid)
+          .property("isvalid", &channel::is_valid),
+        class_<mixer, base>("mixer")
+          .def("get_channel", &mixer::get_channel)
+          .def("pause", &mixer::pause)
+          .def("play", &mixer::play)
+          .def("__call", &mixer::get_channel)
+          .property("is_playing", &mixer::get_playing, &mixer::set_playing)
+          .property("isplaying", &mixer::get_playing, &mixer::set_playing)
           .scope
           [
-            def("play", &sound::play)
-          ]
+            def("create", &mixer::create, adopt(result))
+          ],
+        def("init", &sound::init),
+        def("play", &sound::play),
+        def("stop", &sound::stop)
       ]
     ];
 
+    module(L, "lev")
+    [
+      def("get_app", &application::getapp)
+    ];
+
     register_to(L, globals(L)["package"]["preload"], "gl", luaopen_gl);
+//    application::getapp();
     return 1;
   }
 }

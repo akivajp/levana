@@ -29,7 +29,7 @@ local class = function(name)
 end
 
 -- porting
-msgbox = lev.application.msgbox
+msgbox = lev.app.msgbox
 
 -------------------------------------------------------------------
 -- begin 'canvas' class rewrapping

@@ -87,7 +87,8 @@ namespace lev
 
   bool myApp::Yield()
   {
-    while(!this->Pending()) { this->ProcessIdle(); }
+    if (!this->Pending()) { this->ProcessIdle(); }
+//    while(!this->Pending()) { this->ProcessIdle(); }
     return wxTheApp->Yield(true);
   }
 }
@@ -154,10 +155,19 @@ namespace lev
     frame::settop(top);
   }
 
-  void application::wait(int delay_in_msec)
+  bool application::sleep(int delay_in_msec)
   {
-    wxSleep(delay_in_msec);
+    if (delay_in_msec < 0) { return false; }
+    wxStopWatch sw;
+    sw.Start();
+    while (sw.Time() < delay_in_msec) {}
+    return true;
   }
+
+//  void application::wait(int delay_in_msec)
+//  {
+//    wxSleep(delay_in_msec);
+//  }
 
   bool application::yield()
   {
