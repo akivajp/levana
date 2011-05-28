@@ -9,7 +9,7 @@
 
 -- dependency
 require 'lev'
-lev.load_cfg()
+--lev.load_cfg()
 local lev = lev
 
 -- modulize
@@ -23,6 +23,4 @@ defaults = {
   x = -1,
   y = -1,
 }
-
-frame_style = lev.cfg.frame_style
 

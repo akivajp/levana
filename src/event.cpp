@@ -15,7 +15,7 @@
 namespace lev
 {
 
-  control::control() : base(), _id(0), _obj(NULL), _sz()
+  control::control() : base(), _id(0), _obj(NULL), _sz(), _managing(false)
   { }
 
   control::~control()
@@ -24,8 +24,9 @@ namespace lev
     {
       // object is in wxWidgets control, and already deleted
     }
-    else
+    else if (_managing)
     {
+      // the object is under self management
       delete (wxWindow *)_obj;
     }
   }

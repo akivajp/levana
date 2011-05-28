@@ -10,6 +10,7 @@
 
 #include "prec.h"
 #include "lev/draw.hpp"
+#include "lev/util.hpp"
 
 #include <wx/glcanvas.h>
 #include <wx/rawbmp.h>
@@ -18,25 +19,7 @@
 
 namespace lev
 {
-  canvas::canvas(control *parent, int width, int height) : control()
-  {
-    int attribs[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, 0 };
-    wxWindow *p = NULL;
-    if (parent) { p = (wxWindow *)parent->_obj; }
-    try {
-      wxGLCanvas *canvas = new wxGLCanvas(p, -1, wxDefaultPosition, wxSize(width, height),
-                            0, wxGLCanvasName, attribs);
-      _obj = canvas;
-    }
-    catch(...) {
-      fprintf(stderr, "canvas: allocation error");
-      return;
-    }
-
-    this->setcurrent();
-    glViewport(0, 0, width, height);
-  }
-
+  canvas::~canvas() { }
 
   void canvas::blendmode(bool enable)
   {
@@ -63,6 +46,63 @@ namespace lev
     glClearColor(r / 255.0, g / 255.0, b / 255.0, 1.0);
   }
 
+  canvas* canvas::create(control *parent, int width, int height)
+  {
+    canvas *cv = new canvas();
+    if (cv == NULL) { return NULL; }
+    int attribs[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, 0 };
+    wxWindow *p = NULL;
+    if (parent) { p = (wxWindow *)parent->_obj; }
+    wxGLCanvas *canvas =
+      new wxGLCanvas(p, -1, wxDefaultPosition, wxSize(width, height),
+                     0, wxGLCanvasName, attribs);
+    if (canvas == NULL) { goto Error; }
+    cv->_obj = canvas;
+    if (p == NULL) { cv->_managing = true; }
+    else { cv->_managing = false; }
+    cv->setcurrent();
+    glViewport(0, 0, width, height);
+    return cv;
+
+    Error:
+    delete cv;
+    return NULL;
+  }
+
+  int canvas::create_l(lua_State *L)
+  {
+    using namespace luabind;
+    object p;
+    int w = -1, h = -1;
+
+    int n = lua_gettop(L);
+    lua_pushcfunction(L, &util::merge);
+    newtable(L).push(L);
+    for (int i = 1; i <= n; i++)
+    {
+      object(from_stack(L, i)).push(L);
+    }
+    lua_call(L, n + 1, 1);
+    object t(from_stack(L, -1));
+    lua_remove(L, -1);
+
+    if (t["parent"]) { p = t["parent"]; }
+    else if (t["p"]) { p = t["p"]; }
+    else if (t["udata"]) { p = t["udata"]; }
+
+    if (t["width"]) { w = object_cast<int>(t["width"]); }
+    else if (t["w"]) { w = object_cast<int>(t["w"]); }
+    else if (t["num1"]) { w = object_cast<int>(t["num1"]); }
+
+    if (t["height"]) { h = object_cast<int>(t["height"]); }
+    else if (t["h"]) { h = object_cast<int>(t["h"]); }
+    else if (t["num2"]) { h = object_cast<int>(t["num2"]); }
+
+    object func = globals(L)["lev"]["gui"]["canvas"]["create_c"];
+    object result = func(p, w, h);
+    result.push(L);
+    return 1;
+  }
 
   bool canvas::drawbitmap(bitmap *bmp, int x, int y)
   {

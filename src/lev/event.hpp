@@ -47,6 +47,7 @@ namespace lev
       friend class text;
 
     protected:
+      bool _managing;
       sizer _sz;
       void *_obj;
       int _id;

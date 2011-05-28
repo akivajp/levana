@@ -14,15 +14,21 @@
 #include "event.hpp"
 #include "image.hpp"
 
+#include <lua.h>
+
 namespace lev
 {
   class canvas : public control
   {
+    private:
+      canvas() : control() {}
     public:
-      canvas(control *parent, int width, int height);
+      ~canvas();
       void blendmode(bool enable);
       void clear();
       void clearcolor(unsigned char r, unsigned char g, unsigned char b);
+      static canvas* create(control *parent, int width, int height);
+      static int create_l(lua_State *L);
       bool drawbitmap(bitmap *bmp, int x, int y);
       void flush();
       void line(int x1, int y1, int x2, int y2);

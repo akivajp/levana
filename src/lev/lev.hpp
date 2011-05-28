@@ -13,7 +13,6 @@
 
 
 #include "app.hpp"
-#include "cfg.hpp"
 #include "draw.hpp"
 #include "entry.hpp"
 #include "event.hpp"

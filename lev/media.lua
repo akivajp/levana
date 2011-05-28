@@ -15,7 +15,7 @@ end
 
 -------------------------------------------------------------------
 -- begin 'player' class rewrapping
-class 'player' (lev.player)
+class 'player' (lev.gui.player)
 
 function player:__init(conf)
   local c = conf

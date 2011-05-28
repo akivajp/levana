@@ -161,8 +161,6 @@ extern "C"
         def("PushMatrix", (void(*)())&glPushMatrix),
         def("Rectd", (void(*)(double,double,double,double))&glRectd),
         def("Rectf", (void(*)(float,float,float,float))&glRectf),
-        def("Recti", (void(*)(int,int,int,int))&glRecti),
-        def("Rects", (void(*)(short int,short int,short int,short int))&glRects),
         def("Rotated", (void(*)(double,double,double,double))&glRotated),
         def("Rotatef", (void(*)(float,float,float,float))&glRotatef),
         def("Scaled", (void(*)(double,double,double))&glScaled),
@@ -171,16 +169,10 @@ extern "C"
         def("Translatef", (void(*)(float,float,float))&glTranslatef),
         def("Vertex2d", (void(*)(double,double))&glVertex2d),
         def("Vertex2f", (void(*)(float,float))&glVertex2f),
-        def("Vertex2i", (void(*)(int,int))&glVertex2i),
-        def("Vertex2s", (void(*)(short int,short int))&glVertex2s),
         def("Vertex3d", (void(*)(double,double,double))&glVertex3d),
         def("Vertex3f", (void(*)(float,float,float))&glVertex3f),
-        def("Vertex3i", (void(*)(int,int,int))&glVertex3i),
-        def("Vertex3s", (void(*)(short int,short int,short int))&glVertex3s),
         def("Vertex4d", (void(*)(double,double,double,double))&glVertex4d),
         def("Vertex4f", (void(*)(float,float,float,float))&glVertex4f),
-        def("Vertex4i", (void(*)(int,int,int,int))&glVertex4i),
-        def("Vertex4s", (void(*)(short int,short int,short int,short int))&glVertex4s),
         def("Viewport", (void(*)(int,int,int,int))&glViewport)
       ]
     ];

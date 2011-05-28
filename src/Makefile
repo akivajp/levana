@@ -1,5 +1,5 @@
 CXX = g++
-SRC = app.cpp cfg.cpp draw.cpp entry.cpp event.cpp frame.cpp \
+SRC = app.cpp draw.cpp entry.cpp event.cpp frame.cpp \
       gl.cpp gui.cpp icon.cpp image.cpp media.cpp menu.cpp prim.cpp \
       sizer.cpp sound.cpp taskbar.cpp util.cpp
 OBJS = $(SRC:%.cpp=%.o)
@@ -35,7 +35,7 @@ distclean: clean
 tags: $(SRC) $(SRC:%.cpp=lev/%.hpp)
 	ctags -R .
 
-$(PCH): prec.h lev/lev.hpp
+$(PCH): prec.h
 	$(CXX) $(CXXFLAGS) $<
 
 $(OUT): $(OBJS) main.o
@@ -49,7 +49,6 @@ $(DLIB): $(OBJS)
 	$(CXX) $(SHARED) -o $(DLIB) $(OBJS) $(LIBS)
 
 app.o: app.cpp lev/app.hpp
-cfg.o: cfg.cpp lev/cfg.hpp
 draw.o: draw.cpp lev/draw.hpp lev/frame.hpp
 entry.o: entry.cpp $(SRC:%.cpp=lev/%.hpp) lev/event.hpp
 event.o: event.cpp
@@ -63,6 +62,7 @@ media.o: media.cpp lev/media.hpp
 menu.o: menu.cpp lev/menu.hpp lev/icon.hpp
 prim.o: prim.cpp lev/prim.hpp
 sizer.o: sizer.cpp lev/sizer.hpp
+sound.o: sound.cpp lev/sound.hpp
 taskbar.o: taskbar.cpp lev/taskbar.hpp
 util.o: util.cpp lev/util.hpp
 %.o: %.cpp

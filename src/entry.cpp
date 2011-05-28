@@ -75,8 +75,6 @@ extern "C" {
     lua_entry(L);
 
     luabind::object lev = globals(L)["lev"] = newtable(L);
-    // configuration
-    register_to(L, lev, "load_cfg", &cfg::luaopen_cfg);
     // usable functions
     register_to(L, lev, "load_util", &util::luaopen_util);
 
@@ -86,7 +84,6 @@ extern "C" {
     [
       class_<base>("base")
         .property("type", &base::gettype)
-//        .property("isvalid", &base::isvalid)
     ];
 
 
@@ -103,17 +100,95 @@ extern "C" {
     // GUI control, event handling
     module(L, "lev")
     [
-      // base class
-      class_<control, base>("control")
-        .def("connect", &control::connect)
-        .def("hide", &control::hide)
-        .def("setonkeydown", &control::setonkeydown)
-        .def("setonmenu", &control::setonmenu)
-        .def("show", &control::show)
-        .property("id", &control::getid)
-        .property("isvalid", &control::isvalid)
-        .property("isshown", &control::isshown, &control::setshown)
-        .property("sizer", &control::getsizer, &control::setsizer),
+      namespace_("gui")
+      [
+        def("msgbox", &application::msgbox),
+        def("msgbox", &application::msgbox_nocap),
+        // base class
+        class_<control, base>("control")
+          .def("connect", &control::connect)
+          .def("hide", &control::hide)
+          .def("setonkeydown", &control::setonkeydown)
+          .def("setonmenu", &control::setonmenu)
+          .def("show", &control::show)
+          .property("id", &control::getid)
+          .property("isvalid", &control::isvalid)
+          .property("isshown", &control::isshown, &control::setshown)
+          .property("sizer", &control::getsizer, &control::setsizer),
+        class_<canvas, control>("canvas")
+          .def("blendmode", &canvas::blendmode)
+          .def("clear", &canvas::clear)
+          .def("clearcolor", &canvas::clearcolor)
+          .def("draw", &canvas::drawbitmap)
+          .def("flush", &canvas::flush)
+          .def("line",  &canvas::line)
+          .def("set2d", &canvas::set2d)
+          .def("setcurrent", &canvas::setcurrent)
+          .def("swap", &canvas::swap)
+          .scope
+          [
+            def("create_c", &canvas::create, adopt(result))
+          ],
+        class_<frame, control>("frame")
+          .def("close", &frame::close)
+          .def("close", &frame::close_noforce)
+          .def("fit", &frame::fit)
+          .property("status", &frame::getstatus, &frame::setstatus)
+          .property("title", &frame::gettitle, &frame::settitle)
+          .scope
+          [
+            def("create_c", &frame::create, adopt(result) ),
+            def("set_menubar", &frame::set_menubar),
+            def("setmenubar", &frame::set_menubar)
+          ],
+        class_<htmlview, control>("htmlview")
+          .def(constructor<control*, int, int>())
+          .def("loadpage", &htmlview::loadpage)
+          .def("setpage", &htmlview::setpage)
+          .def("totext", &htmlview::totext),
+        class_<player, control>("player")
+          .def(constructor<control*,int,int>())
+          .def("loadlocal", &player::loadlocal)
+          .def("loaduri", &player::loaduri)
+          .def("pause", &player::pause)
+          .def("play", &player::play)
+          .def("stop", &player::stop)
+          .property("bestsize", &player::getbestsize)
+          .property("ispaused", &player::ispaused)
+          .property("isplaying", &player::isplaying)
+          .property("isstopped", &player::isstopped)
+          .property("volume", &player::getvolume, &player::setvolume),
+        class_<menu, control>("menu")
+          .def(constructor<>())
+          .def(constructor<const char *>())
+          .scope
+          [
+            def("append", &menu::append)
+          ],
+        class_<menubar, control>("menubar")
+          .def(constructor<>())
+          .scope
+          [
+            def("append", &menubar::append)
+          ],
+        class_<systray, control>("systray")
+          .def(constructor<>())
+          .def("seticon", &systray::seticon)
+          .scope
+          [
+            def("setmenu", &systray::setmenu)
+          ],
+        class_<text, control>("text")
+          .def(constructor<control*,int,int,const char*>())
+          .property("value", &text::getvalue, &text::setvalue)
+      ]
+    ];
+    register_to(L, globals(L)["lev"]["gui"]["canvas"], "create", &canvas::create_l);
+    register_to(L, globals(L)["lev"]["gui"]["frame"], "create", &frame::create_l);
+
+    // Application management module
+    module(L, "lev")
+    [
       // derived classes
       class_<application, control>("app")
         .def("autoloop", &application::autoloop)
@@ -126,72 +201,8 @@ extern "C" {
         .property("topwindow",  &application::gettop,  &application::settop)
         .scope
         [
-          def("get", &application::getapp),
-          def("msgbox", &application::msgbox),
-          def("msgbox", &application::msgbox_nocap)
-        ],
-      class_<canvas, control>("canvas")
-        .def(constructor<frame*, int, int>())
-        .def("blendmode", &canvas::blendmode)
-        .def("clear", &canvas::clear)
-        .def("clearcolor", &canvas::clearcolor)
-        .def("draw", &canvas::drawbitmap)
-        .def("flush", &canvas::flush)
-        .def("line",  &canvas::line)
-        .def("set2d", &canvas::set2d)
-        .def("setcurrent", &canvas::setcurrent)
-        .def("swap", &canvas::swap),
-      class_<frame, control>("frame")
-        .def("close", &frame::close)
-        .def("close", &frame::close_noforce)
-        .def("fit", &frame::fit)
-        .property("status", &frame::getstatus, &frame::setstatus)
-        .property("title", &frame::gettitle, &frame::settitle)
-        .scope
-        [
-          def("new", &frame::create, adopt(result) ),
-          def("setmenubar", &frame::setmenubar)
-        ],
-      class_<htmlview, control>("htmlview")
-        .def(constructor<control*, int, int>())
-        .def("loadpage", &htmlview::loadpage)
-        .def("setpage", &htmlview::setpage)
-        .def("totext", &htmlview::totext),
-      class_<player, control>("player")
-        .def(constructor<control*,int,int>())
-        .def("loadlocal", &player::loadlocal)
-        .def("loaduri", &player::loaduri)
-        .def("pause", &player::pause)
-        .def("play", &player::play)
-        .def("stop", &player::stop)
-        .property("bestsize", &player::getbestsize)
-        .property("ispaused", &player::ispaused)
-        .property("isplaying", &player::isplaying)
-        .property("isstopped", &player::isstopped)
-        .property("volume", &player::getvolume, &player::setvolume),
-      class_<menu, control>("menu")
-        .def(constructor<>())
-        .def(constructor<const char *>())
-        .scope
-        [
-          def("append", &menu::append)
-        ],
-      class_<menubar, control>("menubar")
-        .def(constructor<>())
-        .scope
-        [
-          def("append", &menubar::append)
-        ],
-      class_<systray, control>("systray")
-        .def(constructor<>())
-        .def("seticon", &systray::seticon)
-        .scope
-        [
-          def("setmenu", &systray::setmenu)
-        ],
-      class_<text, control>("text")
-        .def(constructor<control*,int,int,const char*>())
-        .property("value", &text::getvalue, &text::setvalue)
+          def("get", &application::getapp)
+        ]
     ];
 
     // sizers

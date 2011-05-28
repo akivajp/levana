@@ -28,47 +28,10 @@ local class = function(name)
   return deriver
 end
 
--- porting
-msgbox = lev.app.msgbox
-
--------------------------------------------------------------------
--- begin 'canvas' class rewrapping
-class 'canvas' (lev.canvas)
-
-function canvas:__init(...)
-  local c = util.merge(...)
-  c.p = c.p or c.parent
-  c.w = c.w or c.width or -1
-  c.h = c.h or c.height or -1
-  lev.canvas.__init(self, c.p, c.w, c.h)
-end
-
--- end 'canvas' class rewrapping
--------------------------------------------------------------------
-
 
 -------------------------------------------------------------------
 -- begin 'frame' class rewrapping
-class 'frame' (lev.frame)
-
-
-function frame.new(...)
-  local c = util.merge({}, lev.cfg.defaults, ...)
-  c.p = c.parent or c.p or nil
-  c.t = c.title  or c.t or "Levana Application"
-  c.h = c.height or c.h or -1
-  c.w = c.width  or c.w or -1
-  c.s = c.style  or c.s
-  if (c.s == nil) then
-    c.s = -1
-  elseif (type(c.s) == 'table') then
-    c.s = lev.cfg.frame_style(unpack(c.s))
-  else
-    c.s = lev.cfg.frame_style(c.s)
-  end
-  return lev.frame.new(c.p, c.t, c.w, c.h, c.s)
-end
-
+class 'frame' (lev.gui.frame)
 
 function frame:setmenubar(mb)
   lev.frame.setmenubar(self, mb)
@@ -89,7 +52,7 @@ end
 
 -------------------------------------------------------------------
 -- begin 'menu' class rewrapping
-class 'menu' (lev.menu)
+class 'menu' (lev.gui.menu)
 
 function menu:__init(title)
   lev.menu.__init(self, title)
@@ -111,7 +74,7 @@ end
 
 -------------------------------------------------------------------
 -- begin 'menubar' class rewrapping
-class 'menubar' (lev.menubar)
+class 'menubar' (lev.gui.menubar)
 
 function menubar:__init()
   lev.menubar.__init(self)
@@ -164,7 +127,7 @@ vsizer.add = sizer.add
 
 -------------------------------------------------------------------
 -- begin 'systray' class rewrapping
-class 'systray' (lev.systray)
+class 'systray' (lev.gui.systray)
 
 function systray:__init()
   lev.systray.__init(self)
@@ -187,7 +150,7 @@ end
 
 -------------------------------------------------------------------
 -- begin 'text' class rewrapping
-class 'text' (lev.text)
+class 'text' (lev.gui.text)
 
 function text:__init(conf)
   local c = conf
@@ -196,7 +159,7 @@ function text:__init(conf)
   c.w = c.width  or c.w or -1
   c.h = c.height or c.h or -1
   c.v = c.value  or c.v or ""
-  lev.text.__init(self, c.p, c.w, c.h, c.v)
+  lev.gui.text.__init(self, c.p, c.w, c.h, c.v)
 end
 
 -- end of 'text' class rewrapping

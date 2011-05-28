@@ -82,6 +82,8 @@ namespace lev
       if (parent) { p = (wxWindow *)parent->_obj; }
       if (val) { val = wxString(value, wxConvUTF8); }
       myTextCtrl *text = new myTextCtrl(p, width, height, val);
+      if (p == NULL) { _managing = true; }
+      else { _managing = false; }
       _id = text->GetId();
       _obj = text;
     }

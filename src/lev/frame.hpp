@@ -14,6 +14,7 @@
 #include "icon.hpp"
 #include "event.hpp"
 #include <string>
+#include <lua.h>
 
 namespace luabind { class object; }
 
@@ -23,14 +24,19 @@ namespace lev
   class frame : public control
   {
     protected:
-      inline frame() : control(), status(NULL) { }
+      frame() : control(), status(NULL) { }
     public:
-      virtual inline ~frame() { }
+      ~frame() { }
+      static frame *gettop();
+      static void settop(frame *top);
       bool close(bool force);
       bool close_noforce() { return close(false); }
+      static frame *create(frame *parent, const char *title, int w, int h, long style);
+      static int create_l(lua_State *L);
       void fit();
       void seticon(const icon &i);
-      void setmenubar(menubar *mb);
+      void set_menubar(menubar *mb);
+      static int set_menubar_l(lua_State *L);
       void setonmenu(int id, luabind::object lua_func);
       // statusbar property
       const char *getstatus();
@@ -38,10 +44,6 @@ namespace lev
       // title property
       const char *gettitle();
       void settitle(const char *title);
-      // static function
-      static frame *create(frame *parent, const char *title, int w = -1, int h = -1, long style = -1);
-      static frame *gettop();
-      static void settop(frame *top);
     private:
       const char *status;
   };

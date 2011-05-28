@@ -21,7 +21,7 @@
 namespace lev
 {
 
-  class MyChannel
+  class myChannel
   {
     public:
 
@@ -31,13 +31,13 @@ namespace lev
         SOUND_STREAM,
       };
 
-      MyChannel() : type(0), snd(NULL), inst(NULL), mixer(NULL) {}
+      myChannel() : type(0), snd(NULL), inst(NULL), mixer(NULL) {}
 
-      ~MyChannel() {}
+      ~myChannel() {}
 
-      MyChannel *Create()
+      myChannel *Create()
       {
-        MyChannel *ch = new MyChannel;
+        myChannel *ch = new myChannel;
         if (ch == NULL) { return NULL; }
         return ch;
       }
@@ -158,7 +158,7 @@ namespace lev
 
   channel::~channel()
   {
-    if (_obj) { delete (MyChannel *)_obj; }
+    if (_obj) { delete (myChannel *)_obj; }
   }
 
   // static member function
@@ -167,7 +167,7 @@ namespace lev
   {
     channel *ch = new channel;
     if (ch == NULL) { return NULL; }
-    MyChannel *obj = new MyChannel;
+    myChannel *obj = new myChannel;
     if (obj == NULL) { goto Error; }
     ch->_obj = obj;
     ch->_id = id;
@@ -181,44 +181,44 @@ namespace lev
 
   bool channel::clean()
   {
-    return ((MyChannel *)_obj)->Clean();
+    return ((myChannel *)_obj)->Clean();
   }
 
   bool channel::is_valid()
   {
-    if ( ((MyChannel *)_obj)->snd == NULL ) { return false; }
+    if ( ((myChannel *)_obj)->snd == NULL ) { return false; }
     return true;
   }
 
   bool channel::load(const char *filename)
   {
-    return ((MyChannel *)_obj)->LoadSample(filename);
+    return ((myChannel *)_obj)->LoadSample(filename);
   }
 
   bool channel::open(const char *filename)
   {
-    return ((MyChannel *)_obj)->OpenStream(filename);
+    return ((myChannel *)_obj)->OpenStream(filename);
   }
 
   bool channel::get_playing()
   {
-    return ((MyChannel *)_obj)->GetPlaying();
+    return ((myChannel *)_obj)->GetPlaying();
   }
 
   bool channel::set_playing(bool play)
   {
-    return ((MyChannel *)_obj)->SetPlaying(play);
+    return ((myChannel *)_obj)->SetPlaying(play);
   }
 
 
-  class MyMixer
+  class myMixer
   {
     public:
 
 
-      MyMixer() : voice(NULL), mixer(NULL), channels() {}
+      myMixer() : voice(NULL), mixer(NULL), channels() {}
 
-      ~MyMixer()
+      ~myMixer()
       {
         std::map<unsigned, channel *>::iterator i;
         for (i = channels.begin(); i != channels.end(); i++)
@@ -236,9 +236,9 @@ namespace lev
         }
       }
 
-      static MyMixer *Create()
+      static myMixer *Create()
       {
-        MyMixer *mx = new MyMixer;
+        myMixer *mx = new myMixer;
         if (mx == NULL) { return NULL; }
 
         mx->mixer = al_create_mixer(44100, ALLEGRO_AUDIO_DEPTH_FLOAT32, ALLEGRO_CHANNEL_CONF_2);
@@ -329,7 +329,7 @@ namespace lev
 
   mixer::~mixer()
   {
-    delete (MyMixer *)_obj;
+    delete (myMixer *)_obj;
   }
 
   // static methods
@@ -339,7 +339,7 @@ namespace lev
     if (not sound::init()) { return NULL; }
     mixer *mx = new mixer;
     if (mx == NULL) { return NULL; }
-    mx->_obj = MyMixer::Create();
+    mx->_obj = myMixer::Create();
     if (mx->_obj == NULL) { goto Error; }
 
     return mx;
@@ -354,17 +354,17 @@ namespace lev
 
   channel* mixer::get_channel(int channel_num)
   {
-    return ((MyMixer *)_obj)->GetChannel(channel_num);
+    return ((myMixer *)_obj)->GetChannel(channel_num);
   }
 
   bool mixer::get_playing()
   {
-    return ((MyMixer *)_obj)->GetPlaying();
+    return ((myMixer *)_obj)->GetPlaying();
   }
 
   bool mixer::set_playing(bool play)
   {
-    return ((MyMixer *)_obj)->SetPlaying(play);
+    return ((myMixer *)_obj)->SetPlaying(play);
   }
 
   sound::sound() : _items()
