@@ -9,7 +9,7 @@
 
 -- dependency
 require 'lev'
-require 'lev/cfg'
+--require 'lev/cfg'
 require 'lev/util'
 
 local _G = _G
@@ -27,67 +27,6 @@ local class = function(name)
   _G[name] = nil
   return deriver
 end
-
-
--------------------------------------------------------------------
--- begin 'frame' class rewrapping
-class 'frame' (lev.gui.frame)
-
-function frame:setmenubar(mb)
-  lev.frame.setmenubar(self, mb)
-  if (mb.menus) then
-    for i, menu in pairs(mb.menus) do
-      for id, func in pairs(menu.items) do
-        if func then
-          self:setonmenu(id, func)
-        end
-      end
-    end
-  end
-end
-
--- end of 'frame' class rewrapping
--------------------------------------------------------------------
-
-
--------------------------------------------------------------------
--- begin 'menu' class rewrapping
-class 'menu' (lev.gui.menu)
-
-function menu:__init(title)
-  lev.menu.__init(self, title)
-  self.items = {}
-end
-
-function menu:append(conf)
-  local c = conf
-  if (c.id == nil)       then c.id = -1 end
-  if (c.help_str == nil) then c.help_str = '' end
-  local id = lev.menu.append(self, c.id, c.str, c.help_str)
---    if (c.func) then self:setonmenu(id, c.func) end
-  self.items[id] = c.func
-  return id
-end
-
--- end of 'menu' class rewrapping
--------------------------------------------------------------------
-
--------------------------------------------------------------------
--- begin 'menubar' class rewrapping
-class 'menubar' (lev.gui.menubar)
-
-function menubar:__init()
-  lev.menubar.__init(self)
-  self.menus = {}
-end
-
-function menubar:append(menu, title)
-  lev.menubar.append(self, menu, title)
-  table.insert(self.menus, menu)
-end
-
--- end of 'menubar' class rewrapping
--------------------------------------------------------------------
 
 
 -------------------------------------------------------------------

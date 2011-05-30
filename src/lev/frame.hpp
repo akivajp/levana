@@ -37,7 +37,7 @@ namespace lev
       void seticon(const icon &i);
       void set_menubar(menubar *mb);
       static int set_menubar_l(lua_State *L);
-      void setonmenu(int id, luabind::object lua_func);
+      bool set_onmenu(int id, luabind::object lua_func);
       // statusbar property
       const char *getstatus();
       void setstatus(const char *str_status);

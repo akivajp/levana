@@ -12,6 +12,7 @@
 #include "lev/app.hpp"
 #include "lev/frame.hpp"
 #include "connect.hpp"
+#include "lev/sound.hpp"
 
 #include <lua.h>
 #include <string>
@@ -30,7 +31,7 @@ namespace lev
       virtual bool OnInit(void);
       virtual int OnExit(void);
       bool Yield();
-      inline wxEventLoop *GetEventLoop() { return m_mainLoop; }
+//      inline wxEventLoop *GetEventLoop() { return m_mainLoop; }
       static lua_State *L;
     private:
       char **argv_utf8;
@@ -73,8 +74,8 @@ namespace lev
   bool myApp::OnInit(void)
   {
     set_argv();
-    m_mainLoop = new wxEventLoop();
-    wxEventLoop::SetActive(m_mainLoop);
+//    m_mainLoop = new wxEventLoop();
+//    wxEventLoop::SetActive(m_mainLoop);
     wxInitAllImageHandlers();
     wxFileSystem::AddHandler(new wxInternetFSHandler);
     return true;
@@ -140,6 +141,11 @@ namespace lev
     return frame::gettop();
   }
 
+  void application::mainloop()
+  {
+    wxGetApp().MainLoop();
+  }
+
   void application::setname(const char *name)
   {
     wxGetApp().SetAppName(wxString(name, wxConvUTF8));
@@ -163,11 +169,6 @@ namespace lev
     while (sw.Time() < delay_in_msec) {}
     return true;
   }
-
-//  void application::wait(int delay_in_msec)
-//  {
-//    wxSleep(delay_in_msec);
-//  }
 
   bool application::yield()
   {

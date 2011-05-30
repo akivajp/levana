@@ -27,6 +27,7 @@ namespace lev
       void autoloop_with(frame *frm);
       const char* getname();
       frame *gettop();
+      void mainloop();
       void setname(const char *name);
       void setonkeydown(luabind::object lua_func);
       void settop(frame *top);

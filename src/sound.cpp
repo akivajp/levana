@@ -156,12 +156,13 @@ namespace lev
       void *mixer;
   };
 
+  channel::channel() : _obj(NULL) {}
+
   channel::~channel()
   {
     if (_obj) { delete (myChannel *)_obj; }
   }
 
-  // static member function
 
   channel* channel::create(void *mx, int id)
   {
@@ -326,35 +327,76 @@ namespace lev
       std::map<unsigned int, channel *> channels;
   };
 
+  mixer::mixer() : _obj(NULL) { }
 
   mixer::~mixer()
   {
-    delete (myMixer *)_obj;
+    if (_obj) { delete (myMixer *)_obj; }
   }
-
-  // static methods
 
   mixer* mixer::create()
   {
     if (not sound::init()) { return NULL; }
     mixer *mx = new mixer;
     if (mx == NULL) { return NULL; }
-    mx->_obj = myMixer::Create();
-    if (mx->_obj == NULL) { goto Error; }
-
+    myMixer *obj = myMixer::Create();
+    if (obj == NULL) { goto Error; }
+    mx->_obj = obj;
     return mx;
 
     Error:
-    if (mx) { delete (mixer *)mx; }
+    delete mx;
     return NULL;
   }
 
-  // member functions
-
+  int mixer::create_l(lua_State *L)
+  {
+    using namespace luabind;
+    object func = globals(L)["lev"]["sound"]["mixer"]["create_c"];
+    object mx = func();
+    if (mx)
+    {
+      lua_pushcfunction(L, &mixer::get_field);
+      object get_field(from_stack(L, 1));
+      lua_pop(L, 1);
+      object meta = getmetatable(mx);
+      if (not meta["__index2"])
+      {
+        meta["__index2"] = meta["__index"];
+        meta["__index"] = get_field;
+      }
+    }
+    mx.push(L);
+    return 1;
+  }
 
   channel* mixer::get_channel(int channel_num)
   {
     return ((myMixer *)_obj)->GetChannel(channel_num);
+  }
+
+  int mixer::get_field(lua_State *L)
+  {
+    using namespace luabind;
+
+    luaL_checktype(L, 1, LUA_TUSERDATA);
+    object mixer = object(from_stack(L, 1));
+    object index = object(from_stack(L, 2));
+
+    if (luabind::type(index) == LUA_TNUMBER)
+    {
+      object func = mixer["get_channel"];
+      object channel = func(mixer, index);
+      channel.push(L);
+      return 1;
+    }
+    else
+    {
+      object func = getmetatable(mixer)["__index2"];
+      object field = func(mixer, index);
+      field.push(L);
+      return 1;
+    }
   }
 
   bool mixer::get_playing()
@@ -420,6 +462,7 @@ namespace lev
     snd->_items.clear();
     return true;
   }
+
 
 }
 

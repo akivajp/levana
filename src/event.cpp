@@ -73,18 +73,20 @@ namespace lev
   // event methods
   event::event(void *e) : base()
   {
-    _obj.reset((wxEvent *)e);
+    _obj = e;
   }
+
+  event::~event() {}
 
 
   int event::getkey() const
   {
-    return ((wxKeyEvent *)_obj.get())->GetKeyCode();
+    return ((wxKeyEvent *)_obj)->GetKeyCode();
   }
 
   void event::skip()
   {
-    ((wxEvent *)_obj.get())->Skip(true);
+    ((wxEvent *)_obj)->Skip(true);
   }
 }
 

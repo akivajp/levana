@@ -75,7 +75,6 @@ extern "C" {
     lua_entry(L);
 
     luabind::object lev = globals(L)["lev"] = newtable(L);
-    // usable functions
     register_to(L, lev, "load_util", &util::luaopen_util);
 
 
@@ -108,8 +107,8 @@ extern "C" {
         class_<control, base>("control")
           .def("connect", &control::connect)
           .def("hide", &control::hide)
-          .def("setonkeydown", &control::setonkeydown)
-          .def("setonmenu", &control::setonmenu)
+          .def("set_onkeydown", &control::set_onkeydown)
+          .def("set_onmenu", &control::set_onmenu)
           .def("show", &control::show)
           .property("id", &control::getid)
           .property("isvalid", &control::isvalid)
@@ -137,9 +136,7 @@ extern "C" {
           .property("title", &frame::gettitle, &frame::settitle)
           .scope
           [
-            def("create_c", &frame::create, adopt(result) ),
-            def("set_menubar", &frame::set_menubar),
-            def("setmenubar", &frame::set_menubar)
+            def("create_c", &frame::create, adopt(result) )
           ],
         class_<htmlview, control>("htmlview")
           .def(constructor<control*, int, int>())
@@ -159,17 +156,14 @@ extern "C" {
           .property("isstopped", &player::isstopped)
           .property("volume", &player::getvolume, &player::setvolume),
         class_<menu, control>("menu")
-          .def(constructor<>())
-          .def(constructor<const char *>())
           .scope
           [
-            def("append", &menu::append)
+            def("create_c", &menu::create)
           ],
         class_<menubar, control>("menubar")
-          .def(constructor<>())
           .scope
           [
-            def("append", &menubar::append)
+            def("create_c", &menubar::create)
           ],
         class_<systray, control>("systray")
           .def(constructor<>())
@@ -185,6 +179,8 @@ extern "C" {
     ];
     register_to(L, globals(L)["lev"]["gui"]["canvas"], "create", &canvas::create_l);
     register_to(L, globals(L)["lev"]["gui"]["frame"], "create", &frame::create_l);
+    register_to(L, globals(L)["lev"]["gui"]["menu"], "create", &menu::create_l);
+    register_to(L, globals(L)["lev"]["gui"]["menubar"], "create", &menubar::create_l);
 
     // Application management module
     module(L, "lev")
@@ -292,18 +288,18 @@ extern "C" {
           .def("get_channel", &mixer::get_channel)
           .def("pause", &mixer::pause)
           .def("play", &mixer::play)
-          .def("__call", &mixer::get_channel)
           .property("is_playing", &mixer::get_playing, &mixer::set_playing)
           .property("isplaying", &mixer::get_playing, &mixer::set_playing)
           .scope
           [
-            def("create", &mixer::create, adopt(result))
+            def("create_c", &mixer::create, adopt(result))
           ],
         def("init", &sound::init),
         def("play", &sound::play),
         def("stop", &sound::stop)
       ]
     ];
+    register_to(L, globals(L)["lev"]["sound"]["mixer"], "create", &mixer::create_l);
 
     module(L, "lev")
     [
@@ -311,8 +307,7 @@ extern "C" {
     ];
 
     register_to(L, globals(L)["package"]["preload"], "gl", luaopen_gl);
-//    application::getapp();
-    return 1;
+    return 0;
   }
 }
 

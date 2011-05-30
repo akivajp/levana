@@ -23,12 +23,9 @@ namespace lev
       control();
       virtual ~control();
     public:
-      virtual void connect(int type, luabind::object lua_func)
-      { throw "control: derived connect method has not been implemented"; }
-      virtual void setonkeydown(luabind::object lua_func)
-      { throw "control: derived setonkeydown method has not been implemented"; }
-      virtual void setonmenu(int id, luabind::object lua_func)
-      { throw "control: derived setonmenu method has not been implemented"; }
+      virtual bool connect(int type, luabind::object lua_func) { return false; }
+      virtual bool set_onkeydown(luabind::object lua_func) { return false; }
+      virtual bool set_onmenu(int id, luabind::object lua_func) { return false; }
       int getid();
       sizer *getsizer();
       inline bool hide() { return setshown(false); }
@@ -58,10 +55,11 @@ namespace lev
   {
     public:
       event(void *e);
+      ~event();
       int getkey() const;
       void skip();
     protected:
-      boost::shared_ptr<void> _obj;
+      void *_obj;
   };
 }
 

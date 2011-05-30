@@ -24,7 +24,7 @@ namespace lev
   class channel : public base
   {
     private:
-      channel() : _obj(NULL) {}
+      channel();
     public:
       ~channel();
       static channel *create(void *mx, int id);
@@ -47,12 +47,14 @@ namespace lev
   class mixer : public base
   {
     private:
-      mixer()  {}
+      mixer();
     public:
       ~mixer();
       static mixer *create();
+      static int create_l(lua_State *L);
       bool clean_channel(int channel_num);
       channel *get_channel(int channel_num);
+      static int get_field(lua_State *L);
       bool get_playing();
       bool pause() { return set_playing(false); }
       bool play() { return set_playing(true); }

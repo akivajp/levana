@@ -11,6 +11,7 @@
 #include "lev/frame.hpp"
 #include "lev/util.hpp"
 #include "connect.hpp"
+#include "register.hpp"
 
 #include <string>
 #include <map>
@@ -110,8 +111,13 @@ namespace lev
     if (strstr(s, "fixed")) { style = style & ~wxRESIZE_BORDER; }
 
     object func = globals(L)["lev"]["gui"]["frame"]["create_c"];
-    object result = func(p, title, h, w, style);
-    result.push(L);
+    object frame = func(p, title, h, w, style);
+    if (frame)
+    {
+      register_to(L, frame, "set_menubar", &frame::set_menubar_l);
+      register_to(L, frame, "setmenubar", &frame::set_menubar_l);
+    }
+    frame.push(L);
     return 1;
   }
 
@@ -150,6 +156,11 @@ namespace lev
 
   void frame::set_menubar(menubar *mb)
   {
+//wxMenuBar *mbar = new wxMenuBar();
+//wxMenu *menu = new wxMenu();
+//mbar->Append(menu, wxString("test", wxConvUTF8));
+//menu->Append(-1, wxString("aaa", wxConvUTF8));
+//    ((wxFrame *)_obj)->SetMenuBar(mbar);
     ((wxFrame *)_obj)->SetMenuBar((wxMenuBar *)mb->_obj);
   }
 
@@ -157,22 +168,30 @@ namespace lev
   {
     using namespace luabind;
 
-    frame *frm = (frame *)lua_touserdata(L, 1);
-    menubar *mb = (menubar *)lua_touserdata(L, 2);
-    if (frm == NULL || mb == NULL) { goto Error; }
-    frm->set_menubar(mb);
-    // to do
-    return 1;
+    luaL_checktype(L, 1, LUA_TUSERDATA);
+    luaL_checktype(L, 2, LUA_TUSERDATA);
+    object frame_obj(from_stack(L, 1));
+    object mb(from_stack(L, 2));
 
-    Error:
-
-    lua_pushboolean(L, false);
+    frame *frm = object_cast<frame *>(frame_obj);
+    frm->set_menubar(object_cast<menubar *>(mb));
+    luabind::iterator i(mb["menus"]), end;
+    for (; i != end; i++)
+    {
+      luabind::iterator j((*i)["fmap"]);
+      for (; j != end; j++)
+      {
+        frame_obj["set_onmenu"](frame_obj, j.key(), *j);
+      }
+    }
+    lua_pushboolean(L, true);
     return 1;
   }
 
-  void frame::setonmenu(int id, luabind::object lua_func)
+  bool frame::set_onmenu(int id, luabind::object lua_func)
   {
     ((myFrame *)_obj)->Connect(id, wxEVT_COMMAND_MENU_SELECTED, lua_func);
+    return true;
   }
 
   void frame::settop(frame *top)

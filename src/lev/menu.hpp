@@ -11,25 +11,36 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "event.hpp"
+#include <lua.h>
+#include <luabind/luabind.hpp>
 
 namespace lev
 {
 
   class menu : public control
   {
-    public:
+    private:
       menu();
-      menu(const char *title);
+      ~menu();
+    public:
       int append(int id, const char *str, const char *help_str = "");
+      static int append_l(lua_State *L);
+      static menu* create(const char *title);
+      static int create_l(lua_State *L);
       friend class systray;
       friend class menubar;
   };
 
   class menubar : public control
   {
-    public:
+    private:
       menubar();
+      ~menubar();
+    public:
       bool append(menu *m, const char *title);
+      static int append_l(lua_State *L);
+      static menubar *create();
+      static int create_l(lua_State *L);
       friend class frame;
   };
 
