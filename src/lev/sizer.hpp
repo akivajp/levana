@@ -23,11 +23,13 @@ namespace lev
       sizer();
       virtual ~sizer();
     public:
-      void addctrl(control *c, int proportion = 0, int flag = 0, int border = 0);
-      void addsizer(sizer *s, int proportion = 0, int flag = 0, int border = 0);
-      void addspace(int width, int height, int proportion = 0, int flag = 0, int border = 0);
+      void add_ctrl(control *c, int proportion = 0, int flag = 0, int border = 0);
+      void add_sizer(sizer *s, int proportion = 0, int flag = 0, int border = 0);
+      void add_space(int width, int height, int proportion = 0, int flag = 0, int border = 0);
+      static int add_l(lua_State *L);
       void fit(control *c);
       void fitinside(control *c);
+      virtual type_id get_type_id() { return LEV_TSIZER; }
       void layout();
       // lua cfunctions
       static int ladd(lua_State *L);
@@ -35,20 +37,30 @@ namespace lev
       friend class control;
 
     protected:
-      bool _adopt;
+      bool _managing;
       void *_obj;
   };
 
   class hsizer : public sizer
   {
-    public:
+    private:
       hsizer();
+    public:
+      ~hsizer();
+      static hsizer *create();
+      static int create_l(lua_State *L);
+      virtual type_id get_type_id() { return LEV_THSIZER; }
   };
 
   class vsizer : public sizer
   {
-    public:
+    private:
       vsizer();
+    public:
+      ~vsizer();
+      static vsizer *create();
+      static int create_l(lua_State *L);
+      virtual type_id get_type_id() { return LEV_TVSIZER; }
   };
 }
 

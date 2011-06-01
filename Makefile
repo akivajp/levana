@@ -2,7 +2,8 @@ PREFIX=/tmp
 VERSION=0.2.3
 OUT = a.out
 BIN = levana
-DLIB = lev.so
+CORE_DLIB = lev.so
+SOUND_DLIB = sound.so
 SLIB = liblev.a
 LUA_VERSION = 5.1
 
@@ -33,7 +34,7 @@ bin: src/$(OUT)
 
 lib: src/$(DLIB) src/$(SLIB)
 	install -d lib
-	cp src/{$(DLIB),$(SLIB)} lib/
+	cp src/{$(CORE_DLIB),$(SOUND_DLIB),$(SLIB)} lib/
 
 install:
 	install -d $(PREFIX)/bin

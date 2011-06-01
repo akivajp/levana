@@ -25,17 +25,22 @@ namespace lev
     public:
       void autoloop();
       void autoloop_with(frame *frm);
-      const char* getname();
-      frame *gettop();
+      static bool entry(lua_State *L, int argc, char **argv);
+      bool get_keystate(const char *key);
+      const char* get_name();
+      virtual luabind::object get_onany();
+      virtual luabind::object get_onkeydown();
+      frame *get_top();
+      virtual type_id get_type_id() const { return LEV_TAPP; }
+      virtual const char *get_type_name() const { return "app"; }
       void mainloop();
       void setname(const char *name);
-      void setonkeydown(luabind::object lua_func);
+      virtual bool set_onany(luabind::object lua_func);
+      virtual bool set_onkeydown(luabind::object lua_func);
       void settop(frame *top);
       bool sleep(int delay_in_msec);
-//      void wait(int delay_in_msec);
       bool yield();
-      // static method
-      static bool entry(lua_State *L, int argc, char **argv);
+
       static application *getapp();
       static lua_State* getL();
       static int msgbox(const char *msg, const char *caption);

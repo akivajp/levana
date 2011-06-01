@@ -188,6 +188,8 @@ namespace lev
     wxMenuBar *obj = new wxMenuBar();
     if (obj == NULL) { goto Error; }
     mb->_obj = obj;
+    mb->_id = obj->GetId();
+    mb->_managing = true;
     return mb;
 
     Error:

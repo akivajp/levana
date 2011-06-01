@@ -13,10 +13,12 @@
 
 #include "base.hpp"
 
-#include <lua.h>
-#include <string>
+#include <luabind/luabind.hpp>
 #include <map>
+#include <string>
 #include <vector>
+
+extern "C" { int luaopen_sound(lua_State *L); }
 
 namespace lev
 {
@@ -27,16 +29,23 @@ namespace lev
       channel();
     public:
       ~channel();
-      static channel *create(void *mx, int id);
       bool clean();
+      static channel *create(int id);
       int  get_id() { return _id; }
+      double get_length();
+      float get_pan();
       bool get_playing();
-      bool is_valid();
+      float get_position();
+      virtual type_id get_type_id() const { return LEV_TCHANNEL; }
+      virtual const char *get_type_name() const { return "channel"; }
       bool load(const char *filename);
       bool open(const char *filename);
       bool pause() { return set_playing(false); }
       bool play() { return set_playing(true); }
+      bool play_with(const char *);
+      bool set_pan(float pan);
       bool set_playing(bool play);
+      bool set_position(float pos);
 
       friend class mixer;
     private:
@@ -56,6 +65,8 @@ namespace lev
       channel *get_channel(int channel_num);
       static int get_field(lua_State *L);
       bool get_playing();
+      virtual type_id get_type_id() const { return LEV_TMIXER; }
+      virtual const char *get_type_name() const { return "mixer"; }
       bool pause() { return set_playing(false); }
       bool play() { return set_playing(true); }
       bool set_playing(bool play);
@@ -72,9 +83,9 @@ namespace lev
     public:
       static bool init();
       static bool play(const char *filename);
-      static bool stop();
+      static bool stop_all();
     private:
-      std::vector<void *> _items;
+      void *_obj;
   };
 
 }

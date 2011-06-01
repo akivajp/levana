@@ -8,6 +8,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "event.hpp"
+#include <lua.h>
 
 namespace lev
 {
@@ -15,17 +16,28 @@ namespace lev
   {
     public:
       htmlview(control *parent, int width, int height);
+      virtual type_id get_type_id() const { return LEV_THTMLVIEW; }
+      virtual const char *get_type_name() const { return "htmlview"; }
       bool loadpage(const char *url);
       bool setpage(const char *src);
       const char *totext();
   };
 
-  class text: public control
+  class textbox: public control
   {
+    private:
+      textbox();
     public:
-      text(control *parent, int width, int height, const char *value = "");
-      const char* getvalue();
-      void setvalue(const char *value);
+      virtual ~textbox();
+      textbox(control *parent, int width, int height, const char *value = "");
+      static textbox* create(control *parent, int width, int height, const char *value = "");
+      static int create_l(lua_State *L);
+      virtual luabind::object get_onkeydown();
+      virtual type_id get_type_id() const { return LEV_TTEXTBOX; }
+      virtual const char *get_type_name() const { return "textbox"; }
+      const char* get_value();
+      virtual bool set_onkeydown(luabind::object lua_func);
+      void set_value(const char *value);
   };
 }
 

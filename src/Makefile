@@ -1,22 +1,33 @@
 CXX = g++
-SRC = app.cpp draw.cpp entry.cpp event.cpp frame.cpp \
-      gl.cpp gui.cpp icon.cpp image.cpp media.cpp menu.cpp prim.cpp \
-      sizer.cpp sound.cpp taskbar.cpp util.cpp
-OBJS = $(SRC:%.cpp=%.o)
-OUT = a.out
-DLIB = lev.so
-SLIB = liblev.a
-PCH = prec.h.gch
 WX_CXXFLAGS=`wx-config --cxxflags`
-WX_LIBS = `wx-config --libs std,media,gl` -lGLU
 CXXFLAGS = $(WX_CXXFLAGS) -fPIC
-LIBS = $(WX_LIBS) -llua -lluabind -lallegro -lallegro_acodec -lallegro_audio
 SHARED= -shared
+SLIB = liblev.a
+OUT = a.out
+PCH = prec.h.gch
+WX_LIBS = `wx-config --libs std,media,gl` -lGLU
+
+CORE_SRC  = app.cpp draw.cpp entry.cpp event.cpp frame.cpp \
+	    gl.cpp gui.cpp icon.cpp image.cpp media.cpp menu.cpp prim.cpp \
+	    sizer.cpp taskbar.cpp util.cpp
+CORE_OBJS = $(CORE_SRC:%.cpp=%.o)
+CORE_DLIB = lev_core.so
+CORE_LIBS = $(WX_LIBS) -llua -lluabind
+
+SOUND_SRC  = sound.cpp
+SOUND_OBJS = $(SOUND_SRC:%.cpp=%.o)
+SOUND_DLIB = sound.so
+SOUND_LIBS = -lsfml-audio -lsfml-system -lluabind -llua
+
+ALL_SRC  = $(CORE_SRC) $(SOUND_SRC)
+ALL_OBJS = $(ALL_SRC:%.cpp=%.o)
+DLIB = lev.so
 
 all: pch tags bin lib
 
 bin: $(OUT)
 
+#lib: $(SLIB) $(CORE_DLIB) $(SOUND_DLIB)
 lib: $(SLIB) $(DLIB)
 
 win-bin: $(OUT) $(OBJS) main.o resource.rc
@@ -38,15 +49,21 @@ tags: $(SRC) $(SRC:%.cpp=lev/%.hpp)
 $(PCH): prec.h
 	$(CXX) $(CXXFLAGS) $<
 
-$(OUT): $(OBJS) main.o
-	$(CXX) -o $(OUT) main.o $(OBJS) $(LIBS)
+$(OUT): $(ALL_OBJS) main.o
+	$(CXX) -o $(OUT) main.o $(ALL_OBJS) $(CORE_LIBS) $(SOUND_LIBS)
 
-$(SLIB): $(OBJS)
-	ar r $(SLIB) $(OBJS)
+$(SLIB): $(ALL_OBJS)
+	ar r $(SLIB) $(ALL_OBJS)
 	ranlib $(SLIB)
 
-$(DLIB): $(OBJS)
-	$(CXX) $(SHARED) -o $(DLIB) $(OBJS) $(LIBS)
+$(DLIB): $(ALL_OBJS)
+	$(CXX) $(SHARED) -o $(DLIB) $(ALL_OBJS) $(CORE_LIBS) $(SOUND_LIBS)
+
+$(CORE_DLIB): $(CORE_OBJS)
+	$(CXX) $(SHARED) -o $(CORE_DLIB) $(CORE_OBJS) $(CORE_LIBS)
+
+$(SOUND_DLIB): $(SOUND_OBJS)
+	$(CXX) $(SHARED) -o $(SOUND_DLIB) $(SOUND_OBJS) $(SOUND_LIBS)
 
 app.o: app.cpp lev/app.hpp
 draw.o: draw.cpp lev/draw.hpp lev/frame.hpp

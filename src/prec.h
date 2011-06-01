@@ -12,12 +12,16 @@
 /////////////////////////////////////////////////////////////////////////////
 
 extern "C" {
+
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
 }
-#include <luabind/luabind.hpp>
+
+#include <SFML/Audio.hpp>
+
 #include <luabind/adopt_policy.hpp>
+#include <luabind/luabind.hpp>
 #include <luabind/object.hpp>
 #include <luabind/operator.hpp>
 
@@ -32,6 +36,7 @@ extern "C" {
 
 #include <map>
 #include <string>
+#include <vector>
 #include <boost/shared_ptr.hpp>
 
 #endif // _PREC_H

@@ -18,15 +18,30 @@ namespace lev
   class base
   {
     public:
-      enum type
+      enum type_id
       {
-        LEV_TBASE
+        LEV_TBASE = 1,
+          LEV_TCHANNEL,
+          LEV_TCONTROL,
+            LEV_TAPP,
+            LEV_TFRAME,
+            LEV_THTMLVIEW,
+            LEV_TSYSTRAY,
+            LEV_TTEXTBOX,
+          LEV_TCONTROL_END,
+          LEV_TMIXER,
+          LEV_TSIZER,
+            LEV_THSIZER,
+            LEV_TVSIZER,
+          LEV_TSIZER_END,
+        LEV_TBASE_END,
       };
     protected:
-      inline base() { }
-      inline virtual ~base() { }
+      base() { }
+      virtual ~base() { }
     public:
-      inline virtual type gettype() const { return LEV_TBASE; }
+      virtual type_id get_type_id() const { return LEV_TBASE; }
+      virtual const char *get_type_name() const { return "base"; }
   };
 }
 

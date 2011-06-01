@@ -9,11 +9,16 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "prec.h"
+
 #include "lev/entry.hpp"
 #include "lev/app.hpp"
+#include "register.hpp"
+
+#include <string>
 
 int main(int argc, char **argv)
 {
+  using namespace luabind;
   using namespace lev;
 
   const int len = 3;
@@ -31,19 +36,11 @@ int main(int argc, char **argv)
   lua_call(L, 1, 0);
 
   // lev library registration
-  lua_getglobal(L, "package");
-  lua_getfield(L, -1, "preload");
-  lua_pushcfunction(L, &luaopen_debug);
-  lua_setfield(L, -2, "debug");
-  lua_pushcfunction(L, &luaopen_io);
-  lua_setfield(L, -2, "io");
-  lua_pushcfunction(L, &luaopen_lev);
-  lua_setfield(L, -2, "lev");
-  lua_pushcfunction(L, &luaopen_os);
-  lua_setfield(L, -2, "os");
-  lua_pushcfunction(L, &luaopen_string);
-  lua_setfield(L, -2, "string");
-  lua_pop(L, 2);
+  register_to(L, globals(L)["package"]["preload"], "debug", &luaopen_debug);
+  register_to(L, globals(L)["package"]["preload"], "io", &luaopen_io);
+  register_to(L, globals(L)["package"]["preload"], "lev", &luaopen_lev);
+  register_to(L, globals(L)["package"]["preload"], "os", &luaopen_os);
+  register_to(L, globals(L)["package"]["preload"], "string", &luaopen_string);
 
   // lev entry
   application::entry(L, argc, argv);
@@ -65,6 +62,16 @@ int main(int argc, char **argv)
         }
         break;
       default:
+        if (done_something) { break; }
+        globals(L)["arg"] = newtable(L);
+        object arg = globals(L)["arg"];
+        arg[-1] = std::string(argv[0]);
+        arg[0] =  std::string(argv[i]);
+        int j;
+        for (j = 1; j <= argc - i - 1; j++)
+        {
+          arg[j] = std::string(argv[i + j]);
+        }
         if (luaL_dofile(L, argv[i]))
         {
           wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));

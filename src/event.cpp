@@ -15,7 +15,7 @@
 namespace lev
 {
 
-  control::control() : base(), _id(0), _obj(NULL), _sz(), _managing(false)
+  control::control() : base(), _id(0), _obj(NULL), _sz(NULL), _managing(false)
   { }
 
   control::~control()
@@ -38,10 +38,7 @@ namespace lev
 
   sizer *control::getsizer()
   {
-    wxSizer *sz = ((wxWindow *)_obj)->GetSizer();
-    if (sz == NULL) { return NULL; }
-    this->_sz._obj = sz;
-    return &(this->_sz);
+    return _sz;
   }
 
   bool control::isshown()
@@ -60,7 +57,8 @@ namespace lev
     if (s)
     {
       ((wxWindow *)_obj)->SetSizer((wxSizer *)s->_obj);
-      s->_adopt = false;
+      _sz = s;
+      s->_managing = false;
     }
   }
 
@@ -78,8 +76,12 @@ namespace lev
 
   event::~event() {}
 
+  int event::get_id() const
+  {
+    return ((wxEvent *)_obj)->GetId();
+  }
 
-  int event::getkey() const
+  int event::get_key() const
   {
     return ((wxKeyEvent *)_obj)->GetKeyCode();
   }

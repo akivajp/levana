@@ -74,8 +74,8 @@ namespace lev
   bool myApp::OnInit(void)
   {
     set_argv();
-//    m_mainLoop = new wxEventLoop();
-//    wxEventLoop::SetActive(m_mainLoop);
+    m_mainLoop = new wxEventLoop();
+    wxEventLoop::SetActive(m_mainLoop);
     wxInitAllImageHandlers();
     wxFileSystem::AddHandler(new wxInternetFSHandler);
     return true;
@@ -129,14 +129,59 @@ namespace lev
     }
   }
 
-  const char *application::getname()
+  bool application::entry(lua_State *L, int argc, char **argv)
+  {
+    static bool entried = false;
+    if (entried) { return false; }
+    if (!wxEntryStart(argc, argv)) { return false; }
+    myApp::L = L;
+    entried = true;
+    return true;
+  }
+
+  bool application::get_keystate(const char *key)
+  {
+    if (strstr(key, "CTRL") || strstr(key, "Ctrl") || strstr(key, "ctrl"))
+    {
+      return wxGetKeyState(WXK_CONTROL);
+    }
+    if (strstr(key, "SHIFT") || strstr(key, "Shift") || strstr(key, "shift"))
+    {
+      return wxGetKeyState(WXK_SHIFT);
+    }
+    if (strstr(key, "ALT") || strstr(key, "Alt") || strstr(key, "alt"))
+    {
+      return wxGetKeyState(WXK_ALT);
+    }
+    if (strstr(key, "ESC") || strstr(key, "Esc") || strstr(key, "esc"))
+    {
+      return wxGetKeyState(WXK_ESCAPE);
+    }
+    if (strlen(key) == 1)
+    {
+      return wxGetKeyState(wxKeyCode(key[0]));
+    }
+    return false;
+  }
+
+  const char *application::get_name()
   {
     const std::string name =
       (const char *)wxGetApp().GetAppName().mb_str(wxConvUTF8);
     return name.c_str();
   }
 
-  frame *application::gettop()
+  luabind::object application::get_onany()
+  {
+    return (wxGetApp())._fmap[-1][-1];
+  }
+
+  luabind::object application::get_onkeydown()
+  {
+    return (wxGetApp())._fmap[wxEVT_KEY_DOWN][-1];
+  }
+
+  frame *application::get_top()
   {
     return frame::gettop();
   }
@@ -151,9 +196,16 @@ namespace lev
     wxGetApp().SetAppName(wxString(name, wxConvUTF8));
   }
 
-  void application::setonkeydown(luabind::object lua_func)
+  bool application::set_onany(luabind::object lua_func)
+  {
+    wxGetApp().Connect(-1, -1, lua_func);
+    return true;
+  }
+
+  bool application::set_onkeydown(luabind::object lua_func)
   {
     wxGetApp().Connect(-1, wxEVT_KEY_DOWN, lua_func);
+    return true;
   }
 
   void application::settop(frame *top)
@@ -175,17 +227,6 @@ namespace lev
     return wxGetApp().Yield();
   }
 
-
-  // static methods
-  bool application::entry(lua_State *L, int argc, char **argv)
-  {
-    static bool entried = false;
-    if (entried) { return false; }
-    if (!wxEntryStart(argc, argv)) { return false; }
-    myApp::L = L;
-    entried = true;
-    return true;
-  }
 
   application *application::getapp()
   {

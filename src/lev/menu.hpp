@@ -21,8 +21,8 @@ namespace lev
   {
     private:
       menu();
-      ~menu();
     public:
+      ~menu();
       int append(int id, const char *str, const char *help_str = "");
       static int append_l(lua_State *L);
       static menu* create(const char *title);
@@ -35,8 +35,8 @@ namespace lev
   {
     private:
       menubar();
-      ~menubar();
     public:
+      ~menubar();
       bool append(menu *m, const char *title);
       static int append_l(lua_State *L);
       static menubar *create();

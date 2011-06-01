@@ -9,6 +9,7 @@
 
 #include "prec.h"
 #include "lev/lev.hpp"
+#include "lev/sound.hpp"
 #include "register.hpp"
 
 #include <sstream>
@@ -74,16 +75,16 @@ extern "C" {
     luabind::open(L);
     lua_entry(L);
 
-    luabind::object lev = globals(L)["lev"] = newtable(L);
-    register_to(L, lev, "load_util", &util::luaopen_util);
-
-
-    // base of all
-    module(L, "base")
-    [
-      class_<base>("base")
-        .property("type", &base::gettype)
-    ];
+    if (not globals(L)["lev"])
+    {
+      // base of all
+      module(L, "lev")
+      [
+        class_<base>("base")
+          .property("type_id", &base::get_type_id)
+          .property("type_name", &base::get_type_name)
+      ];
+    }
 
 
     // event class, and its derived ones
@@ -91,8 +92,9 @@ extern "C" {
     [
       // base class
       class_<event, base>("event")
-        .def("getkey", &event::getkey)
         .def("skip", &event::skip)
+        .property("id", &event::get_id)
+        .property("key", &event::get_key)
     ];
 
 
@@ -107,12 +109,17 @@ extern "C" {
         class_<control, base>("control")
           .def("connect", &control::connect)
           .def("hide", &control::hide)
+          .def("set_onany", &control::set_onany)
           .def("set_onkeydown", &control::set_onkeydown)
           .def("set_onmenu", &control::set_onmenu)
           .def("show", &control::show)
           .property("id", &control::getid)
+          .property("is_valid", &control::isvalid)
           .property("isvalid", &control::isvalid)
+          .property("is_shown", &control::isshown, &control::setshown)
           .property("isshown", &control::isshown, &control::setshown)
+          .property("onany", &control::get_onany, &control::set_onany)
+          .property("onkeydown", &control::get_onkeydown, &control::set_onkeydown)
           .property("sizer", &control::getsizer, &control::setsizer),
         class_<canvas, control>("canvas")
           .def("blendmode", &canvas::blendmode)
@@ -158,29 +165,34 @@ extern "C" {
         class_<menu, control>("menu")
           .scope
           [
-            def("create_c", &menu::create)
+            def("create_c", &menu::create, adopt(result))
           ],
         class_<menubar, control>("menubar")
           .scope
           [
-            def("create_c", &menubar::create)
+            def("create_c", &menubar::create, adopt(result))
           ],
         class_<systray, control>("systray")
-          .def(constructor<>())
-          .def("seticon", &systray::seticon)
+          .def("popup", &systray::popup)
+          .def("set_icon", &systray::set_icon)
           .scope
           [
-            def("setmenu", &systray::setmenu)
+            def("create_c", &systray::create, adopt(result))
           ],
-        class_<text, control>("text")
-          .def(constructor<control*,int,int,const char*>())
-          .property("value", &text::getvalue, &text::setvalue)
+        class_<textbox, control>("textbox")
+          .property("value", &textbox::get_value, &textbox::set_value)
+          .scope
+          [
+            def("create_c", &textbox::create)
+          ]
       ]
     ];
     register_to(L, globals(L)["lev"]["gui"]["canvas"], "create", &canvas::create_l);
     register_to(L, globals(L)["lev"]["gui"]["frame"], "create", &frame::create_l);
     register_to(L, globals(L)["lev"]["gui"]["menu"], "create", &menu::create_l);
     register_to(L, globals(L)["lev"]["gui"]["menubar"], "create", &menubar::create_l);
+    register_to(L, globals(L)["lev"]["gui"]["systray"], "create", &systray::create_l);
+    register_to(L, globals(L)["lev"]["gui"]["textbox"], "create", &textbox::create_l);
 
     // Application management module
     module(L, "lev")
@@ -189,12 +201,13 @@ extern "C" {
       class_<application, control>("app")
         .def("autoloop", &application::autoloop)
         .def("autoloop", &application::autoloop_with)
+        .def("get_keystate", &application::get_keystate)
         .def("sleep", &application::sleep)
         .def("yield", &application::yield)
-        .property("name", &application::getname, &application::setname)
-        .property("title", &application::getname, &application::setname)
-        .property("top",  &application::gettop,  &application::settop)
-        .property("topwindow",  &application::gettop,  &application::settop)
+        .property("name", &application::get_name, &application::setname)
+        .property("title", &application::get_name, &application::setname)
+        .property("top",  &application::get_top,  &application::settop)
+        .property("topwindow",  &application::get_top,  &application::settop)
         .scope
         [
           def("get", &application::getapp)
@@ -204,21 +217,26 @@ extern "C" {
     // sizers
     module(L, "lev")
     [
-      class_<sizer>("sizer")
-        .def("fit", &sizer::fit)
-        .def("fitinside", &sizer::fitinside)
-        .def("layout", &sizer::layout)
-        .scope
-        [
-          def("add", &sizer::addctrl),
-          def("add", &sizer::addsizer),
-          def("addspace", &sizer::addspace)
-        ],
-      class_<hsizer, sizer>("hsizer")
-        .def(constructor<>()),
-      class_<vsizer, sizer>("vsizer")
-        .def(constructor<>())
+      namespace_("gui")
+      [
+        class_<sizer, base>("sizer")
+          .def("fit", &sizer::fit)
+          .def("fitinside", &sizer::fitinside)
+          .def("layout", &sizer::layout),
+        class_<hsizer, sizer>("hsizer")
+          .scope
+          [
+            def("create_c", &hsizer::create, adopt(result))
+          ],
+        class_<vsizer, sizer>("vsizer")
+          .scope
+          [
+            def("create_c", &vsizer::create, adopt(result))
+          ]
+      ]
     ];
+    register_to(L, globals(L)["lev"]["gui"]["hsizer"], "create", &hsizer::create_l);
+    register_to(L, globals(L)["lev"]["gui"]["vsizer"], "create", &vsizer::create_l);
 
     // primitives
     module(L, "lev")
@@ -271,42 +289,14 @@ extern "C" {
 
     module(L, "lev")
     [
-      namespace_("sound")
-      [
-        class_<channel, base>("channel")
-          .def("clean", &channel::clean)
-          .def("load", &channel::load)
-          .def("open", &channel::open)
-          .def("pause", &channel::pause)
-          .def("play", &channel::play)
-          .property("id", &channel::get_id)
-          .property("is_playing", &channel::get_playing, &channel::set_playing)
-          .property("isplaying", &channel::get_playing, &channel::set_playing)
-          .property("is_valid", &channel::is_valid)
-          .property("isvalid", &channel::is_valid),
-        class_<mixer, base>("mixer")
-          .def("get_channel", &mixer::get_channel)
-          .def("pause", &mixer::pause)
-          .def("play", &mixer::play)
-          .property("is_playing", &mixer::get_playing, &mixer::set_playing)
-          .property("isplaying", &mixer::get_playing, &mixer::set_playing)
-          .scope
-          [
-            def("create_c", &mixer::create, adopt(result))
-          ],
-        def("init", &sound::init),
-        def("play", &sound::play),
-        def("stop", &sound::stop)
-      ]
-    ];
-    register_to(L, globals(L)["lev"]["sound"]["mixer"], "create", &mixer::create_l);
-
-    module(L, "lev")
-    [
       def("get_app", &application::getapp)
     ];
 
     register_to(L, globals(L)["package"]["preload"], "gl", luaopen_gl);
+//    register_to(L, globals(L)["package"]["preload"], "load_util", &util::luaopen_util);
+    register_to(L, globals(L)["lev"], "load_util", &util::luaopen_util);
+
+    luaopen_sound(L);
     return 0;
   }
 }

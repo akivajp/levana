@@ -14,17 +14,25 @@
 #include "icon.hpp"
 #include "menu.hpp"
 
-namespace luabind { class object; }
+#include <lua.h>
+#include <luabind/luabind.hpp>
 
 namespace lev
 {
   class systray : public control
   {
-    public:
+    private:
       systray();
-      bool seticon(const icon& i, const char *tooltip = "");
-      void setmenu(menu *m);
-      void setonmenu(int id, luabind::object lua_func);
+    public:
+      virtual ~systray();
+      static systray* create();
+      static int create_l(lua_State *L);
+      virtual type_id get_type_id() { return LEV_TSYSTRAY; }
+      bool popup(menu *m);
+      bool set_icon(const icon& i, const char *tooltip = "");
+      void set_menu(menu *m);
+      static int set_menu_l(lua_State *L);
+      virtual bool set_onmenu(int id, luabind::object lua_func);
   };
 }
 

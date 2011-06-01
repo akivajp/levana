@@ -13,10 +13,9 @@
 #include "menu.hpp"
 #include "icon.hpp"
 #include "event.hpp"
-#include <string>
-#include <lua.h>
 
-namespace luabind { class object; }
+#include <luabind/luabind.hpp>
+#include <string>
 
 namespace lev
 {
@@ -34,9 +33,11 @@ namespace lev
       static frame *create(frame *parent, const char *title, int w, int h, long style);
       static int create_l(lua_State *L);
       void fit();
+      luabind::object get_onkeydown();
       void seticon(const icon &i);
       void set_menubar(menubar *mb);
       static int set_menubar_l(lua_State *L);
+      bool set_onkeydown(luabind::object lua_func);
       bool set_onmenu(int id, luabind::object lua_func);
       // statusbar property
       const char *getstatus();

@@ -24,10 +24,16 @@ namespace lev
       virtual ~control();
     public:
       virtual bool connect(int type, luabind::object lua_func) { return false; }
+      virtual luabind::object get_onany() { return luabind::object(); }
+      virtual luabind::object get_onmenu(int id) { return luabind::object(); }
+      virtual luabind::object get_onkeydown() { return luabind::object(); }
+      virtual bool set_onany(luabind::object lua_func) { return false; }
       virtual bool set_onkeydown(luabind::object lua_func) { return false; }
       virtual bool set_onmenu(int id, luabind::object lua_func) { return false; }
       int getid();
       sizer *getsizer();
+      virtual type_id get_type_id() const { return LEV_TCONTROL; }
+      virtual const char *get_type_name() const { return "control"; }
       inline bool hide() { return setshown(false); }
       bool isshown();
       bool isvalid();
@@ -41,11 +47,11 @@ namespace lev
       friend class htmlview;
       friend class player;
       friend class sizer;
-      friend class text;
+      friend class textbox;
 
     protected:
       bool _managing;
-      sizer _sz;
+      sizer *_sz;
       void *_obj;
       int _id;
   };
@@ -56,7 +62,8 @@ namespace lev
     public:
       event(void *e);
       ~event();
-      int getkey() const;
+      int get_id() const;
+      int get_key() const;
       void skip();
     protected:
       void *_obj;

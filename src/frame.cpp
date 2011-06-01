@@ -111,7 +111,7 @@ namespace lev
     if (strstr(s, "fixed")) { style = style & ~wxRESIZE_BORDER; }
 
     object func = globals(L)["lev"]["gui"]["frame"]["create_c"];
-    object frame = func(p, title, h, w, style);
+    object frame = func(p, title, w, h, style);
     if (frame)
     {
       register_to(L, frame, "set_menubar", &frame::set_menubar_l);
@@ -125,6 +125,11 @@ namespace lev
   void frame::fit()
   {
     ((myFrame *)_obj)->Fit();
+  }
+
+  luabind::object frame::get_onkeydown()
+  {
+    return ((myFrame *)_obj)->_fmap[wxEVT_KEY_DOWN][-1];
   }
 
   const char * frame::getstatus()
@@ -156,12 +161,8 @@ namespace lev
 
   void frame::set_menubar(menubar *mb)
   {
-//wxMenuBar *mbar = new wxMenuBar();
-//wxMenu *menu = new wxMenu();
-//mbar->Append(menu, wxString("test", wxConvUTF8));
-//menu->Append(-1, wxString("aaa", wxConvUTF8));
-//    ((wxFrame *)_obj)->SetMenuBar(mbar);
     ((wxFrame *)_obj)->SetMenuBar((wxMenuBar *)mb->_obj);
+    mb->_managing = false;
   }
 
   int frame::set_menubar_l(lua_State *L)
@@ -186,6 +187,12 @@ namespace lev
     }
     lua_pushboolean(L, true);
     return 1;
+  }
+
+  bool frame::set_onkeydown(luabind::object lua_func)
+  {
+    ((myFrame *)_obj)->Connect(-1, wxEVT_KEY_DOWN, lua_func);
+    return true;
   }
 
   bool frame::set_onmenu(int id, luabind::object lua_func)
