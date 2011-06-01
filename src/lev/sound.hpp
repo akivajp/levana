@@ -35,7 +35,7 @@ namespace lev
       double get_length();
       float get_pan();
       bool get_playing();
-      float get_position();
+      double get_position();
       virtual type_id get_type_id() const { return LEV_TCHANNEL; }
       virtual const char *get_type_name() const { return "channel"; }
       bool load(const char *filename);
@@ -45,7 +45,7 @@ namespace lev
       bool play_with(const char *);
       bool set_pan(float pan);
       bool set_playing(bool play);
-      bool set_position(float pos);
+      bool set_position(double pos);
 
       friend class mixer;
     private:

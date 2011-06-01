@@ -18,7 +18,8 @@ extern "C" {
 #include <lauxlib.h>
 }
 
-#include <SFML/Audio.hpp>
+#include <ClanLib/sound.h>
+#include <ClanLib/vorbis.h>
 
 #include <luabind/adopt_policy.hpp>
 #include <luabind/luabind.hpp>

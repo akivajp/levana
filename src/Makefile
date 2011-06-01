@@ -1,5 +1,5 @@
 CXX = g++
-WX_CXXFLAGS=`wx-config --cxxflags`
+WX_CXXFLAGS=`wx-config --cxxflags` -I/usr/include/ClanLib-0.8
 CXXFLAGS = $(WX_CXXFLAGS) -fPIC
 SHARED= -shared
 SLIB = liblev.a
@@ -17,7 +17,8 @@ CORE_LIBS = $(WX_LIBS) -llua -lluabind
 SOUND_SRC  = sound.cpp
 SOUND_OBJS = $(SOUND_SRC:%.cpp=%.o)
 SOUND_DLIB = sound.so
-SOUND_LIBS = -lsfml-audio -lsfml-system -lluabind -llua
+#SOUND_LIBS = -lsfml-audio -lsfml-system -lluabind -llua
+SOUND_LIBS = -lclanSound -lclanVorbis -lclanCore -lclanSignals -llua -lluabind
 
 ALL_SRC  = $(CORE_SRC) $(SOUND_SRC)
 ALL_OBJS = $(ALL_SRC:%.cpp=%.o)

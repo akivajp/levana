@@ -8,15 +8,16 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
-#include "prec.h"
+//#include "prec.h"
 
 #include "lev/sound.hpp"
 #include "register.hpp"
 
+#include <ClanLib/sound.h>
+#include <ClanLib/vorbis.h>
 #include <luabind/adopt_policy.hpp>
 #include <luabind/luabind.hpp>
 #include <map>
-#include <SFML/Audio.hpp>
 
 extern "C" {
   int luaopen_sound(lua_State *L)
@@ -27,15 +28,12 @@ extern "C" {
     luabind::open(L);
 
     // base of all
-    if (not globals(L)["lev"])
-    {
-      module(L, "lev")
-      [
-        class_<base>("base")
-          .property("type_id", &base::get_type_id)
-          .property("type_name", &base::get_type_name)
-      ];
-    }
+    module(L, "lev")
+    [
+      class_<base>("base")
+        .property("type_id", &base::get_type_id)
+        .property("type_name", &base::get_type_name)
+    ];
 
     module(L, "lev")
     [
@@ -86,13 +84,7 @@ namespace lev
   {
     private:
 
-      enum sound_type {
-        SOUND_NONE = 0,
-        SOUND_SAMPLE,
-        SOUND_STREAM,
-      };
-
-      myChannel() : snd(NULL), buf(NULL), type(SOUND_NONE) {}
+      myChannel() : buf(NULL), playback(NULL) {}
 
     public:
 
@@ -100,22 +92,16 @@ namespace lev
 
       bool Clean()
       {
-        if (this->snd == NULL) { return false; }
-        switch (this->type)
+        if (this->buf)
         {
-          case SOUND_SAMPLE:
-            delete (sf::Sound *)snd;
-            snd = NULL;
-            delete buf;
-            buf = NULL;
-            type = SOUND_NONE;
-            return true;
-          case SOUND_STREAM:
-            delete (sf::Music *)snd;
-            snd = NULL;
-            type = SOUND_NONE;
-            return true;
+          playback->stop();
+          delete playback;
+          playback = NULL;
+          delete buf;
+          buf = NULL;
+          return true;
         }
+        else { return false; }
       }
 
       static myChannel *Create()
@@ -125,88 +111,74 @@ namespace lev
         return ch;
       }
 
-      float GetLength()
+      double GetLength()
       {
-        if (this->snd == NULL) { return -1; }
-        switch (this->type)
-        {
-          case SOUND_SAMPLE:
-            return buf->GetDuration();
-          case SOUND_STREAM:
-            return ((sf::Music *)snd)->GetDuration();
-        }
+        if (this->buf == NULL) { return -1; }
+        return playback->get_length();
       }
 
       float GetPan()
       {
-        return 0;
-//        if (this->buf == NULL) { return 0; }
-//        return playback->get_pan();
+        if (this->buf == NULL) { return 0; }
+        return playback->get_pan();
       }
 
       bool GetPlaying()
       {
-        if (this->snd == NULL) { return false; }
-        switch (this->type)
-        {
-          case SOUND_SAMPLE:
-            return ( ((sf::Sound *)snd)->GetStatus() == sf::Sound::Playing );
-          case SOUND_STREAM:
-            return ( ((sf::Music *)snd)->GetStatus() == sf::Music::Playing );
-        }
+        if (this->buf == NULL) { return false; }
+        return playback->is_playing();
       }
 
       double GetPosition()
       {
-        if (this->snd == NULL) { return -1; }
-        switch (this->type)
-        {
-          case SOUND_SAMPLE:
-            return ((sf::Sound *)snd)->GetPlayingOffset();
-          case SOUND_STREAM:
-            return ((sf::Music *)snd)->GetPlayingOffset();
-        }
+        if (this->buf == NULL) { return -1; }
+        return playback->get_position();
       }
 
       bool LoadSample(const char *filename)
       {
-        sf::SoundBuffer *buffer = NULL;
-        sf::Sound *sound = NULL;
-        if (this->snd) { this->Clean(); }
-
-        buffer = new sf::SoundBuffer;
-        if (buffer == NULL) { goto Error; }
-        if (not buffer->LoadFromFile(filename)) { goto Error; }
-        sound = new sf::Sound;
-        if (sound == NULL) { goto Error; }
-        sound->SetBuffer(*buffer);
-
-        this->buf  = buffer;
-        this->snd  = sound;
-        this->type = SOUND_SAMPLE;
-        return true;
-
-        Error:
-        if (sound) { delete sound; }
-        if (buffer) { delete buffer; }
+//        ALLEGRO_SAMPLE *sample = NULL;
+//        ALLEGRO_SAMPLE_INSTANCE *instance = NULL;
+//        if (mixer == NULL) { return false; }
+//
+//        sample = al_load_sample(filename);
+//        if (sample == NULL) { goto Error; }
+//        instance = al_create_sample_instance(sample);
+//        if (instance == NULL) { goto Error; }
+//        if (not al_attach_sample_instance_to_mixer(instance, (ALLEGRO_MIXER *)mixer))
+//        {
+//          goto Error;
+//        }
+//        if (this->snd) { this->Clean(); }
+//        inst = instance;
+//        snd  = sample;
+//        type = SOUND_SAMPLE;
+//        return true;
+//
+//        Error:
+//
+//        if (instance) { al_destroy_sample_instance(instance); }
+//        if (sample) { al_destroy_sample(sample); }
         return false;
       }
 
       bool OpenStream(const char *filename)
       {
-        sf::Music *music = NULL;
-        if (this->snd) { this->Clean(); }
+        CL_SoundBuffer *buffer = NULL;
+        CL_SoundBuffer_Session *session = NULL;
+        if (this->buf) { this->Clean(); }
+        buffer = new CL_SoundBuffer(filename);
+        if (buffer == NULL) { goto Error; }
+        session = new CL_SoundBuffer_Session(buffer->prepare());
+        if (session == NULL) { goto Error; }
 
-        music = new sf::Music(44100);
-        if (music == NULL) { goto Error; }
-        if (not music->OpenFromFile(filename)) { goto Error; }
-
-        this->snd  = music;
-        this->type = SOUND_STREAM;
+        this->buf      = buffer;
+        this->playback = session;
         return true;
 
         Error:
-        if (music) { delete music; }
+        if (session) { delete session; }
+        if (buffer)  { delete buffer; }
         return false;
       }
 
@@ -218,46 +190,28 @@ namespace lev
 
       bool SetPan(float pan)
       {
-        return false;
-//        if (this->buf == NULL) { return false; }
-//        playback->set_pan(pan);
-//        return true;
+        if (this->buf == NULL) { return false; }
+        playback->set_pan(pan);
+        return true;
       }
 
       bool SetPlaying(bool play)
       {
-        if (this->snd == NULL) { return false; }
-        switch (this->type)
-        {
-          case SOUND_SAMPLE:
-            if (play) { ((sf::Sound *)snd)->Play(); }
-            else { ((sf::Sound *)snd)->Pause(); }
-            return true;
-          case SOUND_STREAM:
-            if (play) { ((sf::Music *)snd)->Play(); }
-            else { ((sf::Music *)snd)->Pause(); }
-            return true;
-        }
+        if (this->buf == NULL) { return false; }
+        if (play == true) { playback->play(); }
+        else { playback->stop(); }
+        return true;
       }
 
-      bool SetPosition(float pos)
+      bool SetPosition(double pos)
       {
-        if (this->snd == NULL) { return false; }
-        switch (this->type)
-        {
-          case SOUND_SAMPLE:
-            ((sf::Sound *)snd)->SetPlayingOffset(pos);
-            return true;
-          case SOUND_STREAM:
-            return false;
-//            ((sf::Music *)snd)->SetPlayingOffset(pos);
-//            return true;
-        }
+        if (this->buf == NULL) { return false; }
+        playback->set_position(pos);
+        return true;
       }
 
-      void *snd;
-      sf::SoundBuffer *buf;
-      int type;
+      CL_SoundBuffer *buf;
+      CL_SoundBuffer_Session *playback;
   };
 
   channel::channel() : _obj(NULL) {}
@@ -285,14 +239,14 @@ namespace lev
   double channel::get_length() { return ((myChannel *)_obj)->GetLength(); }
   float channel::get_pan() { return ((myChannel *)_obj)->GetPan(); }
   bool channel::get_playing() { return ((myChannel *)_obj)->GetPlaying(); }
-  float channel::get_position() { return ((myChannel *)_obj)->GetPosition(); }
+  double channel::get_position() { return ((myChannel *)_obj)->GetPosition(); }
 
   bool channel::load(const char *filename) { return ((myChannel *)_obj)->LoadSample(filename); }
   bool channel::open(const char *filename) { return ((myChannel *)_obj)->OpenStream(filename); }
   bool channel::play_with(const char *filename) { return ((myChannel *)_obj)->Play(filename); }
   bool channel::set_pan(float pan) { return ((myChannel *)_obj)->SetPan(pan); }
   bool channel::set_playing(bool play) { return ((myChannel *)_obj)->SetPlaying(play); }
-  bool channel::set_position(float pos) { return ((myChannel *)_obj)->SetPosition(pos); }
+  bool channel::set_position(double pos) { return ((myChannel *)_obj)->SetPosition(pos); }
 
 
 
@@ -487,14 +441,27 @@ namespace lev
   class mySoundManager
   {
     public:
-      mySoundManager() : play_list() {}
+      mySoundManager()
+        : setup_sound(NULL), setup_vorbis(NULL), output(NULL),
+          play_back(), play_list() {}
 
-      ~mySoundManager() { StopAll(); }
+      ~mySoundManager()
+      {
+        if (output) { delete output; }
+        if (setup_vorbis) { delete setup_vorbis; }
+        if (setup_sound) { delete setup_sound; }
+      }
 
       static mySoundManager *Create()
       {
         mySoundManager *mng = new mySoundManager;
         if (mng == NULL) { return NULL; }
+        mng->setup_sound = new CL_SetupSound;
+        if (mng->setup_sound == NULL) { goto Error; }
+        mng->setup_vorbis = new CL_SetupVorbis;
+        if (mng->setup_vorbis == NULL) { goto Error; }
+        mng->output = new CL_SoundOutput(44100);
+        if (mng->output == NULL) { goto Error; }
         return mng;
 
         Error:
@@ -504,16 +471,12 @@ namespace lev
 
       bool PlayAdd(const char *filename)
       {
-        sf::Music *music = new sf::Music(44100);
-        if (music == NULL) { return false; }
-        if (not music->OpenFromFile(filename)) { goto Error; }
-        music->Play();
-        play_list.push_back(music);
+        CL_SoundBuffer *buf = new CL_SoundBuffer(filename);
+        if (buf == NULL) { return false; }
+        CL_SoundBuffer_Session *back = new CL_SoundBuffer_Session(buf->play());
+        play_list.push_back(buf);
+        play_back.push_back(back);
         return true;
-
-        Error:
-        delete music;
-        return false;
       }
 
       bool StopAll()
@@ -521,13 +484,20 @@ namespace lev
         int i;
         for (i = 0; i < play_list.size(); i++)
         {
-          delete ((sf::Music *)play_list[i]);
+          play_back[i]->stop();
+          delete (CL_SoundBuffer_Session *)(play_back[i]);
+          delete (CL_SoundBuffer *)(play_list[i]);
         }
+        play_back.clear();
         play_list.clear();
         return true;
       }
 
-      std::vector<sf::Music *> play_list;
+      CL_SetupSound  *setup_sound;
+      CL_SetupVorbis *setup_vorbis;
+      CL_SoundOutput *output;
+      std::vector<CL_SoundBuffer *> play_list;
+      std::vector<CL_SoundBuffer_Session *> play_back;
   };
 
   sound::sound() : _obj(NULL) { }
