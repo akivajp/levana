@@ -92,6 +92,7 @@ extern "C" {
     [
       // base class
       class_<event, base>("event")
+        .def("request", &event::request)
         .def("skip", &event::skip)
         .property("id", &event::get_id)
         .property("key", &event::get_key)
@@ -119,6 +120,7 @@ extern "C" {
           .property("is_shown", &control::isshown, &control::setshown)
           .property("isshown", &control::isshown, &control::setshown)
           .property("onany", &control::get_onany, &control::set_onany)
+          .property("onidle", &control::get_onidle, &control::set_onidle)
           .property("onkeydown", &control::get_onkeydown, &control::set_onkeydown)
           .property("sizer", &control::getsizer, &control::setsizer),
         class_<canvas, control>("canvas")
@@ -202,10 +204,12 @@ extern "C" {
         .def("autoloop", &application::autoloop)
         .def("autoloop", &application::autoloop_with)
         .def("get_keystate", &application::get_keystate)
+        .def("run", &application::run)
+        .def("run", &application::run_default)
         .def("sleep", &application::sleep)
         .def("yield", &application::yield)
-        .property("name", &application::get_name, &application::setname)
-        .property("title", &application::get_name, &application::setname)
+        .property("name", &application::get_name, &application::set_name)
+        .property("title", &application::get_name, &application::set_name)
         .property("top",  &application::get_top,  &application::settop)
         .property("topwindow",  &application::get_top,  &application::settop)
         .scope

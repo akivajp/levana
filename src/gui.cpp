@@ -92,9 +92,7 @@ namespace lev
 
     myTextCtrl *text = new myTextCtrl(p, width, height, val);
     if (text == NULL) { goto Error; }
-
-    if (p == NULL) { tb->_managing = true; }
-    else { tb->_managing = false; }
+    tb->wx_managed = true;
     tb->_id = text->GetId();
     tb->_obj = text;
     return tb;

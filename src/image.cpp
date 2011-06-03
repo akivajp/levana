@@ -48,7 +48,8 @@ namespace lev
     int num_pix = geth() * getw();
     wxBitmap *bmp = (wxBitmap *)_obj.get();
     wxAlphaPixelData data(*bmp);
-    data.UseAlpha();
+// deprecated in 2.9
+//    data.UseAlpha();
     wxAlphaPixelData::Iterator p(data);
 //    for (int i = 0 ; i < num_pix ; i++, p++) { p.Alpha() = 128; }
   }
@@ -60,8 +61,9 @@ namespace lev
     wxMemoryDC dc;
     wxBitmap *bitmap = (wxBitmap *)_obj.get();
     dc.SelectObject(*bitmap);
-    wxGCDC gdc(dc);
-    gdc.DrawCircle(x, y, radius);
+//    wxGCDC gdc(dc);
+//    gdc.DrawCircle(x, y, radius);
+    dc.DrawCircle(x, y, radius);
   }
 
 

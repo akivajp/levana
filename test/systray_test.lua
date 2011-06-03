@@ -14,5 +14,6 @@ menu.fmap[id] = function()
 end
 st:set_menu(menu)
 
-app:autoloop(frm)
+--app:autoloop(frm)
+app:run(true)
 

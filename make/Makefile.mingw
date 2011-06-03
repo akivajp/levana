@@ -1,28 +1,29 @@
-CXXFLAGS = `/usr/mingw32/usr/bin/wx-config --cxxflags` -I/usr/mingw32/usr/include
+CXXFLAGS = `/usr/mingw32/usr/bin/wx-config --cxxflags` -I/usr/mingw32/usr/include/ClanLib-0.8
 #LIBS = -L/usr/mingw32/usr/lib `/usr/mingw32/usr/bin/wx-config --libs std gl` -lglu32 -llua -lluabind -static
-LIBS =-L/usr/mingw32/usr/lib \
-	-lallegro_acodec-static -lallegro_audio-static -lallegro-static -lvorbisfile -lvorbis -logg \
+CORE_LIBS =-L/usr/mingw32/usr/lib \
 	-lluabind -llua \
 	`/usr/mingw32/usr/bin/wx-config --libs std gl media` -lgdiplus -lglu32 -lpsapi \
 	-static
+SOUND_LIBS = -lclanSound -lclanVorbis -lclanCore -lclanSignals -ldxguid -ldsound -lvorbisfile -lvorbis -logg
 CXX=mingw32-g++
 WINDRES=mingw32-windres
-OUT=levana.exe
+WIN_OUT=levana.exe
 DLIB=lev.dll
+RANLIB = mingw32-ranlib
 PACK_DIR=levana-win32-$(VERSION)
 
 all: build
 
 build:
 	cd src && make pch lib win-bin \
-		CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)" LIBS="$(LIBS)" \
-		WINDRES=$(WINDRES) \
-		OUT=$(OUT) DLIB=$(DLIB)
+		CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)" CORE_LIBS="$(CORE_LIBS)" \
+		SOUND_LIBS="$(SOUND_LIBS)" WINDRES=$(WINDRES) RANLIB=$(RANLIB) \
+		WIN_OUT=$(WIN_OUT) DLIB=$(DLIB)
 	install -d $(PACK_DIR)
 	install -d $(PACK_DIR)/lev
 	install -d $(PACK_DIR)/doc
 	install lev/* $(PACK_DIR)/lev/
-	install src/$(OUT) $(PACK_DIR)/$(OUT)
+	install src/$(WIN_OUT) $(PACK_DIR)/$(WIN_OUT)
 	install COPYRIGHT  $(PACK_DIR)/doc/COPYRIGHT.txt
 	install MANUAL.ja  $(PACK_DIR)/doc/MANUAL.ja.txt
 	install README.ja  $(PACK_DIR)/doc/README.ja.txt

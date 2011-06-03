@@ -39,7 +39,7 @@ namespace lev
     myTaskBarIcon *obj = new myTaskBarIcon();
     if (obj == NULL) { goto Error; }
     st->_obj = obj;
-    st->_managing = false;
+    st->wx_managed = true;
     st->set_icon(icon::levana_icon(), "Levana Application");
     return st;
 
@@ -93,7 +93,6 @@ namespace lev
     systray *st = object_cast<systray *>(systray_obj);
     menu *m = object_cast<menu *>(menu_obj);
     st->set_menu(m);
-    m->_managing = false;
 
     luabind::iterator i(menu_obj["fmap"]), end;
     for (; i != end; i++)

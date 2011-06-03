@@ -69,7 +69,11 @@ namespace lev
   bool player::loadlocal(const char *filename)
   {
     wxString cwd = wxGetCwd();
+#if __WXMSW__
+    wxString path = cwd + wxT("\\") + wxString(filename, wxConvUTF8);
+#else
     wxString path = cwd + wxT("/") + wxString(filename, wxConvUTF8);
+#endif
     return ((wxMediaCtrl *)_obj)->Load(path);
   }
 

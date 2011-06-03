@@ -28,12 +28,15 @@ extern "C" {
     luabind::open(L);
 
     // base of all
-    module(L, "lev")
-    [
-      class_<base>("base")
-        .property("type_id", &base::get_type_id)
-        .property("type_name", &base::get_type_name)
-    ];
+    if (not globals(L)["lev"])
+    {
+      module(L, "lev")
+      [
+        class_<base>("base")
+          .property("type_id", &base::get_type_id)
+          .property("type_name", &base::get_type_name)
+      ];
+    }
 
     module(L, "lev")
     [

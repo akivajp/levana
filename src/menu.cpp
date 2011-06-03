@@ -17,10 +17,7 @@ namespace lev
 
   menu::menu() : control() {}
 
-  menu::~menu()
-  {
-    if (_obj) { delete (wxMenu *)_obj; }
-  }
+  menu::~menu() {}
 
   int menu::append(int id, const char *str, const char *help_str)
   {
@@ -81,6 +78,7 @@ namespace lev
     wxMenu *obj = new wxMenu(wxString(title, wxConvUTF8));
     if (obj == NULL) { goto Error; }
     m->_obj = obj;
+    m->wx_managed = true;
     return m;
 
     Error:
@@ -125,10 +123,7 @@ namespace lev
 
   menubar::menubar() : control() { }
 
-  menubar::~menubar()
-  {
-    if (_obj) { delete ((wxMenuBar *)_obj); }
-  }
+  menubar::~menubar() { }
 
   bool menubar::append(menu *m, const char *title)
   {
@@ -189,7 +184,7 @@ namespace lev
     if (obj == NULL) { goto Error; }
     mb->_obj = obj;
     mb->_id = obj->GetId();
-    mb->_managing = true;
+    mb->wx_managed = true;
     return mb;
 
     Error:

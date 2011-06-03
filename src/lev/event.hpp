@@ -25,9 +25,11 @@ namespace lev
     public:
       virtual bool connect(int type, luabind::object lua_func) { return false; }
       virtual luabind::object get_onany() { return luabind::object(); }
+      virtual luabind::object get_onidle() { return luabind::object(); }
       virtual luabind::object get_onmenu(int id) { return luabind::object(); }
       virtual luabind::object get_onkeydown() { return luabind::object(); }
       virtual bool set_onany(luabind::object lua_func) { return false; }
+      virtual bool set_onidle(luabind::object lua_func) { return false; }
       virtual bool set_onkeydown(luabind::object lua_func) { return false; }
       virtual bool set_onmenu(int id, luabind::object lua_func) { return false; }
       int getid();
@@ -50,7 +52,7 @@ namespace lev
       friend class textbox;
 
     protected:
-      bool _managing;
+      bool wx_managed;
       sizer *_sz;
       void *_obj;
       int _id;
@@ -64,6 +66,7 @@ namespace lev
       ~event();
       int get_id() const;
       int get_key() const;
+      bool request();
       void skip();
     protected:
       void *_obj;

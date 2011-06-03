@@ -17,10 +17,11 @@ end
 id = menu:append('Evening(&E)')
 menu.fmap[id] = function()
   lev.gui.msgbox('Guten Abend!')
+  frm:close()
 end
 
 frm:set_menubar(mb)
 frm:show()
 
-app:autoloop()
+app:run()
 

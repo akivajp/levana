@@ -15,18 +15,22 @@
 namespace lev
 {
 
-  control::control() : base(), _id(0), _obj(NULL), _sz(NULL), _managing(false)
+  control::control() : base(), _id(0), _obj(NULL), _sz(NULL), wx_managed(false)
   { }
 
   control::~control()
   {
-    if (_id && !isvalid())
+    if (wx_managed)
     {
-      // object is in wxWidgets control, and already deleted
+      // wxWidgets will delete
     }
-    else if (_managing)
+    else if (_id && !isvalid())
     {
-      // the object is under self management
+      // the object isn't already found
+    }
+    else
+    {
+      // the object is under our management
       delete (wxWindow *)_obj;
     }
   }
@@ -64,6 +68,7 @@ namespace lev
 
   bool control::setshown(bool showing)
   {
+    safe_gui_lock();
     return ((wxWindow *)_obj)->Show(showing);
   }
 
@@ -84,6 +89,12 @@ namespace lev
   int event::get_key() const
   {
     return ((wxKeyEvent *)_obj)->GetKeyCode();
+  }
+
+  bool event::request()
+  {
+    ((wxIdleEvent *)_obj)->RequestMore(true);
+    return true;
   }
 
   void event::skip()

@@ -19,6 +19,41 @@
 
 namespace lev
 {
+
+  class myCanvas : public wxGLCanvas
+  {
+    public:
+
+      myCanvas(wxWindow *parent, int *attribList, int width, int height)
+        : wxGLCanvas(parent, wxID_ANY, attribList, wxDefaultPosition, wxSize(width, height)),
+          context(NULL)
+      {}
+
+      virtual ~myCanvas()
+      {
+        if (context) { delete context; }
+      }
+
+      bool SetCurrent()
+      {
+        if (context == NULL)
+        {
+          try
+          {
+            context = new wxGLContext(this);
+          }
+          catch (...)
+          {
+            return false;
+          }
+        }
+        ((wxGLCanvas *)this)->SetCurrent(*context);
+        return true;
+      }
+
+      wxGLContext *context;
+  };
+
   canvas::~canvas() { }
 
   void canvas::blendmode(bool enable)
@@ -48,25 +83,24 @@ namespace lev
 
   canvas* canvas::create(control *parent, int width, int height)
   {
-    canvas *cv = new canvas();
-    if (cv == NULL) { return NULL; }
     int attribs[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, 0 };
+    canvas *cv = NULL;
     wxWindow *p = NULL;
-    if (parent) { p = (wxWindow *)parent->_obj; }
-    wxGLCanvas *canvas =
-      new wxGLCanvas(p, -1, wxDefaultPosition, wxSize(width, height),
-                     0, wxGLCanvasName, attribs);
-    if (canvas == NULL) { goto Error; }
-    cv->_obj = canvas;
-    if (p == NULL) { cv->_managing = true; }
-    else { cv->_managing = false; }
+    try
+    {
+      cv = new canvas();
+      if (parent) { p = (wxWindow *)parent->_obj; }
+      cv->_obj = new myCanvas(p, attribs, width, height);
+    }
+    catch (...)
+    {
+      delete cv;
+      return NULL;
+    }
+    cv->wx_managed = true;
     cv->setcurrent();
     glViewport(0, 0, width, height);
     return cv;
-
-    Error:
-    delete cv;
-    return NULL;
   }
 
   int canvas::create_l(lua_State *L)
@@ -156,7 +190,7 @@ namespace lev
 
   void canvas::setcurrent()
   {
-    ((wxGLCanvas *)_obj)->SetCurrent();
+    ((myCanvas *)_obj)->SetCurrent();
   }
 
 

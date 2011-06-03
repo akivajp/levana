@@ -6,13 +6,14 @@ SLIB = liblev.a
 OUT = a.out
 PCH = prec.h.gch
 WX_LIBS = `wx-config --libs std,media,gl` -lGLU
+RANLIB = ranlib
 
 CORE_SRC  = app.cpp draw.cpp entry.cpp event.cpp frame.cpp \
 	    gl.cpp gui.cpp icon.cpp image.cpp media.cpp menu.cpp prim.cpp \
 	    sizer.cpp taskbar.cpp util.cpp
 CORE_OBJS = $(CORE_SRC:%.cpp=%.o)
 CORE_DLIB = lev_core.so
-CORE_LIBS = $(WX_LIBS) -llua -lluabind
+CORE_LIBS = $(WX_LIBS) -llua -lluabind -lboost_thread
 
 SOUND_SRC  = sound.cpp
 SOUND_OBJS = $(SOUND_SRC:%.cpp=%.o)
@@ -31,9 +32,11 @@ bin: $(OUT)
 #lib: $(SLIB) $(CORE_DLIB) $(SOUND_DLIB)
 lib: $(SLIB) $(DLIB)
 
-win-bin: $(OUT) $(OBJS) main.o resource.rc
+win-bin: $(WIN_OUT)
+
+$(WIN_OUT): $(ALL_OBJS) main.o resource.rc
 	$(WINDRES) -o resource.o resource.rc
-	$(CXX) -o $(OUT) main.o resource.o $(OBJS) $(LIBS)
+	$(CXX) -o $(WIN_OUT) main.o resource.o $(SLIB) $(SOUND_LIBS) $(CORE_LIBS)
 
 # precompiled header
 pch: $(PCH)
@@ -51,14 +54,14 @@ $(PCH): prec.h
 	$(CXX) $(CXXFLAGS) $<
 
 $(OUT): $(ALL_OBJS) main.o
-	$(CXX) -o $(OUT) main.o $(ALL_OBJS) $(CORE_LIBS) $(SOUND_LIBS)
+	$(CXX) -o $(OUT) main.o $(ALL_OBJS) $(SOUND_LIBS) $(CORE_LIBS)
 
 $(SLIB): $(ALL_OBJS)
 	ar r $(SLIB) $(ALL_OBJS)
-	ranlib $(SLIB)
+	$(RANLIB) $(SLIB)
 
 $(DLIB): $(ALL_OBJS)
-	$(CXX) $(SHARED) -o $(DLIB) $(ALL_OBJS) $(CORE_LIBS) $(SOUND_LIBS)
+	$(CXX) $(SHARED) -o $(DLIB) $(ALL_OBJS) $(SOUND_LIBS) $(CORE_LIBS)
 
 $(CORE_DLIB): $(CORE_OBJS)
 	$(CXX) $(SHARED) -o $(CORE_DLIB) $(CORE_OBJS) $(CORE_LIBS)

@@ -12,7 +12,6 @@
 /////////////////////////////////////////////////////////////////////////////
 
 extern "C" {
-
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
@@ -33,6 +32,7 @@ extern "C" {
 #include <wx/mediactrl.h>
 #include <wx/sound.h>
 #include <wx/taskbar.h>
+#include <wx/thread.h>
 #include <wx/wxhtml.h>
 
 #include <map>

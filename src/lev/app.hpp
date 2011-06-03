@@ -29,13 +29,17 @@ namespace lev
       bool get_keystate(const char *key);
       const char* get_name();
       virtual luabind::object get_onany();
+      virtual luabind::object get_onidle();
       virtual luabind::object get_onkeydown();
       frame *get_top();
       virtual type_id get_type_id() const { return LEV_TAPP; }
       virtual const char *get_type_name() const { return "app"; }
       void mainloop();
-      void setname(const char *name);
+      bool run(bool sync = true);
+      bool run_default() { run(true); }
+      void set_name(const char *name);
       virtual bool set_onany(luabind::object lua_func);
+      virtual bool set_onidle(luabind::object lua_func);
       virtual bool set_onkeydown(luabind::object lua_func);
       void settop(frame *top);
       bool sleep(int delay_in_msec);
@@ -47,6 +51,13 @@ namespace lev
       static inline int msgbox_nocap(const char *msg) { return msgbox(msg, "Message"); }
 
     private:
+  };
+
+  class safe_gui_lock
+  {
+    public:
+      safe_gui_lock();
+      ~safe_gui_lock();
   };
 }
 

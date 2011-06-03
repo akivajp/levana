@@ -8,6 +8,8 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "prec.h"
+
+#include "lev/app.hpp"
 #include "lev/frame.hpp"
 #include "lev/util.hpp"
 #include "connect.hpp"
@@ -38,17 +40,18 @@ namespace lev
   bool frame::close(bool force)
   {
     if (!_obj) { return false; }
-    bool result = ((wxWindow *)_obj)->Close(force);
-    if (result)
-    {
-      _obj = NULL;
-      return true;
-    }
-    return false;
+//    safe_gui_lock lock;
+//    bool result = ((wxWindow *)_obj)->Close(force);
+    if (force) { return ((wxWindow *)_obj)->Close(force); }
+//    ((wxEvtHandler *)_obj)->QueueEvent(new wxCommandEvent(wxEVT_CLOSE_WINDOW));
+    wxCommandEvent close(wxEVT_CLOSE_WINDOW);
+    ((wxEvtHandler *)_obj)->AddPendingEvent(close);
+    return true;
   }
 
   frame *frame::create(frame *parent, const char *title, int w, int h, long style)
   {
+    safe_gui_lock lock;
     frame   *newfrm = NULL;
     wxFrame *wxfrm  = NULL;
     try {
@@ -59,6 +62,7 @@ namespace lev
       newfrm->_id = wxfrm->GetId();
       newfrm->_obj = wxfrm;
       newfrm->seticon(icon::levana_icon());
+      newfrm->wx_managed = true;
       return newfrm;
     }
     catch (...) {
@@ -162,7 +166,6 @@ namespace lev
   void frame::set_menubar(menubar *mb)
   {
     ((wxFrame *)_obj)->SetMenuBar((wxMenuBar *)mb->_obj);
-    mb->_managing = false;
   }
 
   int frame::set_menubar_l(lua_State *L)
