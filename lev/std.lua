@@ -9,7 +9,6 @@
 
 require 'lev'
 require 'lev/gui'
---require 'lev/media'
 
 function _(str)
   return str

@@ -127,7 +127,7 @@ extern "C" {
           .def("blendmode", &canvas::blendmode)
           .def("clear", &canvas::clear)
           .def("clearcolor", &canvas::clearcolor)
-          .def("draw", &canvas::drawbitmap)
+          .def("draw", &canvas::draw_image)
           .def("flush", &canvas::flush)
           .def("line",  &canvas::line)
           .def("set2d", &canvas::set2d)
@@ -153,7 +153,6 @@ extern "C" {
           .def("setpage", &htmlview::setpage)
           .def("totext", &htmlview::totext),
         class_<player, control>("player")
-          .def(constructor<control*,int,int>())
           .def("loadlocal", &player::loadlocal)
           .def("loaduri", &player::loaduri)
           .def("pause", &player::pause)
@@ -163,7 +162,11 @@ extern "C" {
           .property("ispaused", &player::ispaused)
           .property("isplaying", &player::isplaying)
           .property("isstopped", &player::isstopped)
-          .property("volume", &player::getvolume, &player::setvolume),
+          .property("volume", &player::getvolume, &player::setvolume)
+          .scope
+          [
+            def("create_c", &player::create, adopt(result))
+          ],
         class_<menu, control>("menu")
           .scope
           [
@@ -177,6 +180,7 @@ extern "C" {
         class_<systray, control>("systray")
           .def("popup", &systray::popup)
           .def("set_icon", &systray::set_icon)
+          .property("menu_generator", &systray::get_menu_generator, &systray::set_menu_generator)
           .scope
           [
             def("create_c", &systray::create, adopt(result))
@@ -193,6 +197,7 @@ extern "C" {
     register_to(L, globals(L)["lev"]["gui"]["frame"], "create", &frame::create_l);
     register_to(L, globals(L)["lev"]["gui"]["menu"], "create", &menu::create_l);
     register_to(L, globals(L)["lev"]["gui"]["menubar"], "create", &menubar::create_l);
+    register_to(L, globals(L)["lev"]["gui"]["player"], "create", &player::create_l);
     register_to(L, globals(L)["lev"]["gui"]["systray"], "create", &systray::create_l);
     register_to(L, globals(L)["lev"]["gui"]["textbox"], "create", &textbox::create_l);
 
@@ -203,7 +208,7 @@ extern "C" {
       class_<application, control>("app")
         .def("autoloop", &application::autoloop)
         .def("autoloop", &application::autoloop_with)
-        .def("get_keystate", &application::get_keystate)
+        .def("get_keydown", &application::get_keydown)
         .def("run", &application::run)
         .def("run", &application::run_default)
         .def("sleep", &application::sleep)
@@ -245,6 +250,19 @@ extern "C" {
     // primitives
     module(L, "lev")
     [
+      class_<color>("color")
+        .def(constructor<>())
+        .def(constructor<unsigned char,unsigned char,unsigned char>())
+        .def(constructor<unsigned char,unsigned char,unsigned char,unsigned char>())
+        .def(constructor<wxUint32>())
+        .property("a", &color::get_a, &color::set_a)
+        .property("alpha", &color::get_a, &color::set_a)
+        .property("b", &color::get_b, &color::set_b)
+        .property("blue", &color::get_b, &color::set_b)
+        .property("g", &color::get_g, &color::set_g)
+        .property("green", &color::get_g, &color::set_g)
+        .property("r", &color::get_r, &color::set_r)
+        .property("red", &color::get_r, &color::set_r),
       class_<vector>("vector")
         .def(constructor<>())
         .def(constructor<int,int>())
@@ -276,20 +294,6 @@ extern "C" {
         ]
     ];
 
-    module(L, "lev")
-    [
-      class_<bitmap, base>("bitmap")
-        .def(constructor<int,int>())
-        .def(constructor<const char *>())
-        .def("drawcircle", &bitmap::drawcircle)
-        .def("drawtext", &bitmap::drawtext)
-        .def("save", &bitmap::save)
-        .property("h", &bitmap::geth)
-        .property("height", &bitmap::geth)
-        .property("isvalid", &bitmap::isvalid)
-        .property("w", &bitmap::getw)
-        .property("width", &bitmap::getw)
-    ];
 
     module(L, "lev")
     [
@@ -300,6 +304,7 @@ extern "C" {
 //    register_to(L, globals(L)["package"]["preload"], "load_util", &util::luaopen_util);
     register_to(L, globals(L)["lev"], "load_util", &util::luaopen_util);
 
+    luaopen_image(L);
     luaopen_sound(L);
     return 0;
   }

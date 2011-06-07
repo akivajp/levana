@@ -138,12 +138,12 @@ namespace lev
     return 1;
   }
 
-  bool canvas::drawbitmap(bitmap *bmp, int x, int y)
+  bool canvas::draw_image(image *bmp, int x, int y)
   {
-    wxBitmap *b = (wxBitmap*)bmp->_obj.get();
+    wxBitmap *b = (wxBitmap*)bmp->_obj;
     wxAlphaPixelData pixels(*b);
-    int w = bmp->getw();
-    int h = bmp->geth();
+    int w = bmp->get_w();
+    int h = bmp->get_h();
     unsigned char *data = new unsigned char [4 * w * h];
     if (!data) { return false; }
     wxAlphaPixelData::Iterator p(pixels);
@@ -159,7 +159,7 @@ namespace lev
       }
     }
     glRasterPos2i(x, y + h);
-    glDrawPixels(bmp->getw(), bmp->geth(), GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glDrawPixels(bmp->get_w(), bmp->get_h(), GL_RGBA, GL_UNSIGNED_BYTE, data);
     delete[] data;
     return true;
   }

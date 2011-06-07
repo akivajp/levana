@@ -68,7 +68,7 @@ namespace lev
 
   bool control::setshown(bool showing)
   {
-    safe_gui_lock();
+    gui_lock();
     return ((wxWindow *)_obj)->Show(showing);
   }
 

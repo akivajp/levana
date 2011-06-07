@@ -12,25 +12,37 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "base.hpp"
+#include "prim.hpp"
+#include <lua.h>
+
+int luaopen_image(lua_State *L);
 
 namespace lev
 {
-  class bitmap : public base
+
+  class image : public base
   {
+    protected:
+      image();
     public:
-      bitmap(int width, int height);
-      bitmap(const char *filename);
-      void clear();
-      void drawcircle(int x, int y, int radius);
-      void drawtext(const char *text, int x, int y, double angle = 0);
-      int geth() const;
-      int getw() const;
-      bool isvalid() const;
+      ~image();
+      bool clear() { return clear_with(color()); }
+      bool clear_with(color c);
+      static image* create(int width, int height);
+      bool draw_circle(int x, int y, int radius, color border_color);
+      bool draw_circle_fill(int x, int y, int radius, color border_color, color filling_color);
+      void draw_text(const char *text, int x, int y, double angle = 0, color c = color::black());
+      int get_h() const;
+      virtual type_id get_type_id() const { return LEV_TIMAGE; }
+      virtual const char *get_type_name() const { return "image"; }
+      int get_w() const;
+      static bool init();
+      static image* load(const char *filename);
       bool save(const char *filename) const;
       // friend classes
       friend class canvas;
     private:
-      boost::shared_ptr<void> _obj;
+      void *_obj;
   };
 }
 

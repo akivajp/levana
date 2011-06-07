@@ -26,7 +26,7 @@ namespace lev
       void autoloop();
       void autoloop_with(frame *frm);
       static bool entry(lua_State *L, int argc, char **argv);
-      bool get_keystate(const char *key);
+      bool get_keydown(const char *key);
       const char* get_name();
       virtual luabind::object get_onany();
       virtual luabind::object get_onidle();
@@ -53,11 +53,11 @@ namespace lev
     private:
   };
 
-  class safe_gui_lock
+  class gui_lock
   {
     public:
-      safe_gui_lock();
-      ~safe_gui_lock();
+      gui_lock();
+      ~gui_lock();
   };
 }
 

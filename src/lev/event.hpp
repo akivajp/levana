@@ -24,6 +24,7 @@ namespace lev
       virtual ~control();
     public:
       virtual bool connect(int type, luabind::object lua_func) { return false; }
+      void *get_obj() { return _obj; }
       virtual luabind::object get_onany() { return luabind::object(); }
       virtual luabind::object get_onidle() { return luabind::object(); }
       virtual luabind::object get_onmenu(int id) { return luabind::object(); }

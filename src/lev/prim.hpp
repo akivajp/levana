@@ -10,8 +10,36 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
+#include "base.hpp"
+#include <wx/wx.h>
+
 namespace lev
 {
+
+  class color : public base
+  {
+    public:
+      color(unsigned char r = 0, unsigned char g = 0, unsigned char b = 0, unsigned char a = 255);
+      color(wxUint32 argb_code);
+      unsigned char get_a() const { return _a; }
+      unsigned char get_b() const { return _b; }
+      unsigned char get_g() const { return _g; }
+      unsigned char get_r() const { return _r; }
+      wxUint32 get_code32() const;
+      bool set_a(unsigned char a) { _a = a; return true; }
+      bool set_b(unsigned char b) { _b = b; return true; }
+      bool set_g(unsigned char g) { _g = g; return true; }
+      bool set_r(unsigned char r) { _r = r; return true; }
+
+      static const color black() { return color(0, 0, 0, 255); }
+      static const color blue() { return color(0, 0, 255, 255); }
+      static const color red() { return color(255, 0, 0, 255); }
+      static const color transparent() { return color(0, 0, 0, 0); }
+
+    private:
+      unsigned char _r, _g, _b, _a;
+  };
+
   class vector
   {
     public:

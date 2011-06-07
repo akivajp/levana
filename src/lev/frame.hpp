@@ -30,10 +30,12 @@ namespace lev
       static void settop(frame *top);
       bool close(bool force);
       bool close_noforce() { return close(false); }
-      static frame *create(frame *parent, const char *title, int w, int h, long style);
+      static frame *create(control *parent, const char *title, int w, int h, long style);
       static int create_l(lua_State *L);
       void fit();
       luabind::object get_onkeydown();
+      virtual type_id get_type_id() const { return LEV_TFRAME; }
+      virtual const char *get_type_name() const { return "frame"; }
       void seticon(const icon &i);
       void set_menubar(menubar *mb);
       static int set_menubar_l(lua_State *L);

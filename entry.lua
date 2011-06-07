@@ -22,25 +22,37 @@ end
 frm:fit()
 frm:show()
 --app:autoloop(frm)
---
---while frm.is_valid do
---  if (app:get_keystate("\t")) then print('TAB') end
+
+function idle()
+  i = 1
+  while i do
+    print("i = " .. i)
+    i = i + 1
+    coroutine.yield()
+  end
+end
+co = coroutine.create(idle)
+
+--app.onidle = function()
+--  coroutine.resume(co)
 --end
 
-
-app:run(true)
---while frm.is_valid do
---  if (app:get_keystate('SHIFT')) then
---    if (app:get_keystate('A')) then print('A') end
---  else
---    if (app:get_keystate('A')) then print('a') end
---  end
---  if (app:get_keystate("\t")) then print('TAB') end
---  if (app:get_keystate('ESC')) then
---    print 'ESCAPING!'
---    frm:close()
---  end
---end
+while frm.is_valid do
+  app:yield()
+  if (app:get_keydown('SHIFT')) then
+    if (app:get_keydown('A')) then print('A') end
+  else
+    if (app:get_keydown('A')) then print('a') end
+  end
+  if (app:get_keydown("\t")) then print('TAB') end
+  if (app:get_keydown('ESC')) then
+    if (not send_close) then
+      frm:close()
+      print 'ESCAPING!'
+      send_close  = true
+    end
+  end
+end
 
 print '[END OF FILE]'
 

@@ -29,7 +29,7 @@ namespace lev
       void clearcolor(unsigned char r, unsigned char g, unsigned char b);
       static canvas* create(control *parent, int width, int height);
       static int create_l(lua_State *L);
-      bool drawbitmap(bitmap *bmp, int x, int y);
+      bool draw_image(image *bmp, int x, int y);
       void flush();
       void line(int x1, int y1, int x2, int y2);
       void set2d();

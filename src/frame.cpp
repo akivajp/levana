@@ -42,16 +42,15 @@ namespace lev
     if (!_obj) { return false; }
 //    safe_gui_lock lock;
 //    bool result = ((wxWindow *)_obj)->Close(force);
-    if (force) { return ((wxWindow *)_obj)->Close(force); }
+    return ((wxWindow *)_obj)->Close(force);
 //    ((wxEvtHandler *)_obj)->QueueEvent(new wxCommandEvent(wxEVT_CLOSE_WINDOW));
-    wxCommandEvent close(wxEVT_CLOSE_WINDOW);
-    ((wxEvtHandler *)_obj)->AddPendingEvent(close);
-    return true;
+//    wxCommandEvent close(wxEVT_CLOSE_WINDOW);
+//    ((wxEvtHandler *)_obj)->AddPendingEvent(close);
   }
 
-  frame *frame::create(frame *parent, const char *title, int w, int h, long style)
+  frame *frame::create(control *parent, const char *title, int w, int h, long style)
   {
-    safe_gui_lock lock;
+    gui_lock lock;
     frame   *newfrm = NULL;
     wxFrame *wxfrm  = NULL;
     try {
@@ -74,7 +73,7 @@ namespace lev
   int frame::create_l(lua_State *L)
   {
     using namespace luabind;
-    frame *p = NULL;
+    control *p = NULL;
     const char *title = "Levana Application";
     int w = -1, h = -1;
     const char *s = "default";
@@ -92,9 +91,9 @@ namespace lev
     object t(from_stack(L, -1));
     lua_remove(L, -1);
 
-    if (t["parent"]) { p = touserdata<frame>(t["parent"]); }
-    else if (t["p"]) { p = touserdata<frame>(t["p"]); }
-    else if (t["udata"]) { p = touserdata<frame>(t["udata"]); }
+    if (t["parent"]) { p = object_cast<control *>(t["parent"]); }
+    else if (t["p"]) { p = object_cast<control *>(t["p"]); }
+    else if (t["udata"]) { p = object_cast<control *>(t["udata"]); }
 
     if (t["title"]) { title = object_cast<const char *>(t["title"]); }
     else if (t["t"]) { title = object_cast<const char *>(t["t"]); }

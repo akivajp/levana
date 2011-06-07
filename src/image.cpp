@@ -10,99 +10,174 @@
 
 #include "prec.h"
 #include "lev/image.hpp"
+
+#include <gd.h>
+#include <luabind/luabind.hpp>
+#include <wx/filename.h>
+#include <wx/graphics.h>
 #include <wx/rawbmp.h>
+
+int luaopen_image(lua_State *L)
+{
+  using namespace luabind;
+  using namespace lev;
+
+  module(L, "lev")
+  [
+    class_<image, base>("image")
+      .def("clear", &image::clear)
+      .def("clear", &image::clear_with)
+      .def("draw_circle", &image::draw_circle)
+      .def("draw_circle", &image::draw_circle_fill)
+      .def("draw_text", &image::draw_text)
+      .def("save", &image::save)
+      .property("h", &image::get_h)
+      .property("height", &image::get_h)
+      .property("w", &image::get_w)
+      .property("width", &image::get_w)
+      .scope
+      [
+        def("create", &image::create),
+        def("init", &image::init),
+        def("load", &image::load)
+      ]
+  ];
+
+  return 0;
+}
 
 namespace lev
 {
-  bitmap::bitmap(int width, int height) : base()
+
+  inline static wxBitmap* cast_image(void *obj) { return (wxBitmap *)obj; }
+
+  inline static wxColour to_wxcolor(int r = 0, int g = 0, int b = 0, int a = 255)
   {
-    try {
-      wxBitmap *bmp = new wxBitmap(width, height, 32);
-      _obj.reset(bmp);
-      this->clear();
-    }
-    catch (...) {
-      fprintf(stderr, "bitmap: allocation error");
-    }
+    return wxColour(r, g, b, a);
+  }
+
+  inline static wxColour to_wxcolor(color c)
+  {
+    return wxColour(c.get_r(), c.get_g(), c.get_b(), c.get_a());
   }
 
 
-  bitmap::bitmap(const char *filename)
+  image::image() : base(), _obj(NULL) { }
+
+  image::~image()
   {
-    try {
-      wxString f = wxString(filename, wxConvUTF8);
-      wxImage img(f);
-      wxBitmap *bmp = new wxBitmap(img);
-      _obj.reset(bmp);
-      if ( !(bmp->IsOk()) ) { wxMessageBox(_("error!!!")); }
-    }
-    catch (...) {
-      fprintf(stderr, "bitmap: file load error");
-    }
+    if (_obj) { delete cast_image(_obj); }
   }
 
 
-  void bitmap::clear()
+  bool image::clear_with(color c)
   {
-    if (!_obj) { return; }
-    int num_pix = geth() * getw();
-    wxBitmap *bmp = (wxBitmap *)_obj.get();
+    int num_pix = get_h() * get_w();
+    wxBitmap *bmp = cast_image(_obj);
     wxAlphaPixelData data(*bmp);
-// deprecated in 2.9
-//    data.UseAlpha();
+    data.UseAlpha();
     wxAlphaPixelData::Iterator p(data);
-//    for (int i = 0 ; i < num_pix ; i++, p++) { p.Alpha() = 128; }
+    for (int i = 0 ; i < num_pix ; i++, p++)
+    {
+      p.Red()   = c.get_r();
+      p.Green() = c.get_g();
+      p.Blue()  = c.get_b();
+      p.Alpha() = c.get_a();
+    }
   }
 
 
-  void bitmap::drawcircle(int x, int y, int radius)
+  image* image::create(int width, int height)
   {
-    if (!_obj) { return; }
+    image *img = NULL;
+    try {
+      img = new image;
+      img->_obj = new wxBitmap(width, height, 32);
+    }
+    catch (...) {
+      delete img;
+      return NULL;
+    }
+    img->clear();
+    return img;
+  }
+
+  bool image::draw_circle(int x, int y, int radius, color border_color)
+  {
+    return this->draw_circle_fill(x, y, radius, border_color, color::transparent());
+  }
+
+  bool image::draw_circle_fill(int x, int y, int radius, color border_color, color filling_color)
+  {
     wxMemoryDC dc;
-    wxBitmap *bitmap = (wxBitmap *)_obj.get();
+    wxBitmap *bitmap = cast_image(_obj);
     dc.SelectObject(*bitmap);
-//    wxGCDC gdc(dc);
-//    gdc.DrawCircle(x, y, radius);
-    dc.DrawCircle(x, y, radius);
+    wxGCDC gdc(dc);
+    gdc.SetPen(to_wxcolor(border_color));
+    gdc.SetBrush(to_wxcolor(filling_color));
+    gdc.DrawCircle(x, y, radius);
+    return true;
   }
 
-
-  void bitmap::drawtext(const char *text, int x, int y, double angle)
+  void image::draw_text(const char *text, int x, int y, double angle, color c)
   {
-    if (!_obj) { return; }
     wxMemoryDC dc;
-    wxBitmap &bitmap = *((wxBitmap *)_obj.get());
-    dc.SelectObject(bitmap);
-    dc.DrawRotatedText(wxString(text, wxConvUTF8), x, y, angle);
+    wxBitmap *bitmap = cast_image(_obj);
+    dc.SelectObject(*bitmap);
+    wxGCDC gdc(dc);
+    gdc.SetTextForeground(to_wxcolor(c));
+    gdc.DrawRotatedText(wxString(text, wxConvUTF8), x, y, angle);
+  }
+
+  int image::get_h() const
+  {
+    return cast_image(_obj)->GetHeight();
   }
 
 
-  int bitmap::geth() const
+  int image::get_w() const
   {
-    if (!_obj) { return -1; }
-    return ((wxBitmap *)_obj.get())->GetHeight();
+    return cast_image(_obj)->GetWidth();
   }
 
 
-  int bitmap::getw() const
+  bool image::init()
   {
-    if (!_obj) { return -1; }
-    return ((wxBitmap *)_obj.get())->GetWidth();
+    static bool initialized = false;
+    if (not initialized)
+    {
+      wxInitAllImageHandlers();
+      initialized = true;
+    }
+    return true;
   }
 
 
-  bool bitmap::isvalid() const
+  image* image::load(const char *filename)
   {
-    if (!_obj) { return false; }
-    return ((wxBitmap *)_obj.get())->IsOk();
+    image *img = NULL;
+    wxBitmap *obj = NULL;
+    try {
+      image::init();
+      img = new image;
+      wxString f = wxString(filename, wxConvUTF8);
+      wxImage local_img(f);
+      obj = new wxBitmap(local_img);
+      if (not obj->IsOk()) { throw -1; }
+    }
+    catch (...) {
+      delete img;
+      return NULL;
+    }
+    img->_obj = obj;
+    return img;
   }
 
-
-  bool bitmap::save(const char *filename) const
+  bool image::save(const char *filename) const
   {
-    if (!_obj) { return false; }
     wxString f = wxString(filename, wxConvUTF8);
-    return ((wxBitmap *)_obj.get())->ConvertToImage().SaveFile(f);
+    image::init();
+    return cast_image(_obj)->ConvertToImage().SaveFile(f);
   }
 }
 

@@ -14,13 +14,19 @@
 #include "event.hpp"
 #include "prim.hpp"
 
+#include <lua.h>
+
 namespace lev
 {
 
   class player : public control
   {
+    protected:
+      player();
     public:
-      player(control *parent, int width = -1, int height = -1);
+      virtual ~player();
+      static player* create(control *parent, int width = -1, int height = -1);
+      static int create_l(lua_State *L);
       size getbestsize();
       double getvolume();
       bool ispaused();

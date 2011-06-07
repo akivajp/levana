@@ -27,6 +27,8 @@ namespace lev
       static int append_l(lua_State *L);
       static menu* create(const char *title);
       static int create_l(lua_State *L);
+      virtual type_id get_type_id() const { return LEV_TMENU; }
+      virtual const char *get_type_name() const { return "menu"; }
       friend class systray;
       friend class menubar;
   };

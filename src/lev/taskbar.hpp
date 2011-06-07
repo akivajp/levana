@@ -19,6 +19,7 @@
 
 namespace lev
 {
+
   class systray : public control
   {
     private:
@@ -27,13 +28,17 @@ namespace lev
       virtual ~systray();
       static systray* create();
       static int create_l(lua_State *L);
-      virtual type_id get_type_id() { return LEV_TSYSTRAY; }
+      luabind::object get_menu_generator();
+      virtual type_id get_type_id() const { return LEV_TSYSTRAY; }
+      virtual const char *get_type_name() const { return "systray"; }
       bool popup(menu *m);
       bool set_icon(const icon& i, const char *tooltip = "");
-      void set_menu(menu *m);
-      static int set_menu_l(lua_State *L);
+//      void set_menu(menu *m);
+//      static int set_menu_l(lua_State *L);
+      bool set_menu_generator(luabind::object lua_func);
       virtual bool set_onmenu(int id, luabind::object lua_func);
   };
+
 }
 
 #endif // _TASKBAR_HPP

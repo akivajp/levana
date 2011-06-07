@@ -11,10 +11,9 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
-#include <boost/shared_ptr.hpp>
-
 namespace lev
 {
+
   class base
   {
     public:
@@ -26,9 +25,11 @@ namespace lev
             LEV_TAPP,
             LEV_TFRAME,
             LEV_THTMLVIEW,
+            LEV_TMENU,
             LEV_TSYSTRAY,
             LEV_TTEXTBOX,
           LEV_TCONTROL_END,
+          LEV_TIMAGE,
           LEV_TMIXER,
           LEV_TSIZER,
             LEV_THSIZER,
@@ -43,6 +44,7 @@ namespace lev
       virtual type_id get_type_id() const { return LEV_TBASE; }
       virtual const char *get_type_name() const { return "base"; }
   };
+
 }
 
 #endif // _BASE_HPP

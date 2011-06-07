@@ -50,9 +50,7 @@ namespace lev
       bool Yield();
       lua_State *L;
       char **argv_utf8;
-      class myMainThread *main;
-//      wxEventLoop *old_loop;
-//      wxEventLoop *loop;
+      class myMainThread* main;
     private:
       // Common Connect Interface
       DECLARE_CONNECT();
@@ -75,7 +73,6 @@ namespace lev
 //    loop = new wxEventLoop;
     m_mainLoop = new wxEventLoop();
     wxEventLoop::SetActive(m_mainLoop);
-    wxInitAllImageHandlers();
     wxFileSystem::AddHandler(new wxInternetFSHandler);
     return true;
   }
@@ -83,6 +80,11 @@ namespace lev
   int myApp::OnExit(void)
   {
     del_argv();
+    if (m_mainLoop)
+    {
+      delete m_mainLoop;
+      m_mainLoop = NULL;
+    }
   }
 
   bool myApp::Yield()
@@ -148,9 +150,9 @@ namespace lev
     return true;
   }
 
-  bool application::get_keystate(const char *key)
+  bool application::get_keydown(const char *key)
   {
-    safe_gui_lock lock;
+    gui_lock lock;
 
     if (strstr(key, "CTRL") || strstr(key, "Ctrl") || strstr(key, "ctrl"))
     {
@@ -210,14 +212,27 @@ namespace lev
 
   bool application::run(bool sync)
   {
-    if (wxGetApp().main) { return false; }
-    myMainThread *main = new myMainThread;
-    if (main == NULL) { return false; }
-    (wxGetApp()).main = main;
-    main->Create();
-    main->Run();
-    if (sync) { while (main->IsRunning()) {} }
-    return true;
+    if (sync)
+    {
+      int result = wxGetApp().OnRun();
+      return (result == 0);
+    }
+    else
+    {
+      myMainThread *main = NULL;
+      if (wxGetApp().main) { return false; }
+      try {
+        myMainThread *main = new myMainThread;
+        main->Create();
+        main->Run();
+        wxGetApp().main = main;
+        return true;
+      }
+      catch (...) {
+        delete main;
+        return false;
+      }
+    }
   }
 
   void application::set_name(const char *name)
@@ -283,7 +298,7 @@ namespace lev
     return result;
   }
 
-  safe_gui_lock::safe_gui_lock()
+  gui_lock::gui_lock()
   {
     if (wxGetApp().main && wxGetApp().main->IsRunning())
     {
@@ -293,7 +308,7 @@ namespace lev
     }
   }
 
-  safe_gui_lock::~safe_gui_lock()
+  gui_lock::~gui_lock()
   {
 //    printf(" :LEAVE-");
     if (wxGetApp().main)
@@ -301,6 +316,7 @@ namespace lev
       wxMutexGuiLeave();
 //      printf("OK\n");
     }
+//    else { printf("\n"); }
   }
 
 }

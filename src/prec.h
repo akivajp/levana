@@ -30,6 +30,7 @@ extern "C" {
 #include <wx/fs_inet.h>
 #include <wx/glcanvas.h>
 #include <wx/mediactrl.h>
+#include <wx/rawbmp.h>
 #include <wx/sound.h>
 #include <wx/taskbar.h>
 #include <wx/thread.h>

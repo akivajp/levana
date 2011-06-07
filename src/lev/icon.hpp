@@ -12,6 +12,8 @@
 
 #include "base.hpp"
 
+#include <boost/shared_ptr.hpp>
+
 namespace lev
 {
   class icon : public base

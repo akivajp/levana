@@ -13,7 +13,7 @@ CORE_SRC  = app.cpp draw.cpp entry.cpp event.cpp frame.cpp \
 	    sizer.cpp taskbar.cpp util.cpp
 CORE_OBJS = $(CORE_SRC:%.cpp=%.o)
 CORE_DLIB = lev_core.so
-CORE_LIBS = $(WX_LIBS) -llua -lluabind -lboost_thread
+CORE_LIBS = $(WX_LIBS) -llua -lluabind -lboost_thread -lgd
 
 SOUND_SRC  = sound.cpp
 SOUND_OBJS = $(SOUND_SRC:%.cpp=%.o)
