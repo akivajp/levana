@@ -20,6 +20,7 @@
 #include "gl.hpp"
 #include "gui.hpp"
 #include "image.hpp"
+#include "input.hpp"
 #include "media.hpp"
 #include "prim.hpp"
 #include "sizer.hpp"

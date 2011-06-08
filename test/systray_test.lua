@@ -17,6 +17,6 @@ st.menu_generator = function()
 end
 --st:set_menu(menu)
 
---app:autoloop(frm)
-app:run(true)
+app:autoloop(frm)
+--app:run(true)
 

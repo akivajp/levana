@@ -2,13 +2,12 @@ require 'lev/std'
 require 'lev/gl'
 
 frm = lev.gui.frame.create {}
-draw = lev.gui.canvas.create {p = frm, w = 640, h = 480}
---draw = lev.gui.canvas.create_c(frm, 640, 480)
---draw = lev.gui.canvas.create(frm, 640, 480)
+draw = lev.gui.canvas.create(frm, 640, 480)
 frm:fit()
 frm:show()
 
 --draw:using()
+gl = lev.gl
 draw:setcurrent()
 gl.NewList(1, gl.COMPILE)
 gl.Begin(gl.QUADS)

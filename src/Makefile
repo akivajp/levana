@@ -8,7 +8,7 @@ PCH = prec.h.gch
 WX_LIBS = `wx-config --libs std,media,gl` -lGLU
 RANLIB = ranlib
 
-CORE_SRC  = app.cpp draw.cpp entry.cpp event.cpp frame.cpp \
+CORE_SRC  = app.cpp draw.cpp entry.cpp event.cpp frame.cpp input.cpp \
 	    gl.cpp gui.cpp icon.cpp image.cpp media.cpp menu.cpp prim.cpp \
 	    sizer.cpp taskbar.cpp util.cpp
 CORE_OBJS = $(CORE_SRC:%.cpp=%.o)
@@ -78,6 +78,7 @@ gl.o: gl.cpp lev/gl.hpp
 gui.o: gui.cpp lev/gui.hpp
 icon.o: icon.cpp lev/icon.hpp
 image.o: image.cpp lev/image.hpp
+input.o: input.cpp lev/input.hpp
 main.o: main.cpp lev/app.hpp
 media.o: media.cpp lev/media.hpp
 menu.o: menu.cpp lev/menu.hpp lev/icon.hpp

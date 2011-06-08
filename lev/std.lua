@@ -8,7 +8,6 @@
 -----------------------------------------------------------------------------
 
 require 'lev'
-require 'lev/gui'
 
 function _(str)
   return str

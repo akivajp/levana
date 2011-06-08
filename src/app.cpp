@@ -12,8 +12,6 @@
 #include "lev/app.hpp"
 #include "lev/frame.hpp"
 #include "connect.hpp"
-#include "lev/sound.hpp"
-
 #include <lua.h>
 #include <string>
 
@@ -23,7 +21,7 @@ namespace lev
   class myApp : public wxApp
   {
     public:
-      inline myApp() : main(NULL) {}
+      inline myApp() : main(NULL), istate() {}
 
       void set_argv()
       {
@@ -45,12 +43,25 @@ namespace lev
 
       void del_argv();
       int AutoLoop();
+
+//      int FilterEvent(wxEvent &event)
+//      {
+//        if (event.GetEventType() == wxEVT_KEY_DOWN)
+//        {
+//          printf("ANY KEY!\n");
+//          return true;
+//        }
+//        return -1;
+//      }
+
       virtual bool OnInit(void);
       virtual int OnExit(void);
       bool Yield();
       lua_State *L;
       char **argv_utf8;
       class myMainThread* main;
+      instate  istate;
+      inrecord irecord;
     private:
       // Common Connect Interface
       DECLARE_CONNECT();
@@ -110,7 +121,7 @@ namespace lev
       virtual void OnExit() { wxGetApp().main = NULL; }
   };
 
-  application::application()
+  application::application() : control()
   {
     wxGetApp().OnInit();
     set_name("Levana Application");
@@ -175,6 +186,30 @@ namespace lev
       return wxGetKeyState(wxKeyCode(key[0]));
     }
     return false;
+  }
+
+  inrecord* application::get_inrecord()
+  {
+    inrecord &in = wxGetApp().irecord;
+    if (in._obj) { return &in; }
+    else { return NULL; }
+  }
+
+  instate* application::get_instate()
+  {
+    instate &in = wxGetApp().istate;
+    if (in._obj)
+    {
+      *((wxMouseState *)in._obj) = wxGetMouseState();
+      return &in;
+    }
+    else
+    {
+      in._obj = new wxMouseState();
+      if (in._obj == NULL) { return NULL; }
+      *((wxMouseState *)in._obj) = wxGetMouseState();
+      return &in;
+    }
   }
 
   const char *application::get_name()
@@ -264,10 +299,19 @@ namespace lev
 
   bool application::sleep(int delay_in_msec)
   {
-    if (delay_in_msec < 0) { return false; }
+    inrecord &in = wxGetApp().irecord;
     wxStopWatch sw;
+
+    if (delay_in_msec < 0) { return false; }
     sw.Start();
-    while (sw.Time() < delay_in_msec) {}
+    in.clear();
+    do {
+      wxMouseState ms = wxGetMouseState();
+      if (ms.LeftDown()) { in.set_left_down(); }
+      if (ms.MiddleDown()) { in.set_middle_down(); }
+      if (ms.RightDown()) { in.set_right_down(); }
+      yield();
+    } while (sw.Time() < delay_in_msec);
     return true;
   }
 

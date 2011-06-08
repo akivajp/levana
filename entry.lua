@@ -38,7 +38,6 @@ co = coroutine.create(idle)
 --end
 
 while frm.is_valid do
-  app:yield()
   if (app:get_keydown('SHIFT')) then
     if (app:get_keydown('A')) then print('A') end
   else
@@ -52,6 +51,7 @@ while frm.is_valid do
       send_close  = true
     end
   end
+  app:sleep()
 end
 
 print '[END OF FILE]'

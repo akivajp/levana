@@ -99,6 +99,7 @@ extern "C" {
     ];
 
 
+
     // GUI control, event handling
     module(L, "lev")
     [
@@ -212,11 +213,15 @@ extern "C" {
         .def("run", &application::run)
         .def("run", &application::run_default)
         .def("sleep", &application::sleep)
+        .def("sleep", &application::sleep_def)
         .def("yield", &application::yield)
+        .property("input", &application::get_instate)
+        .property("inrecord", &application::get_inrecord)
+        .property("instate", &application::get_instate)
         .property("name", &application::get_name, &application::set_name)
         .property("title", &application::get_name, &application::set_name)
         .property("top",  &application::get_top,  &application::settop)
-        .property("topwindow",  &application::get_top,  &application::settop)
+        .property("top_window",  &application::get_top,  &application::settop)
         .scope
         [
           def("get", &application::getapp)
@@ -300,11 +305,12 @@ extern "C" {
       def("get_app", &application::getapp)
     ];
 
-    register_to(L, globals(L)["package"]["preload"], "gl", luaopen_gl);
+    register_to(L, globals(L)["package"]["preload"], "lev/gl", luaopen_gl);
 //    register_to(L, globals(L)["package"]["preload"], "load_util", &util::luaopen_util);
     register_to(L, globals(L)["lev"], "load_util", &util::luaopen_util);
 
     luaopen_image(L);
+    luaopen_input(L);
     luaopen_sound(L);
     return 0;
   }

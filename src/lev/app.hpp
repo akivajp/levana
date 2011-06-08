@@ -13,10 +13,12 @@
 
 #include "event.hpp"
 #include "frame.hpp"
+#include "input.hpp"
 #include <luabind/luabind.hpp>
 
 namespace lev
 {
+
   class application : public control
   {
     protected:
@@ -27,6 +29,8 @@ namespace lev
       void autoloop_with(frame *frm);
       static bool entry(lua_State *L, int argc, char **argv);
       bool get_keydown(const char *key);
+      inrecord* get_inrecord();
+      instate* get_instate();
       const char* get_name();
       virtual luabind::object get_onany();
       virtual luabind::object get_onidle();
@@ -43,14 +47,13 @@ namespace lev
       virtual bool set_onkeydown(luabind::object lua_func);
       void settop(frame *top);
       bool sleep(int delay_in_msec);
+      bool sleep_def() { sleep(0); }
       bool yield();
 
       static application *getapp();
       static lua_State* getL();
       static int msgbox(const char *msg, const char *caption);
       static inline int msgbox_nocap(const char *msg) { return msgbox(msg, "Message"); }
-
-    private:
   };
 
   class gui_lock
