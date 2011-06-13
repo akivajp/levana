@@ -15,7 +15,7 @@ typedef struct lua_State lua_State;
 
 extern "C"
 {
-  extern int luaopen_gl(lua_State *L);
+  extern int luaopen_lev_gl(lua_State *L);
 }
 
 #endif // _GL_HPP

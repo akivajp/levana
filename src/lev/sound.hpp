@@ -18,7 +18,7 @@
 #include <string>
 #include <vector>
 
-extern "C" { int luaopen_sound(lua_State *L); }
+extern "C" { int luaopen_lev_sound(lua_State *L); }
 
 namespace lev
 {
@@ -37,7 +37,7 @@ namespace lev
       bool get_playing();
       double get_position();
       virtual type_id get_type_id() const { return LEV_TCHANNEL; }
-      virtual const char *get_type_name() const { return "channel"; }
+      virtual const char *get_type_name() const { return "lev.sound.channel"; }
       bool load(const char *filename);
       bool open(const char *filename);
       bool pause() { return set_playing(false); }
@@ -66,7 +66,7 @@ namespace lev
       static int get_field(lua_State *L);
       bool get_playing();
       virtual type_id get_type_id() const { return LEV_TMIXER; }
-      virtual const char *get_type_name() const { return "mixer"; }
+      virtual const char *get_type_name() const { return "lev.sound.mixer"; }
       bool pause() { return set_playing(false); }
       bool play() { return set_playing(true); }
       bool set_playing(bool play);

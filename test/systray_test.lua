@@ -11,12 +11,11 @@ st.menu_generator = function()
   id = menu:append('Exit(&X)')
   menu.fmap[id] = function()
     lev.gui.msgbox('Bye!')
-  --  frm:close()
+    frm:close()
   end
   return menu
 end
 --st:set_menu(menu)
 
 app:autoloop(frm)
---app:run(true)
 

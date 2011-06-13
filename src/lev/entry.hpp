@@ -15,6 +15,12 @@ typedef struct lua_State lua_State;
 extern "C"
 {
   extern int luaopen_lev(lua_State *L);
+  extern int luaopen_lev_std(lua_State *L);
+}
+
+namespace lev
+{
+  void set_preloaders(lua_State *L);
 }
 
 #endif // _ENTRY_HPP

@@ -14,25 +14,27 @@
 #include "base.hpp"
 #include <lua.h>
 
-int luaopen_input(lua_State *L);
+extern "C" {
+  int luaopen_lev_input(lua_State *L);
+}
 
 namespace lev
 {
 
-  class input : public base
+  class inbase : public base
   {
     protected:
-      input() {}
-      virtual ~input() {}
+      inbase() {}
+      virtual ~inbase() {}
     public:
       virtual bool get_left_down() const = 0;
       virtual bool get_middle_down() const = 0;
       virtual bool get_right_down() const = 0;
       virtual type_id get_type_id() const { return LEV_TINPUT; }
-      virtual const char *get_type_name() const { return "lev.input"; }
+      virtual const char *get_type_name() const { return "lev.input.inbase"; }
   };
 
-  class instate : public input
+  class instate : public inbase
   {
     public:
       instate();
@@ -43,14 +45,14 @@ namespace lev
       virtual bool get_middle_down() const;
       virtual bool get_right_down() const;
       virtual type_id get_type_id() const { return LEV_TINSTATE; }
-      virtual const char *get_type_name() const { return "lev.instate"; }
+      virtual const char *get_type_name() const { return "lev.input.instate"; }
 
       friend class application;
     private:
       void *_obj;
   };
 
-  class inrecord : public input
+  class inrecord : public inbase
   {
     public:
       inrecord();

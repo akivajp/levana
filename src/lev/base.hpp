@@ -11,6 +11,8 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
+#include <string>
+
 namespace lev
 {
 
@@ -47,6 +49,7 @@ namespace lev
     public:
       virtual type_id get_type_id() const { return LEV_TBASE; }
       virtual const char *get_type_name() const { return "base"; }
+      static std::string tostring(base *b);
   };
 
 }

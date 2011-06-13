@@ -31,7 +31,7 @@ namespace lev
     try {
       new_player = new player();
       wxWindow *p = NULL;
-      if (parent) { p = (wxWindow *)parent->_obj; }
+      if (parent) { p = (wxWindow *)parent->get_rawobj(); }
       media = new wxMediaCtrl(p, -1, wxEmptyString, wxDefaultPosition, wxSize(width, height));
     }
     catch (...) {

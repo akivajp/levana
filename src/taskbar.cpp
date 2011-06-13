@@ -37,7 +37,7 @@ namespace lev
         {
           owner["set_onmenu"](owner, i.key(), *i);
         }
-        return (wxMenu *)m->get_obj();
+        return (wxMenu *)m->get_rawobj();
       }
 
 //      wxMenu *menu;

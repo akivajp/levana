@@ -1,4 +1,4 @@
-require 'lev'
+require 'lev.sound'
 
 if not arg[1] then
   if arg[-1] then

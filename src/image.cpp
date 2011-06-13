@@ -11,16 +11,18 @@
 #include "prec.h"
 #include "lev/image.hpp"
 
-#include <gd.h>
 #include <luabind/luabind.hpp>
 #include <wx/filename.h>
 #include <wx/graphics.h>
 #include <wx/rawbmp.h>
 
-int luaopen_image(lua_State *L)
+int luaopen_lev_image(lua_State *L)
 {
   using namespace luabind;
   using namespace lev;
+
+  open(L);
+  globals(L)["require"]("lev");
 
   module(L, "lev")
   [
@@ -98,7 +100,11 @@ namespace lev
       delete img;
       return NULL;
     }
+#ifdef __WXMSW__
     img->clear();
+#else
+    img->clear_with(color(0, 0, 0, 255));
+#endif
     return img;
   }
 

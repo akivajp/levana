@@ -15,7 +15,9 @@
 #include "prim.hpp"
 #include <lua.h>
 
-int luaopen_image(lua_State *L);
+extern "C" {
+  int luaopen_lev_image(lua_State *L);
+}
 
 namespace lev
 {

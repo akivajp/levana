@@ -89,7 +89,7 @@ namespace lev
     try
     {
       cv = new canvas();
-      if (parent) { p = (wxWindow *)parent->_obj; }
+      if (parent) { p = (wxWindow *)parent->get_rawobj(); }
       cv->_obj = new myCanvas(p, attribs, width, height);
     }
     catch (...)

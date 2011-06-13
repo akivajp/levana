@@ -13,7 +13,7 @@
 
 #include <luabind/luabind.hpp>
 
-int luaopen_input(lua_State *L)
+int luaopen_lev_input(lua_State *L)
 {
   using namespace luabind;
   using namespace lev;
@@ -22,14 +22,14 @@ int luaopen_input(lua_State *L)
   [
     namespace_("input")
     [
-      class_<input, base>("input")
-        .property("left_down", &input::get_left_down)
-        .property("middle_down", &input::get_middle_down)
-        .property("right_down", &input::get_right_down),
-      class_<instate, input>("instate")
+      class_<inbase, base>("inbase")
+        .property("left_down", &inbase::get_left_down)
+        .property("middle_down", &inbase::get_middle_down)
+        .property("right_down", &inbase::get_right_down),
+      class_<instate, inbase>("instate")
         .property("x", &instate::get_x)
         .property("y", &instate::get_y),
-      class_<inrecord, input>("input")
+      class_<inrecord, inbase>("inrecord")
     ]
   ];
 
@@ -39,7 +39,7 @@ int luaopen_input(lua_State *L)
 namespace lev
 {
 
-  instate::instate() : input(), _obj(NULL) { }
+  instate::instate() : inbase(), _obj(NULL) { }
 
   instate::~instate() { delete (wxMouseState *)_obj; }
 
@@ -86,7 +86,7 @@ namespace lev
       bool right_down, right_up;
   };
 
-  inrecord::inrecord() : input(), _obj(NULL)
+  inrecord::inrecord() : inbase(), _obj(NULL)
   {
     try {
       _obj = new myRecord;

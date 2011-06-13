@@ -1,4 +1,4 @@
-require 'lev/std'
+require 'lev.std'
 
 app = lev.app.get()
 --mixer = lev.sound.mixer.create()
@@ -17,25 +17,11 @@ txt.onkeydown = function(e)
   print("key = " .. e.key)
 end
 
---mixer[1]:play('kami.ogg')
+--mixer[1]:play('test.ogg')
 
 frm:fit()
 frm:show()
 --app:autoloop(frm)
-
-function idle()
-  i = 1
-  while i do
-    print("i = " .. i)
-    i = i + 1
-    coroutine.yield()
-  end
-end
-co = coroutine.create(idle)
-
---app.onidle = function()
---  coroutine.resume(co)
---end
 
 while frm.is_valid do
   if (app:get_keydown('SHIFT')) then

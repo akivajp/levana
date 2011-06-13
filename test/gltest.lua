@@ -1,5 +1,5 @@
-require 'lev/std'
-require 'lev/gl'
+require 'lev.std'
+require 'lev.gl'
 
 frm = lev.gui.frame.create {}
 draw = lev.gui.canvas.create(frm, 640, 480)

@@ -19,65 +19,52 @@
 #include <luabind/luabind.hpp>
 #include <map>
 
-extern "C" {
-  int luaopen_sound(lua_State *L)
-  {
-    using namespace luabind;
-    using namespace lev;
+int luaopen_lev_sound(lua_State *L)
+{
+  using namespace luabind;
+  using namespace lev;
 
-    luabind::open(L);
+  luabind::open(L);
+  globals(L)["require"]("lev");
 
-    // base of all
-    if (not globals(L)["lev"])
-    {
-      module(L, "lev")
-      [
-        class_<base>("base")
-          .property("type_id", &base::get_type_id)
-          .property("type_name", &base::get_type_name)
-      ];
-    }
-
-    module(L, "lev")
+  module(L, "lev")
+  [
+    namespace_("sound")
     [
-      namespace_("sound")
-      [
-        class_<channel, base>("channel")
-          .def("clean", &channel::clean)
-          .def("load", &channel::load)
-          .def("open", &channel::open)
-          .def("pause", &channel::pause)
-          .def("play", &channel::play)
-          .def("play", &channel::play_with)
-          .property("id", &channel::get_id)
-          .property("is_playing", &channel::get_playing, &channel::set_playing)
-          .property("isplaying", &channel::get_playing, &channel::set_playing)
-          .property("len", &channel::get_length)
-          .property("length", &channel::get_length)
-          .property("pan", &channel::get_pan, &channel::set_pan)
-          .property("pos", &channel::get_position, &channel::set_position)
-          .property("position", &channel::get_position, &channel::set_position),
-        class_<mixer, base>("mixer")
-          .def("get_channel", &mixer::get_channel)
-          .def("pause", &mixer::pause)
-          .def("play", &mixer::play)
-          .property("is_playing", &mixer::get_playing, &mixer::set_playing)
-          .property("isplaying", &mixer::get_playing, &mixer::set_playing)
-          .property("type_id", &mixer::get_type_id)
-          .property("type_name", &mixer::get_type_name)
-          .scope
-          [
-            def("create_c", &mixer::create, adopt(result))
-          ],
-        def("init", &sound::init),
-        def("play", &sound::play),
-        def("stop", &sound::stop_all)
-      ]
-    ];
-    register_to(L, globals(L)["lev"]["sound"]["mixer"], "create", &mixer::create_l);
-
-    return 0;
-  }
+      class_<channel, base>("channel")
+        .def("clean", &channel::clean)
+        .def("load", &channel::load)
+        .def("open", &channel::open)
+        .def("pause", &channel::pause)
+        .def("play", &channel::play)
+        .def("play", &channel::play_with)
+        .property("id", &channel::get_id)
+        .property("is_playing", &channel::get_playing, &channel::set_playing)
+        .property("isplaying", &channel::get_playing, &channel::set_playing)
+        .property("len", &channel::get_length)
+        .property("length", &channel::get_length)
+        .property("pan", &channel::get_pan, &channel::set_pan)
+        .property("pos", &channel::get_position, &channel::set_position)
+        .property("position", &channel::get_position, &channel::set_position),
+      class_<mixer, base>("mixer")
+        .def("get_channel", &mixer::get_channel)
+        .def("pause", &mixer::pause)
+        .def("play", &mixer::play)
+        .property("is_playing", &mixer::get_playing, &mixer::set_playing)
+        .property("isplaying", &mixer::get_playing, &mixer::set_playing)
+        .property("type_id", &mixer::get_type_id)
+        .property("type_name", &mixer::get_type_name)
+        .scope
+        [
+          def("create_c", &mixer::create, adopt(result))
+        ],
+      def("init", &sound::init),
+      def("play", &sound::play),
+      def("stop", &sound::stop_all)
+    ]
+  ];
+  register_to(L, globals(L)["lev"]["sound"]["mixer"], "create", &mixer::create_l);
+  return 0;
 }
 
 namespace lev

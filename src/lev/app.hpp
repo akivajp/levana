@@ -37,7 +37,7 @@ namespace lev
       virtual luabind::object get_onkeydown();
       frame *get_top();
       virtual type_id get_type_id() const { return LEV_TAPP; }
-      virtual const char *get_type_name() const { return "app"; }
+      virtual const char *get_type_name() const { return "lev.app"; }
       void mainloop();
       bool run(bool sync = true);
       bool run_default() { run(true); }

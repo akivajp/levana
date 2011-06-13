@@ -24,11 +24,11 @@ namespace lev
       virtual ~control();
     public:
       virtual bool connect(int type, luabind::object lua_func) { return false; }
-      void *get_obj() { return _obj; }
       virtual luabind::object get_onany() { return luabind::object(); }
       virtual luabind::object get_onidle() { return luabind::object(); }
       virtual luabind::object get_onmenu(int id) { return luabind::object(); }
       virtual luabind::object get_onkeydown() { return luabind::object(); }
+      void *get_rawobj() { return _obj; }
       virtual bool set_onany(luabind::object lua_func) { return false; }
       virtual bool set_onidle(luabind::object lua_func) { return false; }
       virtual bool set_onkeydown(luabind::object lua_func) { return false; }
@@ -45,12 +45,12 @@ namespace lev
       inline bool show() { return setshown(true); }
 
       // friend classes
-      friend class canvas;
-      friend class frame;
-      friend class htmlview;
-      friend class player;
-      friend class sizer;
-      friend class textbox;
+//      friend class canvas;
+//      friend class frame;
+//      friend class htmlview;
+//      friend class player;
+//      friend class sizer;
+//      friend class textbox;
 
     protected:
       bool wx_managed;
@@ -66,7 +66,8 @@ namespace lev
       event(void *e);
       ~event();
       int get_id() const;
-      int get_key() const;
+      const char *get_key() const;
+      int get_keycode() const;
       bool request();
       void skip();
     protected:

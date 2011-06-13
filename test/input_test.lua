@@ -1,4 +1,5 @@
 require 'lev'
+require 'lev.input'
 
 app = lev.app.get()
 while 1 do

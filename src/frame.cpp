@@ -55,7 +55,7 @@ namespace lev
     wxFrame *wxfrm  = NULL;
     try {
       newfrm = new frame();
-      wxWindow *p = parent ? (wxWindow *)parent->_obj : NULL;
+      wxWindow *p = parent ? (wxWindow *)parent->get_rawobj() : NULL;
       if (style == -1) { style = wxDEFAULT_FRAME_STYLE; }
       wxfrm = new myFrame(p, wxString(title, wxConvUTF8), w, h, style);
       newfrm->_id = wxfrm->GetId();

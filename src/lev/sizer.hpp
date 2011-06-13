@@ -23,21 +23,22 @@ namespace lev
       sizer();
       virtual ~sizer();
     public:
-      void add_ctrl(control *c, int proportion = 0, int flag = 0, int border = 0);
-      void add_sizer(sizer *s, int proportion = 0, int flag = 0, int border = 0);
-      void add_space(int width, int height, int proportion = 0, int flag = 0, int border = 0);
+      void add_ctrl(control *c, int proportion = 0, int border = 0);
+      void add_sizer(sizer *s, int proportion = 0, int border = 0);
+      void add_space(int width, int height, int proportion = 0, int border = 0);
       static int add_l(lua_State *L);
       void fit(control *c);
       void fitinside(control *c);
-      virtual type_id get_type_id() { return LEV_TSIZER; }
+      void *get_rawobj() { return _obj; }
+      virtual type_id get_type_id() const { return LEV_TSIZER; }
+      virtual const char *get_type_name() const { return "lev.gui.sizer"; }
       void layout();
-      // lua cfunctions
-      static int ladd(lua_State *L);
+
       // friend classes
       friend class control;
 
     protected:
-      bool _managing;
+      bool wx_managed;
       void *_obj;
   };
 

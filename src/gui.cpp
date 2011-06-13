@@ -34,7 +34,7 @@ namespace lev
   {
     try {
       wxWindow *p = NULL;
-      if (parent) { p = (wxWindow *)parent->_obj; }
+      if (parent) { p = (wxWindow *)parent->get_rawobj(); }
       wxHtmlWindow *html = new myHtmlWindow(p, width, height);
       _id = html->GetId();
       _obj = html;
@@ -87,7 +87,7 @@ namespace lev
     if (tb == NULL) { return NULL; }
     wxWindow *p = NULL;
     wxString val = wxEmptyString;
-    if (parent) { p = (wxWindow *)parent->_obj; }
+    if (parent) { p = (wxWindow *)parent->get_rawobj(); }
     if (value) { val = wxString(value, wxConvUTF8); }
 
     myTextCtrl *text = new myTextCtrl(p, width, height, val);

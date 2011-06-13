@@ -18,32 +18,34 @@
 namespace lev
 {
 
-  sizer::sizer() : base(), _managing(false), _obj(NULL) {}
+  inline static wxSizer *cast_sizer(void *obj) { return (wxSizer *)obj; }
+
+  sizer::sizer() : base(), wx_managed(false), _obj(NULL) {}
 
   sizer::~sizer()
   {
-    if (_managing)
-    {
-      delete (wxSizer *)_obj;
-    }
-    else
+    if (wx_managed)
     {
       // object is in wxWidgets control
     }
+    else
+    {
+      delete (wxSizer *)_obj;
+    }
   }
 
-  void sizer::add_ctrl(control *c, int proportion, int flag, int border)
+  void sizer::add_ctrl(control *c, int proportion, int border)
   {
-    ((wxSizer *)_obj)->Add((wxWindow*)c->_obj, proportion, flag, border);
+    cast_sizer(_obj)->Add((wxWindow*)c->get_rawobj(), proportion, wxGROW, border);
   }
-  void sizer::add_sizer(sizer *s, int proportion, int flag, int border)
+  void sizer::add_sizer(sizer *s, int proportion, int border)
   {
-    ((wxSizer *)_obj)->Add((wxSizer*)s->_obj, proportion, flag, border);
-    s->_managing = false;
+    cast_sizer(_obj)->Add((wxSizer*)s->get_rawobj(), proportion, wxGROW, border);
+    s->wx_managed = true;
   }
-  void sizer::add_space(int width, int height, int proportion, int flag, int border)
+  void sizer::add_space(int width, int height, int proportion, int border)
   {
-    ((wxSizer *)_obj)->Add(width, height, proportion, flag, border);
+    ((wxSizer *)_obj)->Add(width, height, proportion, wxGROW, border);
   }
 
   int sizer::add_l(lua_State *L)
@@ -52,7 +54,7 @@ namespace lev
 //    object obj(from_stack(L, 1));
     sizer *sz = object_cast<sizer *>(object(from_stack(L, 1)));
     object o;
-    int p = 0, f = 0, b = 0;
+    int p = 0, b = 0;
     int w = 10, h = 10;
 
     int n = lua_gettop(L);
@@ -83,14 +85,9 @@ namespace lev
       else if (t["p"]) { p = object_cast<int>(t["p"]); }
       else if (t["num1"]) { p = object_cast<int>(t["num1"]); }
 
-      if (t["flag"]) { f = object_cast<int>(t["flag"]); }
-      else if (t["fl"]) { f = object_cast<int>(t["fl"]); }
-      else if (t["f"]) { f = object_cast<int>(t["f"]); }
-      else if (t["num2"]) { f = object_cast<int>(t["num2"]); }
-
       if (t["border"]) { b = object_cast<int>(t["border"]); }
       else if (t["b"]) { b = object_cast<int>(t["b"]); }
-      else if (t["num3"]) { b = object_cast<int>(t["num3"]); }
+      else if (t["num2"]) { b = object_cast<int>(t["num2"]); }
     }
     else
     {
@@ -107,14 +104,9 @@ namespace lev
       else if (t["p"]) { p = object_cast<int>(t["p"]); }
       else if (t["num3"]) { p = object_cast<int>(t["num3"]); }
 
-      if (t["flag"]) { f = object_cast<int>(t["flag"]); }
-      else if (t["fl"]) { f = object_cast<int>(t["fl"]); }
-      else if (t["f"]) { f = object_cast<int>(t["f"]); }
-      else if (t["num4"]) { f = object_cast<int>(t["num4"]); }
-
       if (t["border"]) { b = object_cast<int>(t["border"]); }
       else if (t["b"]) { b = object_cast<int>(t["b"]); }
-      else if (t["num5"]) { b = object_cast<int>(t["num5"]); }
+      else if (t["num4"]) { b = object_cast<int>(t["num4"]); }
     }
 
     if (o)
@@ -123,29 +115,29 @@ namespace lev
       if (LEV_TCONTROL <= id && id < LEV_TCONTROL_END)
       {
         control *ctrl = object_cast<control *>(o);
-        sz->add_ctrl(ctrl, p, f, b);
+        sz->add_ctrl(ctrl, p, b);
       }
       else if (LEV_TSIZER <= id && id < LEV_TSIZER_END)
       {
         sizer *s = object_cast<sizer *>(o);
-        sz->add_sizer(s, p, f, b);
+        sz->add_sizer(s, p, b);
       }
     }
     else
     {
-      sz->add_space(w, h, p, f, b);
+      sz->add_space(w, h, p, b);
     }
     return 0;
   }
 
   void sizer::fit(control *c)
   {
-    ((wxSizer *)_obj)->Fit((wxWindow*)c->_obj);
+    cast_sizer(_obj)->Fit((wxWindow*)c->get_rawobj());
   }
 
   void sizer::fitinside(control *c)
   {
-    ((wxSizer *)_obj)->FitInside((wxWindow *)c->_obj);
+    cast_sizer(_obj)->FitInside((wxWindow *)c->get_rawobj());
   }
 
   void sizer::layout()
@@ -164,7 +156,7 @@ namespace lev
     wxBoxSizer *obj = new wxBoxSizer(wxHORIZONTAL);
     if (obj == NULL) { goto Error; }
     sz->_obj = obj;
-    sz->_managing = true;
+    sz->wx_managed = false;
     return sz;
 
     Error:
@@ -198,7 +190,7 @@ namespace lev
     wxBoxSizer *obj = new wxBoxSizer(wxVERTICAL);
     if (obj == NULL) { goto Error; }
     sz->_obj = obj;
-    sz->_managing = true;
+    sz->wx_managed = false;
     return sz;
 
     Error:

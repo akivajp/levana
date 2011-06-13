@@ -60,9 +60,9 @@ namespace lev
   {
     if (s)
     {
-      ((wxWindow *)_obj)->SetSizer((wxSizer *)s->_obj);
+      ((wxWindow *)_obj)->SetSizer((wxSizer *)s->get_rawobj());
       _sz = s;
-      s->_managing = false;
+      s->wx_managed = true;
     }
   }
 
@@ -86,7 +86,15 @@ namespace lev
     return ((wxEvent *)_obj)->GetId();
   }
 
-  int event::get_key() const
+  const char *event::get_key() const
+  {
+    switch ( ((wxKeyEvent *)_obj)->GetKeyCode() )
+    {
+      default:  return "";
+    }
+  }
+
+  int event::get_keycode() const
   {
     return ((wxKeyEvent *)_obj)->GetKeyCode();
   }
