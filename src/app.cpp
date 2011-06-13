@@ -165,21 +165,172 @@ namespace lev
   {
     gui_lock lock;
 
-    if (strstr(key, "CTRL") || strstr(key, "Ctrl") || strstr(key, "ctrl"))
+    if (strstr(key, "ALT") || strstr(key, "Alt") || strstr(key, "alt"))
+    {
+      return wxGetKeyState(WXK_ALT);
+    }
+    if (strstr(key, "BACK") || strstr(key, "Back") ||
+        strstr(key, "back") || strstr(key, "BS"))
+    {
+      return wxGetKeyState(WXK_BACK);
+    }
+    if (strstr(key, "CANCEL") || strstr(key, "Cancel") || strstr(key, "cancel"))
+    {
+      return wxGetKeyState(WXK_CANCEL);
+    }
+    if (strstr(key, "CAPITAL") || strstr(key, "Capital") || strstr(key, "capital"))
+    {
+      return wxGetKeyState(WXK_CAPITAL);
+    }
+    if (strstr(key, "CLEAR") || strstr(key, "Clear") || strstr(key, "clear"))
+    {
+      return wxGetKeyState(WXK_CLEAR);
+    }
+    if (strstr(key, "CONTROL") || strstr(key, "Control") || strstr(key, "control") || 
+        strstr(key, "CTRL")    || strstr(key, "Ctrl")    || strstr(key, "ctrl"))
     {
       return wxGetKeyState(WXK_CONTROL);
+    }
+    if (strstr(key, "DEL") || strstr(key, "Del") || strstr(key, "del"))
+    {
+      return wxGetKeyState(WXK_DELETE);
+    }
+    if (strstr(key, "DOWN") || strstr(key, "Down") || strstr(key, "down"))
+    {
+      return wxGetKeyState(WXK_DOWN);
+    }
+    if (strstr(key, "END") || strstr(key, "End") || strstr(key, "end"))
+    {
+      return wxGetKeyState(WXK_END);
+    }
+    if (strstr(key, "ESC") || strstr(key, "Esc") || strstr(key, "esc"))
+    {
+      return wxGetKeyState(WXK_ESCAPE);
+    }
+    if (strstr(key, "EXE") || strstr(key, "Exe") || strstr(key, "exe"))
+    {
+      return wxGetKeyState(WXK_EXECUTE);
+    }
+    if (strstr(key, "F10") || strstr(key, "f10"))
+    {
+      return wxGetKeyState(WXK_F10);
+    }
+    if (strstr(key, "F11") || strstr(key, "f11"))
+    {
+      return wxGetKeyState(WXK_F11);
+    }
+    if (strstr(key, "F12") || strstr(key, "f12"))
+    {
+      return wxGetKeyState(WXK_F12);
+    }
+    if (strstr(key, "F1") || strstr(key, "f1"))
+    {
+      return wxGetKeyState(WXK_F1);
+    }
+    if (strstr(key, "F2") || strstr(key, "f2"))
+    {
+      return wxGetKeyState(WXK_F2);
+    }
+    if (strstr(key, "F3") || strstr(key, "f3"))
+    {
+      return wxGetKeyState(WXK_F3);
+    }
+    if (strstr(key, "F4") || strstr(key, "f4"))
+    {
+      return wxGetKeyState(WXK_F4);
+    }
+    if (strstr(key, "F5") || strstr(key, "f5"))
+    {
+      return wxGetKeyState(WXK_F5);
+    }
+    if (strstr(key, "F6") || strstr(key, "f6"))
+    {
+      return wxGetKeyState(WXK_F6);
+    }
+    if (strstr(key, "F7") || strstr(key, "f7"))
+    {
+      return wxGetKeyState(WXK_F1);
+    }
+    if (strstr(key, "F8") || strstr(key, "f8"))
+    {
+      return wxGetKeyState(WXK_F1);
+    }
+    if (strstr(key, "F9") || strstr(key, "f9"))
+    {
+      return wxGetKeyState(WXK_F1);
+    }
+    if (strstr(key, "HOME") || strstr(key, "Home") || strstr(key, "home"))
+    {
+      return wxGetKeyState(WXK_HOME);
+    }
+    if (strstr(key, "INS") || strstr(key, "Ins") || strstr(key, "ins"))
+    {
+      return wxGetKeyState(WXK_INSERT);
+    }
+    if (strstr(key, "LB") || strstr(key, "LeftButton"))
+    {
+      return wxGetKeyState(WXK_LBUTTON);
+    }
+    if (strstr(key, "LEFT") || strstr(key, "Left") || strstr(key, "left"))
+    {
+      return wxGetKeyState(WXK_LEFT);
+    }
+    if (strstr(key, "MB") || strstr(key, "MiddleButton"))
+    {
+      return wxGetKeyState(WXK_MBUTTON);
+    }
+    if (strstr(key, "MENU") || strstr(key, "Menu") || strstr(key, "menu"))
+    {
+      return wxGetKeyState(WXK_MENU);
+    }
+    if (strstr(key, "PAUSE") || strstr(key, "Pause") || strstr(key, "pause"))
+    {
+      return wxGetKeyState(WXK_PAUSE);
+    }
+    if (strstr(key, "PRINT") || strstr(key, "Print") || strstr(key, "print"))
+    {
+      return wxGetKeyState(WXK_PRINT);
+    }
+    if (strstr(key, "RB") || strstr(key, "RightButton"))
+    {
+      return wxGetKeyState(WXK_RBUTTON);
+    }
+    if (strstr(key, "RIGHT") || strstr(key, "Right") || strstr(key, "right"))
+    {
+      return wxGetKeyState(WXK_RIGHT);
+    }
+    if (strstr(key, "RETURN") || strstr(key, "Return") || strstr(key, "return") ||
+        strstr(key, "ENTER")  || strstr(key, "Enter")  || strstr(key, "enter"))
+    {
+      return wxGetKeyState(WXK_RETURN);
     }
     if (strstr(key, "SHIFT") || strstr(key, "Shift") || strstr(key, "shift"))
     {
       return wxGetKeyState(WXK_SHIFT);
     }
-    if (strstr(key, "ALT") || strstr(key, "Alt") || strstr(key, "alt"))
+    if (strstr(key, "SEL") || strstr(key, "Sel") || strstr(key, "sel"))
     {
-      return wxGetKeyState(WXK_ALT);
+      return wxGetKeyState(WXK_SELECT);
     }
-    if (strstr(key, "ESC") || strstr(key, "Esc") || strstr(key, "esc"))
+    if (strstr(key, "SNAP") || strstr(key, "Snap") || strstr(key, "snap"))
     {
-      return wxGetKeyState(WXK_ESCAPE);
+      return wxGetKeyState(WXK_SNAPSHOT);
+    }
+    if (strstr(key, "SPACE") || strstr(key, "Space") || strstr(key, "space"))
+    {
+      return wxGetKeyState(WXK_SPACE);
+    }
+    if (strstr(key, "START") || strstr(key, "Start") || strstr(key, "start"))
+    {
+      return wxGetKeyState(WXK_START);
+    }
+    if (strstr(key, "TAB") || strstr(key, "Tab") || strstr(key, "tab"))
+    {
+      return wxGetKeyState(WXK_TAB);
+    }
+    if (strstr(key, "UP") || strstr(key, "Up") || strstr(key, "up"))
+    {
+      return wxGetKeyState(WXK_UP);
     }
     if (strlen(key) == 1)
     {
