@@ -1,44 +1,23 @@
 require 'lev.std'
 
 app = lev.app.get()
---mixer = lev.sound.mixer.create()
 
 frm = lev.gui.frame.create {}
 sizer = lev.gui.vsizer.create()
 frm.sizer = sizer
-txt = lev.gui.textbox.create {p = frm}
-sizer:add(txt,1)
-txt = lev.gui.textbox.create {p = frm}
-sizer:add(txt,1)
-sizer:fit(frm)
+txt = lev.gui.textbox.create(frm)
+sizer:add(txt,0)
+html = lev.gui.textedit.create(frm)
+sizer:add(html,1)
+--sizer:fit(frm)
+--frm:fit()
+frm:show()
 
 txt.onkeydown = function(e)
   print("id  = " .. e.id)
   print("key = " .. e.key)
+  e:skip()
 end
 
---mixer[1]:play('test.ogg')
-
-frm:fit()
-frm:show()
---app:autoloop(frm)
-
-while frm.is_valid do
-  if (app:get_keydown('SHIFT')) then
-    if (app:get_keydown('A')) then print('A') end
-  else
-    if (app:get_keydown('A')) then print('a') end
-  end
-  if (app:get_keydown("\t")) then print('TAB') end
-  if (app:get_keydown('ESC')) then
-    if (not send_close) then
-      frm:close()
-      print 'ESCAPING!'
-      send_close  = true
-    end
-  end
-  app:sleep()
-end
-
-print '[END OF FILE]'
+app:autoloop(frm)
 

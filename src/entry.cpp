@@ -144,10 +144,13 @@ extern int luaopen_lev(lua_State *L)
           def("create_c", &frame::create, adopt(result) )
         ],
       class_<htmlview, control>("htmlview")
-        .def(constructor<control*, int, int>())
         .def("loadpage", &htmlview::loadpage)
-        .def("setpage", &htmlview::setpage)
-        .def("totext", &htmlview::totext),
+        .def("totext", &htmlview::totext)
+        .property("page", &htmlview::get_page, &htmlview::set_page)
+        .scope
+        [
+          def("create_c", &htmlview::create, adopt(result))
+        ],
       class_<player, control>("player")
         .def("loadlocal", &player::loadlocal)
         .def("loaduri", &player::loaduri)
@@ -186,16 +189,23 @@ extern int luaopen_lev(lua_State *L)
         .scope
         [
           def("create_c", &textbox::create)
+        ],
+      class_<textedit, textbox>("textedit")
+        .scope
+        [
+          def("create_c", &textedit::create)
         ]
     ]
   ];
   register_to(L, globals(L)["lev"]["gui"]["canvas"], "create", &canvas::create_l);
   register_to(L, globals(L)["lev"]["gui"]["frame"], "create", &frame::create_l);
+  register_to(L, globals(L)["lev"]["gui"]["htmlview"], "create", &htmlview::create_l);
   register_to(L, globals(L)["lev"]["gui"]["menu"], "create", &menu::create_l);
   register_to(L, globals(L)["lev"]["gui"]["menubar"], "create", &menubar::create_l);
   register_to(L, globals(L)["lev"]["gui"]["player"], "create", &player::create_l);
   register_to(L, globals(L)["lev"]["gui"]["systray"], "create", &systray::create_l);
   register_to(L, globals(L)["lev"]["gui"]["textbox"], "create", &textbox::create_l);
+  register_to(L, globals(L)["lev"]["gui"]["textedit"], "create", &textedit::create_l);
 
   // Application management module
   module(L, "lev")
@@ -232,6 +242,11 @@ extern int luaopen_lev(lua_State *L)
         .def("fit", &sizer::fit)
         .def("fitinside", &sizer::fitinside)
         .def("layout", &sizer::layout),
+      class_<gsizer, sizer>("gsizer")
+        .scope
+        [
+          def("create_c", &gsizer::create, adopt(result))
+        ],
       class_<hsizer, sizer>("hsizer")
         .scope
         [
@@ -244,6 +259,7 @@ extern int luaopen_lev(lua_State *L)
         ]
     ]
   ];
+  register_to(L, globals(L)["lev"]["gui"]["gsizer"], "create", &gsizer::create_l);
   register_to(L, globals(L)["lev"]["gui"]["hsizer"], "create", &hsizer::create_l);
   register_to(L, globals(L)["lev"]["gui"]["vsizer"], "create", &vsizer::create_l);
 
@@ -323,6 +339,7 @@ int luaopen_lev_std(lua_State *L)
   globals(L)["require"]("lev.gl");
   globals(L)["require"]("lev.image");
   globals(L)["require"]("lev.input");
+  globals(L)["require"]("lev.net");
   globals(L)["require"]("lev.sound");
 
   globals(L)["app"] = globals(L)["lev"]["app"]["get"]();
@@ -342,6 +359,7 @@ namespace lev
     register_to(L, globals(L)["package"]["preload"], "lev.gl", luaopen_lev_gl);
     register_to(L, globals(L)["package"]["preload"], "lev.image", luaopen_lev_image);
     register_to(L, globals(L)["package"]["preload"], "lev.input", luaopen_lev_input);
+    register_to(L, globals(L)["package"]["preload"], "lev.net", luaopen_lev_net);
     register_to(L, globals(L)["package"]["preload"], "lev.sound", luaopen_lev_sound);
     register_to(L, globals(L)["package"]["preload"], "lev.std", luaopen_lev_std);
   }

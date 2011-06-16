@@ -42,6 +42,18 @@ namespace lev
       void *_obj;
   };
 
+  class gsizer : public sizer
+  {
+    private:
+      gsizer();
+    public:
+      ~gsizer();
+      static gsizer* create(int cols, int vgap = 0, int hgap = 0);
+      static int create_l(lua_State *L);
+      virtual type_id get_type_id() const { return LEV_TGSIZER; }
+      virtual const char *get_type_name() const { return "lev.gui.gsizer"; }
+  };
+
   class hsizer : public sizer
   {
     private:
@@ -50,7 +62,8 @@ namespace lev
       ~hsizer();
       static hsizer *create();
       static int create_l(lua_State *L);
-      virtual type_id get_type_id() { return LEV_THSIZER; }
+      virtual type_id get_type_id() const { return LEV_THSIZER; }
+      virtual const char *get_type_name() const { return "lev.gui.hsizer"; }
   };
 
   class vsizer : public sizer
@@ -61,7 +74,8 @@ namespace lev
       ~vsizer();
       static vsizer *create();
       static int create_l(lua_State *L);
-      virtual type_id get_type_id() { return LEV_TVSIZER; }
+      virtual type_id get_type_id() const { return LEV_TVSIZER; }
+      virtual const char *get_type_name() const { return "lev.gui.vsizer"; }
   };
 }
 

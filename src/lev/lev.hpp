@@ -22,6 +22,7 @@
 #include "image.hpp"
 #include "input.hpp"
 #include "media.hpp"
+#include "net.hpp"
 #include "prim.hpp"
 #include "sizer.hpp"
 #include "sound.hpp"

@@ -145,23 +145,61 @@ namespace lev
     ((wxSizer *)_obj)->Layout();
   }
 
+  gsizer::gsizer() : sizer() { }
+  gsizer::~gsizer() { }
+
+  gsizer* gsizer::create(int cols, int vgap, int hgap)
+  {
+    gsizer *sz = NULL;
+    wxFlexGridSizer *obj = NULL;
+    try {
+      sz = new gsizer;
+      obj = new wxFlexGridSizer(cols, vgap, hgap);
+      sz->_obj = obj;
+      sz->wx_managed = false;
+      return sz;
+    }
+    catch (...) {
+      delete sz;
+      return NULL;
+    }
+  }
+
+  int gsizer::create_l(lua_State *L)
+  {
+    using namespace luabind;
+    object func = globals(L)["lev"]["gui"]["gsizer"]["create_c"];
+    object sz = func();
+    if (sz)
+    {
+      if (not sz["add"])
+      {
+        register_to(L, sz, "add", &sizer::add_l);
+      }
+    }
+    sz.push(L);
+    return 1;
+  }
+
 
   hsizer::hsizer() : sizer() { }
-  hsizer::~hsizer() {}
+  hsizer::~hsizer() { }
 
   hsizer* hsizer::create()
   {
-    hsizer *sz = new hsizer();
-    if (sz == NULL) { return NULL; }
-    wxBoxSizer *obj = new wxBoxSizer(wxHORIZONTAL);
-    if (obj == NULL) { goto Error; }
-    sz->_obj = obj;
-    sz->wx_managed = false;
-    return sz;
-
-    Error:
-    delete sz;
-    return NULL;
+    hsizer *sz = NULL;
+    wxBoxSizer *obj = NULL;
+    try {
+      sz = new hsizer;
+      obj = new wxBoxSizer(wxHORIZONTAL);
+      sz->_obj = obj;
+      sz->wx_managed = false;
+      return sz;
+    }
+    catch (...) {
+      delete sz;
+      return NULL;
+    }
   }
 
   int hsizer::create_l(lua_State *L)
@@ -185,17 +223,19 @@ namespace lev
 
   vsizer* vsizer::create()
   {
-    vsizer *sz = new vsizer();
-    if (sz == NULL) { return NULL; }
-    wxBoxSizer *obj = new wxBoxSizer(wxVERTICAL);
-    if (obj == NULL) { goto Error; }
-    sz->_obj = obj;
-    sz->wx_managed = false;
-    return sz;
-
-    Error:
-    delete sz;
-    return NULL;
+    vsizer *sz = NULL;
+    wxBoxSizer *obj = NULL;
+    try {
+      sz  = new vsizer;
+      obj = new wxBoxSizer(wxVERTICAL);
+      sz->_obj = obj;
+      sz->wx_managed = false;
+      return sz;
+    }
+    catch (...) {
+      delete sz;
+      return NULL;
+    }
   }
 
   int vsizer::create_l(lua_State *L)

@@ -9,11 +9,11 @@ WX_LIBS = `wx-config --libs std,media,gl` -lGLU
 RANLIB = ranlib
 
 CORE_SRC  = app.cpp base.cpp draw.cpp entry.cpp event.cpp frame.cpp input.cpp \
-	    gl.cpp gui.cpp icon.cpp image.cpp media.cpp menu.cpp prim.cpp \
+	    gl.cpp gui.cpp icon.cpp image.cpp media.cpp menu.cpp net.cpp prim.cpp \
 	    sizer.cpp taskbar.cpp util.cpp
 CORE_OBJS = $(CORE_SRC:%.cpp=%.o)
 CORE_DLIB = lev_core.so
-CORE_LIBS = $(WX_LIBS) -llua -lluabind -lboost_thread -lgd
+CORE_LIBS = $(WX_LIBS) -llua -lluabind -lboost_regex-mt -lboost_system-mt -lgd
 
 SOUND_SRC  = sound.cpp
 SOUND_OBJS = $(SOUND_SRC:%.cpp=%.o)
@@ -70,6 +70,7 @@ $(SOUND_DLIB): $(SOUND_OBJS)
 	$(CXX) $(SHARED) -o $(SOUND_DLIB) $(SOUND_OBJS) $(SOUND_LIBS)
 
 app.o: app.cpp lev/app.hpp
+base.o: base.cpp lev/base.hpp
 draw.o: draw.cpp lev/draw.hpp lev/frame.hpp
 entry.o: entry.cpp $(SRC:%.cpp=lev/%.hpp) lev/event.hpp
 event.o: event.cpp
@@ -82,6 +83,7 @@ input.o: input.cpp lev/input.hpp
 main.o: main.cpp lev/app.hpp
 media.o: media.cpp lev/media.hpp
 menu.o: menu.cpp lev/menu.hpp lev/icon.hpp
+net.o: net.cpp lev/net.hpp
 prim.o: prim.cpp lev/prim.hpp
 sizer.o: sizer.cpp lev/sizer.hpp
 sound.o: sound.cpp lev/sound.hpp

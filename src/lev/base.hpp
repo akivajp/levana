@@ -22,6 +22,7 @@ namespace lev
       enum type_id
       {
         LEV_TBASE = 1,
+          LEV_TACCEPTOR,
           LEV_TCHANNEL,
           LEV_TCONTROL,
             LEV_TAPP,
@@ -30,6 +31,7 @@ namespace lev
             LEV_TMENU,
             LEV_TSYSTRAY,
             LEV_TTEXTBOX,
+            LEV_TTEXTEDIT,
           LEV_TCONTROL_END,
           LEV_TIMAGE,
           LEV_TINPUT,
@@ -38,9 +40,11 @@ namespace lev
           LEV_TINPUT_END,
           LEV_TMIXER,
           LEV_TSIZER,
+            LEV_TGSIZER,
             LEV_THSIZER,
             LEV_TVSIZER,
           LEV_TSIZER_END,
+          LEV_TSOCKET,
         LEV_TBASE_END,
       };
     protected:
@@ -48,7 +52,7 @@ namespace lev
       virtual ~base() { }
     public:
       virtual type_id get_type_id() const { return LEV_TBASE; }
-      virtual const char *get_type_name() const { return "base"; }
+      virtual const char *get_type_name() const { return "lev.base"; }
       static std::string tostring(base *b);
   };
 
