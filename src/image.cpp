@@ -78,14 +78,22 @@ namespace lev
     wxBitmap *bmp = cast_image(_obj);
     wxAlphaPixelData data(*bmp);
     data.UseAlpha();
-    wxAlphaPixelData::Iterator p(data);
-    for (int i = 0 ; i < num_pix ; i++, p++)
+    wxAlphaPixelData::Iterator p(data), rawStart;
+    for (int y = 0 ; y < get_h() ; y ++)
     {
-      p.Red()   = c.get_r();
-      p.Green() = c.get_g();
-      p.Blue()  = c.get_b();
-      p.Alpha() = c.get_a();
+      rawStart = p;
+      for (int x = 0 ; x < get_w() ; x++)
+      {
+        p.Red()   = c.get_r();
+        p.Green() = c.get_g();
+        p.Blue()  = c.get_b();
+        p.Alpha() = c.get_a();
+        ++p;
+      }
+      p = rawStart;
+      p.OffsetY(data, 1);
     }
+    return true;
   }
 
 
@@ -100,10 +108,11 @@ namespace lev
       delete img;
       return NULL;
     }
-#ifdef __WXMSW__
-    img->clear();
-#else
+    cast_image(img->_obj)->UseAlpha();
+#ifdef __WXGTK__
     img->clear_with(color(0, 0, 0, 255));
+#else
+    img->clear();
 #endif
     return img;
   }
@@ -115,9 +124,8 @@ namespace lev
 
   bool image::draw_circle_fill(int x, int y, int radius, color border_color, color filling_color)
   {
-    wxMemoryDC dc;
     wxBitmap *bitmap = cast_image(_obj);
-    dc.SelectObject(*bitmap);
+    wxMemoryDC dc(*bitmap);
     wxGCDC gdc(dc);
     gdc.SetPen(to_wxcolor(border_color));
     gdc.SetBrush(to_wxcolor(filling_color));

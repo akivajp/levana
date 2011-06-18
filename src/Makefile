@@ -32,6 +32,9 @@ bin: $(OUT)
 #lib: $(SLIB) $(CORE_DLIB) $(SOUND_DLIB)
 lib: $(SLIB) $(DLIB)
 
+dlib: $(DLIB)
+slib: $(SLIB)
+
 win-bin: $(WIN_OUT)
 
 $(WIN_OUT): $(ALL_OBJS) main.o resource.rc

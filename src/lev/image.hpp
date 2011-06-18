@@ -28,7 +28,7 @@ namespace lev
       image();
     public:
       ~image();
-      bool clear() { return clear_with(color()); }
+      bool clear() { return clear_with(color::transparent()); }
       bool clear_with(color c);
       static image* create(int width, int height);
       bool draw_circle(int x, int y, int radius, color border_color);

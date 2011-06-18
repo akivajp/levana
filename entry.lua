@@ -7,15 +7,14 @@ sizer = lev.gui.vsizer.create()
 frm.sizer = sizer
 txt = lev.gui.textbox.create(frm)
 sizer:add(txt,0)
-html = lev.gui.textedit.create(frm)
-sizer:add(html,1)
+txt2 = lev.gui.textedit.create(frm)
+sizer:add(txt2,1)
 --sizer:fit(frm)
 --frm:fit()
 frm:show()
 
 txt.onkeydown = function(e)
-  print("id  = " .. e.id)
-  print("key = " .. e.key)
+  txt2.v = "key = " .. e.key .. "\n"
   e:skip()
 end
 

@@ -185,6 +185,8 @@ extern int luaopen_lev(lua_State *L)
           def("create_c", &systray::create, adopt(result))
         ],
       class_<textbox, control>("textbox")
+        .property("v", &textbox::get_value, &textbox::set_value)
+        .property("val", &textbox::get_value, &textbox::set_value)
         .property("value", &textbox::get_value, &textbox::set_value)
         .scope
         [
