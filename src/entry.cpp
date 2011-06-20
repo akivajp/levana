@@ -100,6 +100,7 @@ extern int luaopen_lev(lua_State *L)
   [
     namespace_("gui")
     [
+      def("file_selector", &gui::file_selector),
       def("msgbox", &application::msgbox),
       def("msgbox", &application::msgbox_nocap),
       // base class

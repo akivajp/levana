@@ -12,6 +12,14 @@
 
 namespace lev
 {
+  class gui
+  {
+    public:
+      static const char *file_selector(const char *message, const char *def_path, const char *def_file,
+                                       const char *def_ext, const char *wildcard, control *parent);
+      static int file_selector_l(lua_State *L);
+  };
+
   class htmlview: public control
   {
     public:

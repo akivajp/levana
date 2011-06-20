@@ -20,6 +20,27 @@
 
 namespace lev
 {
+  const char *gui::file_selector(const char *message, const char *def_path, const char *def_file,
+                                 const char *def_ext, const char *wildcard, control *parent)
+  {
+    wxString msg, path, file, ext, wild, result;
+    std::string str;
+    int flags = 0;
+    wxWindow *p = NULL;
+    if (message) { msg = wxString(message, wxConvUTF8); }
+    else { msg = wxT("Choose a file"); }
+    if (def_path) { path = wxString(def_path, wxConvUTF8); }
+    if (def_file) { file = wxString(def_file, wxConvUTF8); }
+    if (def_ext)  { ext  = wxString(def_ext,  wxConvUTF8); }
+    if (wildcard) { wild = wxString(wildcard, wxConvUTF8); }
+    else { wild = wxT("*.*"); }
+    if (parent) { p = (wxWindow *)parent->get_rawobj(); }
+    result = wxFileSelector(msg, path, file, ext, wild, flags, p);
+    str = (const char *)result.mb_str(wxConvUTF8);
+    return str.c_str();
+  }
+
+
   // html viewer control definitions
   class myHtmlWindow : public wxHtmlWindow
   {
@@ -98,14 +119,23 @@ namespace lev
     return cast_html(_obj)->body.c_str();
   }
 
-  bool htmlview::loadpage(const char *url)
+  bool htmlview::loadpage(const char *str_url)
   {
     image::init();
-    std::string head, body;
-    if (not http::request(url, NULL, &body)) { return false; }
-    cast_html(_obj)->body = body;
+    url *u = NULL;
+    std::string body;
+    try {
+      u = url::connect(str_url);
+      if (u == NULL) { throw -1; }
+      body = u->get_data();
+      cast_html(_obj)->body = body;
+      delete u;
+    }
+    catch (...) {
+      delete u;
+      return false;
+    }
     return cast_html(_obj)->SetPage(wxString(body.c_str(), wxConvUTF8));
-//    return ((myHtmlWindow *)_obj)->LoadPage(wxString(url, wxConvUTF8));
   }
 
   bool htmlview::set_page(const char *src)

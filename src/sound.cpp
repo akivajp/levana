@@ -444,19 +444,18 @@ namespace lev
 
       static mySoundManager *Create()
       {
-        mySoundManager *mng = new mySoundManager;
-        if (mng == NULL) { return NULL; }
-        mng->setup_sound = new CL_SetupSound;
-        if (mng->setup_sound == NULL) { goto Error; }
-        mng->setup_vorbis = new CL_SetupVorbis;
-        if (mng->setup_vorbis == NULL) { goto Error; }
-        mng->output = new CL_SoundOutput(44100);
-        if (mng->output == NULL) { goto Error; }
-        return mng;
-
-        Error:
-        delete mng;
-        return NULL;
+        mySoundManager *mng = NULL;
+        try {
+          mng = new mySoundManager;
+          mng->setup_sound = new CL_SetupSound;
+          mng->setup_vorbis = new CL_SetupVorbis;
+          mng->output = new CL_SoundOutput(44100);
+          return mng;
+        }
+        catch (...) {
+          delete mng;
+          return NULL;
+        }
       }
 
       bool PlayAdd(const char *filename)

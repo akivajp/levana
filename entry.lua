@@ -14,7 +14,8 @@ sizer:add(txt2,1)
 frm:show()
 
 txt.onkeydown = function(e)
-  txt2.v = "key = " .. e.key .. "\n"
+  frm.status = e.key .. " was pressed"
+--  txt2.v = "key = " .. e.key .. "\n"
   e:skip()
 end
 

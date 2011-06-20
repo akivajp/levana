@@ -22,8 +22,8 @@ namespace lev
       enum type_id
       {
         LEV_TBASE = 1,
-          LEV_TACCEPTOR,
           LEV_TCHANNEL,
+
           LEV_TCONTROL,
             LEV_TAPP,
             LEV_TFRAME,
@@ -33,18 +33,27 @@ namespace lev
             LEV_TTEXTBOX,
             LEV_TTEXTEDIT,
           LEV_TCONTROL_END,
+
           LEV_TIMAGE,
           LEV_TINPUT,
             LEV_TINSTATE,
             LEV_TINRECORD,
           LEV_TINPUT_END,
           LEV_TMIXER,
+
+          LEV_TNET_BASE,
+            LEV_TACCEPTOR,
+            LEV_TADDRESS,
+            LEV_TCONNECTOR,
+            LEV_TSOCKET,
+            LEV_TURL,
+          LEV_TNET_BASE_END,
+
           LEV_TSIZER,
             LEV_TGSIZER,
             LEV_THSIZER,
             LEV_TVSIZER,
           LEV_TSIZER_END,
-          LEV_TSOCKET,
         LEV_TBASE_END,
       };
     protected:

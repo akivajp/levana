@@ -16,16 +16,16 @@ txt.onkeydown = function(e)
   print("key = " .. e.key)
   if e.key == "RETURN" then
     local url = 'http://info.babylon.com/onlinebox.cgi?rt=ol&tid=pop&cid=CD1&tl=ja&term=' .. txt.value
-    local body = lev.net.http.request(url)
-    local defs = ''
-    print("BODY: " .. body)
-    for w in body:gmatch('<div class="definition" dir="">.-</div>') do
-      defs = defs .. w
-    end
-    for w in body:gmatch('<div style=%b"" class="definitionCross" dir="">.-</div>') do
-      defs = defs .. w
-    end
-    html.page = defs
+    local sock = lev.net.url.connect(url)
+--    local body = sock.data
+--    local defs = ''
+--    for w in body:gmatch('<div class="definition" dir="">.-</div>') do
+--      defs = defs .. w
+--    end
+--    for w in body:gmatch('<div style=%b"" class="definitionCross" dir="">.-</div>') do
+--      defs = defs .. w
+--    end
+--    html.page = defs
   else
     e:skip()
   end

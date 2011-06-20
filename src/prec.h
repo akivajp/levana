@@ -31,18 +31,18 @@ extern "C" {
 #include <wx/glcanvas.h>
 #include <wx/mediactrl.h>
 #include <wx/rawbmp.h>
+#include <wx/socket.h>
 #include <wx/sound.h>
+#include <wx/sstream.h>
 #include <wx/taskbar.h>
 #include <wx/thread.h>
+#include <wx/url.h>
 #include <wx/wxhtml.h>
 
 #include <map>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
-#include <boost/regex.hpp>
 #include <boost/shared_ptr.hpp>
 
 #endif // _PREC_H
