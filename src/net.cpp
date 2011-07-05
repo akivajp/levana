@@ -704,7 +704,7 @@ namespace lev
 
   const char *url::get_data()
   {
-    if (get_size() <= 0) { return NULL; }
+//    if (get_size() <= 0) { return NULL; }
     wxStringOutputStream out;
     cast_url(_obj)->data->Read(out);
     std::string str = (const char *)out.GetString().mb_str(wxConvUTF8);

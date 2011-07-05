@@ -97,7 +97,7 @@ namespace lev
       delete cv;
       return NULL;
     }
-    cv->wx_managed = true;
+    cv->system_managed = true;
     cv->setcurrent();
     glViewport(0, 0, width, height);
     return cv;
@@ -132,7 +132,7 @@ namespace lev
     else if (t["h"]) { h = object_cast<int>(t["h"]); }
     else if (t["num2"]) { h = object_cast<int>(t["num2"]); }
 
-    object func = globals(L)["lev"]["gui"]["canvas"]["create_c"];
+    object func = globals(L)["lev"]["classes"]["canvas"]["create_c"];
     object result = func(p, w, h);
     result.push(L);
     return 1;

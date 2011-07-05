@@ -19,7 +19,7 @@
 namespace lev
 {
 
-  class application : public control
+  class application : public handler
   {
     protected:
       application();
@@ -28,29 +28,28 @@ namespace lev
       void autoloop();
       void autoloop_with(frame *frm);
       static bool entry(lua_State *L, int argc, char **argv);
+      static application *get_app();
+      double get_fps();
+      double get_interval();
       bool get_keydown(const char *key);
       inrecord* get_inrecord();
       instate* get_instate();
       const char* get_name();
-      virtual luabind::object get_onany();
-      virtual luabind::object get_onidle();
-      virtual luabind::object get_onkeydown();
       frame *get_top();
       virtual type_id get_type_id() const { return LEV_TAPP; }
       virtual const char *get_type_name() const { return "lev.app"; }
       void mainloop();
-      bool run(bool sync = true);
-      bool run_default() { run(true); }
+      bool set_fps(double fps);
+      bool set_interval(double interval_msec);
       void set_name(const char *name);
-      virtual bool set_onany(luabind::object lua_func);
-      virtual bool set_onidle(luabind::object lua_func);
-      virtual bool set_onkeydown(luabind::object lua_func);
       void settop(frame *top);
       bool sleep(int delay_in_msec);
       bool sleep_def() { sleep(0); }
+      bool track_key(const char *keystr);
+      bool track_mouse();
+      bool wait();
       bool yield();
 
-      static application *getapp();
       static lua_State* getL();
       static int msgbox(const char *msg, const char *caption);
       static inline int msgbox_nocap(const char *msg) { return msgbox(msg, "Message"); }

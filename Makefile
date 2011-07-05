@@ -7,7 +7,7 @@ SOUND_DLIB = sound.so
 SLIB = liblev.a
 LUA_VERSION = 5.1
 
-all: linux
+all: linux tags
 
 none:
 	@echo "Please do"
@@ -36,6 +36,9 @@ lib: src/$(DLIB) src/$(SLIB)
 	install -d lib
 	cp src/{$(CORE_DLIB),$(SLIB)} lib/
 
+tags:
+	ctags -R src
+
 install:
 	install -d $(PREFIX)/bin
 	install bin/$(BIN) $(PREFIX)/bin/$(BIN)
@@ -46,6 +49,7 @@ install:
 
 clean:
 	cd src && make clean
+	rm -rf tags
 
 distclean:
 	cd src && make distclean

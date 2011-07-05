@@ -13,7 +13,7 @@ CORE_SRC  = app.cpp base.cpp draw.cpp entry.cpp event.cpp frame.cpp input.cpp \
 	    sizer.cpp taskbar.cpp util.cpp
 CORE_OBJS = $(CORE_SRC:%.cpp=%.o)
 CORE_DLIB = lev_core.so
-CORE_LIBS = $(WX_LIBS) -llua -lluabind -lboost_regex-mt -lgd
+CORE_LIBS = $(WX_LIBS) -llua -lluabind
 
 SOUND_SRC  = sound.cpp
 SOUND_OBJS = $(SOUND_SRC:%.cpp=%.o)
@@ -77,7 +77,7 @@ base.o: base.cpp lev/base.hpp
 draw.o: draw.cpp lev/draw.hpp lev/frame.hpp
 entry.o: entry.cpp $(SRC:%.cpp=lev/%.hpp) lev/event.hpp
 event.o: event.cpp
-frame.o: frame.cpp lev/frame.hpp connect.hpp lev/icon.hpp lev/event.hpp
+frame.o: frame.cpp lev/frame.hpp lev/icon.hpp lev/event.hpp
 gl.o: gl.cpp lev/gl.hpp
 gui.o: gui.cpp lev/gui.hpp
 icon.o: icon.cpp lev/icon.hpp

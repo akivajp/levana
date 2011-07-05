@@ -15,23 +15,62 @@
 namespace lev
 {
 
-  control::control() : base(), _id(0), _obj(NULL), _sz(NULL), wx_managed(false)
-  { }
+  handler::handler() : base(), _obj(NULL), system_managed(false) { }
 
-  control::~control()
+  handler::~handler()
   {
-    if (wx_managed)
+    if (system_managed)
     {
-      // wxWidgets will delete
-    }
-    else if (_id && !isvalid())
-    {
-      // the object isn't already found
+      // wxWidgets will automatically delete
     }
     else
     {
       // the object is under our management
-      delete (wxWindow *)_obj;
+      delete (wxEvtHandler *)_obj;
+      _obj = NULL;
+    }
+  }
+
+  bool handler::connect(int id, int type, luabind::object lua_func)
+  {
+    if (not connector) { return false; }
+    connector(id, type, lua_func);
+    return true;
+  }
+
+  luabind::object handler::get_func(int id, int type)
+  {
+    if (not func_getter) { return luabind::object(); }
+    return func_getter(id, type);
+  }
+
+  object handler::get_on_any() { return get_func(-1); }
+  object handler::get_on_close() { return get_func(wxEVT_CLOSE_WINDOW); }
+  object handler::get_on_idle() { return get_func(wxEVT_IDLE); }
+  object handler::get_on_keydown() { return get_func(wxEVT_KEY_DOWN); }
+
+  bool handler::set_on_any(object lua_func) { return connect(-1, lua_func); }
+  bool handler::set_on_close(object lua_func) { return connect(wxEVT_CLOSE_WINDOW, lua_func); }
+  bool handler::set_on_idle(object lua_func) { return connect(wxEVT_IDLE, lua_func); }
+  bool handler::set_on_keydown(object lua_func) { return connect(wxEVT_KEY_DOWN, lua_func); }
+  bool handler::set_on_menu(int id, object lua_func)
+  {
+    return connect(id, wxEVT_COMMAND_MENU_SELECTED, lua_func);
+  }
+
+  control::control() : handler(), _id(0), _sz(NULL)
+  { }
+
+  control::~control()
+  {
+    if (system_managed)
+    {
+      // wxWidgets will automatically delete
+    }
+    else if (_id && !isvalid())
+    {
+      // the object isn't already found
+      _obj = NULL;
     }
   }
 
@@ -43,6 +82,11 @@ namespace lev
   sizer *control::getsizer()
   {
     return _sz;
+  }
+
+  long control::get_style()
+  {
+    return ((wxWindow *)_obj)->GetWindowStyle();
   }
 
   bool control::isshown()
@@ -68,7 +112,7 @@ namespace lev
 
   bool control::setshown(bool showing)
   {
-    gui_lock();
+//    gui_lock();
     return ((wxWindow *)_obj)->Show(showing);
   }
 
@@ -86,92 +130,12 @@ namespace lev
     return ((wxEvent *)_obj)->GetId();
   }
 
-  const char *event::get_key() const
+  const char *event::get_keystr() const
   {
-    switch ( ((wxKeyEvent *)_obj)->GetKeyCode() )
-    {
-      case WXK_ALT:        return "ALT";
-      case WXK_BACK:       return "BACK";
-      case WXK_CANCEL:     return "CANCEL";
-      case WXK_CAPITAL:    return "CAPITAL";
-      case WXK_CLEAR:      return "CLEAR";
-      case WXK_CONTROL:    return "CONTROL";
-      case WXK_DELETE:     return "DELETE";
-      case WXK_DOWN:       return "DOWN";
-      case WXK_END:        return "END";
-      case WXK_ESCAPE:     return "ESCAPE";
-      case WXK_EXECUTE:    return "EXECUTE";
-      case WXK_F1:         return "F1";
-      case WXK_F2:         return "F2";
-      case WXK_F3:         return "F3";
-      case WXK_F4:         return "F4";
-      case WXK_F5:         return "F5";
-      case WXK_F6:         return "F6";
-      case WXK_F7:         return "F7";
-      case WXK_F8:         return "F8";
-      case WXK_F9:         return "F9";
-      case WXK_F10:        return "F10";
-      case WXK_F11:        return "F11";
-      case WXK_F12:        return "F12";
-      case WXK_HOME:       return "HOME";
-      case WXK_INSERT:     return "INSERT";
-      case WXK_LBUTTON:    return "LBUTTON";
-      case WXK_LEFT:       return "LEFT";
-      case WXK_MBUTTON:    return "MBUTTON";
-      case WXK_MENU:       return "MENU";
-      case WXK_PAUSE:      return "PAUSE";
-      case WXK_PRINT:      return "PRINT";
-      case WXK_RBUTTON:    return "RBUTTON";
-      case WXK_RIGHT:      return "RIGHT";
-      case WXK_RETURN:     return "RETURN";
-      case WXK_SHIFT:      return "SHIFT";
-      case WXK_SELECT:     return "SELECT";
-      case WXK_SNAPSHOT:   return "SNAPSHOT";
-      case WXK_SPACE:      return "SPACE";
-      case WXK_START:      return "START";
-      case WXK_TAB:        return "TAB";
-      case WXK_UP:         return "UP";
-      case wxKeyCode('A'): return "a";
-      case wxKeyCode('B'): return "b";
-      case wxKeyCode('C'): return "c";
-      case wxKeyCode('D'): return "d";
-      case wxKeyCode('E'): return "e";
-      case wxKeyCode('F'): return "f";
-      case wxKeyCode('G'): return "g";
-      case wxKeyCode('H'): return "h";
-      case wxKeyCode('I'): return "i";
-      case wxKeyCode('J'): return "j";
-      case wxKeyCode('K'): return "k";
-      case wxKeyCode('L'): return "l";
-      case wxKeyCode('M'): return "m";
-      case wxKeyCode('N'): return "n";
-      case wxKeyCode('O'): return "o";
-      case wxKeyCode('P'): return "p";
-      case wxKeyCode('Q'): return "q";
-      case wxKeyCode('R'): return "r";
-      case wxKeyCode('S'): return "s";
-      case wxKeyCode('T'): return "t";
-      case wxKeyCode('U'): return "u";
-      case wxKeyCode('V'): return "v";
-      case wxKeyCode('W'): return "w";
-      case wxKeyCode('X'): return "x";
-      case wxKeyCode('Y'): return "y";
-      case wxKeyCode('Z'): return "z";
-      case wxKeyCode('0'): return "0";
-      case wxKeyCode('1'): return "1";
-      case wxKeyCode('2'): return "2";
-      case wxKeyCode('3'): return "3";
-      case wxKeyCode('4'): return "4";
-      case wxKeyCode('5'): return "5";
-      case wxKeyCode('6'): return "6";
-      case wxKeyCode('7'): return "7";
-      case wxKeyCode('8'): return "8";
-      case wxKeyCode('9'): return "9";
-      default:             return "";
-    }
+    return input::to_keystr( ((wxKeyEvent *)_obj)->GetKeyCode() );
   }
 
-  int event::get_keycode() const
+  long event::get_keycode() const
   {
     return ((wxKeyEvent *)_obj)->GetKeyCode();
   }

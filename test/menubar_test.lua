@@ -2,9 +2,9 @@ require 'lev'
 
 app = lev.app.get()
 
-frm = lev.gui.frame.create()
-mb = lev.gui.menubar.create()
-menu = lev.gui.menu.create()
+frm = lev.gui.frame()
+mb = lev.gui.menubar()
+menu = lev.gui.menu()
 mb:append(menu, 'Greetings(&G)')
 id = menu:append('Morning(&M)')
 menu.fmap[id] = function()
@@ -23,5 +23,5 @@ end
 frm:set_menubar(mb)
 frm:show()
 
-app:run()
+app:autoloop()
 

@@ -68,31 +68,34 @@ extern int luaopen_lev(lua_State *L)
   luabind::open(L);
   lua_entry(L);
 
-  if (not globals(L)["lev"])
-  {
-    // base of all
-    module(L, "lev")
+  // base classes
+  module(L, "lev")
+  [
+    namespace_("classes")
     [
+      // base of all
       class_<base>("base")
         .def("__tostring", &base::tostring)
         .property("type_id", &base::get_type_id)
-        .property("type_name", &base::get_type_name)
-    ];
-  }
-
-
-  // event class, and its derived ones
-  module(L, "lev")
-  [
-    // base class
-    class_<event, base>("event")
-      .def("request", &event::request)
-      .def("skip", &event::skip)
-      .property("id", &event::get_id)
-      .property("key", &event::get_key)
-      .property("keycode", &event::get_keycode)
+        .property("type_name", &base::get_type_name),
+      // event class
+      class_<event, base>("event")
+        .def("request", &event::request)
+        .def("skip", &event::skip)
+        .property("id", &event::get_id)
+        .property("key", &event::get_keystr)
+        .property("keystr", &event::get_keystr)
+        .property("keycode", &event::get_keycode),
+      // event handler class
+      class_<handler, base>("handler")
+        .def("set_on_menu", &handler::set_on_menu)
+        .property("on_any", &handler::get_on_any, &handler::set_on_any)
+        .property("on_close", &handler::get_on_close, &handler::set_on_close)
+        .property("on_idle", &handler::get_on_idle, &handler::set_on_idle)
+        .property("on_keydown", &handler::get_on_keydown, &handler::set_on_keydown)
+    ]
   ];
-
+  object classes = globals(L)["lev"]["classes"];
 
 
   // GUI control, event handling
@@ -100,25 +103,19 @@ extern int luaopen_lev(lua_State *L)
   [
     namespace_("gui")
     [
-      def("file_selector", &gui::file_selector),
-      def("msgbox", &application::msgbox),
-      def("msgbox", &application::msgbox_nocap),
+      def("file_selector", &gui::file_selector)
+    ],
+    namespace_("classes")
+    [
       // base class
-      class_<control, base>("control")
-        .def("connect", &control::connect)
+      class_<control, handler>("control")
         .def("hide", &control::hide)
-        .def("set_onany", &control::set_onany)
-        .def("set_onkeydown", &control::set_onkeydown)
-        .def("set_onmenu", &control::set_onmenu)
         .def("show", &control::show)
         .property("id", &control::getid)
         .property("is_valid", &control::isvalid)
         .property("isvalid", &control::isvalid)
         .property("is_shown", &control::isshown, &control::setshown)
         .property("isshown", &control::isshown, &control::setshown)
-        .property("onany", &control::get_onany, &control::set_onany)
-        .property("onidle", &control::get_onidle, &control::set_onidle)
-        .property("onkeydown", &control::get_onkeydown, &control::set_onkeydown)
         .property("sizer", &control::getsizer, &control::setsizer),
       class_<canvas, control>("canvas")
         .def("blendmode", &canvas::blendmode)
@@ -167,7 +164,7 @@ extern int luaopen_lev(lua_State *L)
         [
           def("create_c", &player::create, adopt(result))
         ],
-      class_<menu, control>("menu")
+      class_<menu, handler>("menu")
         .scope
         [
           def("create_c", &menu::create, adopt(result))
@@ -177,69 +174,83 @@ extern int luaopen_lev(lua_State *L)
         [
           def("create_c", &menubar::create, adopt(result))
         ],
-      class_<systray, control>("systray")
+      class_<systray, handler>("systray")
         .def("popup", &systray::popup)
+        .def("remove_icon", &systray::remove_icon)
         .def("set_icon", &systray::set_icon)
+        .property("menugen", &systray::get_menu_generator, &systray::set_menu_generator)
         .property("menu_generator", &systray::get_menu_generator, &systray::set_menu_generator)
         .scope
         [
           def("create_c", &systray::create, adopt(result))
         ],
       class_<textbox, control>("textbox")
+        .def("set_multiline", &textbox::set_multiline)
         .property("v", &textbox::get_value, &textbox::set_value)
         .property("val", &textbox::get_value, &textbox::set_value)
         .property("value", &textbox::get_value, &textbox::set_value)
         .scope
         [
           def("create_c", &textbox::create)
-        ],
-      class_<textedit, textbox>("textedit")
-        .scope
-        [
-          def("create_c", &textedit::create)
         ]
     ]
   ];
-  register_to(L, globals(L)["lev"]["gui"]["canvas"], "create", &canvas::create_l);
-  register_to(L, globals(L)["lev"]["gui"]["frame"], "create", &frame::create_l);
-  register_to(L, globals(L)["lev"]["gui"]["htmlview"], "create", &htmlview::create_l);
-  register_to(L, globals(L)["lev"]["gui"]["menu"], "create", &menu::create_l);
-  register_to(L, globals(L)["lev"]["gui"]["menubar"], "create", &menubar::create_l);
-  register_to(L, globals(L)["lev"]["gui"]["player"], "create", &player::create_l);
-  register_to(L, globals(L)["lev"]["gui"]["systray"], "create", &systray::create_l);
-  register_to(L, globals(L)["lev"]["gui"]["textbox"], "create", &textbox::create_l);
-  register_to(L, globals(L)["lev"]["gui"]["textedit"], "create", &textedit::create_l);
+  object gui = globals(L)["lev"]["gui"];
+  register_to(L, gui, "msgbox", &gui::msgbox_l);
+  register_to(L, classes["canvas"], "create", &canvas::create_l);
+  register_to(L, classes["frame"], "create", &frame::create_l);
+  register_to(L, classes["htmlview"], "create", &htmlview::create_l);
+  register_to(L, classes["menu"], "create", &menu::create_l);
+  register_to(L, classes["menubar"], "create", &menubar::create_l);
+  register_to(L, classes["player"], "create", &player::create_l);
+  register_to(L, classes["systray"], "create", &systray::create_l);
+  register_to(L, classes["textbox"], "create", &textbox::create_l);
+  gui["canvas"]   = classes["canvas"]["create"];
+  gui["frame"]    = classes["frame"]["create"];
+  gui["htmlview"] = classes["htmlview"]["create"];
+  gui["menu"]     = classes["menu"]["create"];
+  gui["menubar"]  = classes["menubar"]["create"];
+  gui["player"]   = classes["player"]["create"];
+  gui["systray"]  = classes["systray"]["create"];
+  gui["textbox"]  = classes["textbox"]["create"];
+
 
   // Application management module
   module(L, "lev")
   [
-    // derived classes
-    class_<application, control>("app")
-      .def("autoloop", &application::autoloop)
-      .def("autoloop", &application::autoloop_with)
-      .def("get_keydown", &application::get_keydown)
-      .def("run", &application::run)
-      .def("run", &application::run_default)
-      .def("sleep", &application::sleep)
-      .def("sleep", &application::sleep_def)
-      .def("yield", &application::yield)
-      .property("input", &application::get_instate)
-      .property("inrecord", &application::get_inrecord)
-      .property("instate", &application::get_instate)
-      .property("name", &application::get_name, &application::set_name)
-      .property("title", &application::get_name, &application::set_name)
-      .property("top",  &application::get_top,  &application::settop)
-      .property("top_window",  &application::get_top,  &application::settop)
-      .scope
-      [
-        def("get", &application::getapp)
-      ]
+    namespace_("classes")
+    [
+      class_<application, handler>("app")
+        .def("autoloop", &application::autoloop)
+        .def("autoloop", &application::autoloop_with)
+        .def("get_keydown", &application::get_keydown)
+        .def("sleep", &application::sleep)
+        .def("sleep", &application::sleep_def)
+        .def("track_key", &application::track_key)
+        .def("track_mouse", &application::track_mouse)
+        .def("wait",  &application::wait)
+        .def("yield", &application::yield)
+        .property("fps", &application::get_fps, &application::set_fps)
+        .property("input", &application::get_instate)
+        .property("inrec", &application::get_inrecord)
+        .property("inrecord", &application::get_inrecord)
+        .property("instate", &application::get_instate)
+        .property("interval", &application::get_interval, &application::set_interval)
+        .property("name", &application::get_name, &application::set_name)
+        .property("title", &application::get_name, &application::set_name)
+        .property("top",  &application::get_top,  &application::settop)
+        .property("top_window",  &application::get_top,  &application::settop)
+    ],
+    namespace_("app")
+    [
+      def("get", &application::get_app)
+    ]
   ];
 
   // sizers
   module(L, "lev")
   [
-    namespace_("gui")
+    namespace_("classes")
     [
       class_<sizer, base>("sizer")
         .def("fit", &sizer::fit)
@@ -262,9 +273,13 @@ extern int luaopen_lev(lua_State *L)
         ]
     ]
   ];
-  register_to(L, globals(L)["lev"]["gui"]["gsizer"], "create", &gsizer::create_l);
-  register_to(L, globals(L)["lev"]["gui"]["hsizer"], "create", &hsizer::create_l);
-  register_to(L, globals(L)["lev"]["gui"]["vsizer"], "create", &vsizer::create_l);
+  register_to(L, classes["gsizer"], "create", &gsizer::create_l);
+  register_to(L, classes["hsizer"], "create", &hsizer::create_l);
+  register_to(L, classes["vsizer"], "create", &vsizer::create_l);
+  gui["gsizer"] = classes["gsizer"]["create"];
+  gui["hsizer"] = classes["hsizer"]["create"];
+  gui["vsizer"] = classes["vsizer"]["create"];
+
 
   // primitives
   module(L, "lev")
@@ -316,10 +331,11 @@ extern int luaopen_lev(lua_State *L)
 
   module(L, "lev")
   [
-    def("get_app", &application::getapp)
+    def("get_app", &application::get_app)
   ];
 
   set_preloaders(L);
+  luaopen_lev_input(L);
 //    register_to(L, globals(L)["package"]["preload"], "load_util", &util::luaopen_util);
 //  register_to(L, globals(L)["lev"], "load_util", &util::luaopen_util);
   return 0;
@@ -341,7 +357,6 @@ int luaopen_lev_std(lua_State *L)
   globals(L)["require"]("lev");
   globals(L)["require"]("lev.gl");
   globals(L)["require"]("lev.image");
-  globals(L)["require"]("lev.input");
   globals(L)["require"]("lev.net");
   globals(L)["require"]("lev.sound");
 
@@ -361,7 +376,6 @@ namespace lev
     register_to(L, globals(L)["package"]["preload"], "lev", luaopen_lev);
     register_to(L, globals(L)["package"]["preload"], "lev.gl", luaopen_lev_gl);
     register_to(L, globals(L)["package"]["preload"], "lev.image", luaopen_lev_image);
-    register_to(L, globals(L)["package"]["preload"], "lev.input", luaopen_lev_input);
     register_to(L, globals(L)["package"]["preload"], "lev.net", luaopen_lev_net);
     register_to(L, globals(L)["package"]["preload"], "lev.sound", luaopen_lev_sound);
     register_to(L, globals(L)["package"]["preload"], "lev.std", luaopen_lev_std);

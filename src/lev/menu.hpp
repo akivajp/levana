@@ -17,7 +17,7 @@
 namespace lev
 {
 
-  class menu : public control
+  class menu : public handler
   {
     private:
       menu();
@@ -28,7 +28,7 @@ namespace lev
       static menu* create(const char *title);
       static int create_l(lua_State *L);
       virtual type_id get_type_id() const { return LEV_TMENU; }
-      virtual const char *get_type_name() const { return "menu"; }
+      virtual const char *get_type_name() const { return "lev.gui.menu"; }
       friend class systray;
       friend class menubar;
   };
@@ -43,6 +43,8 @@ namespace lev
       static int append_l(lua_State *L);
       static menubar *create();
       static int create_l(lua_State *L);
+      virtual type_id get_type_id() const { return LEV_TMENUBAR; }
+      virtual const char *get_type_name() const { return "lev.gui.menubar"; }
       friend class frame;
   };
 

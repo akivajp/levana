@@ -1,8 +1,8 @@
 require 'lev.std'
 require 'lev.gl'
 
-frm = lev.gui.frame.create {}
-draw = lev.gui.canvas.create(frm, 640, 480)
+frm = lev.gui.frame {}
+draw = lev.gui.canvas(frm, 640, 480)
 frm:fit()
 frm:show()
 

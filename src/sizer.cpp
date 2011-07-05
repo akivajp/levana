@@ -168,7 +168,7 @@ namespace lev
   int gsizer::create_l(lua_State *L)
   {
     using namespace luabind;
-    object func = globals(L)["lev"]["gui"]["gsizer"]["create_c"];
+    object func = globals(L)["lev"]["classes"]["gsizer"]["create_c"];
     object sz = func();
     if (sz)
     {
@@ -205,7 +205,7 @@ namespace lev
   int hsizer::create_l(lua_State *L)
   {
     using namespace luabind;
-    object func = globals(L)["lev"]["gui"]["hsizer"]["create_c"];
+    object func = globals(L)["lev"]["classes"]["hsizer"]["create_c"];
     object sz = func();
     if (sz)
     {
@@ -241,7 +241,7 @@ namespace lev
   int vsizer::create_l(lua_State *L)
   {
     using namespace luabind;
-    object func = globals(L)["lev"]["gui"]["vsizer"]["create_c"];
+    object func = globals(L)["lev"]["classes"]["vsizer"]["create_c"];
     object sz = func();
     if (sz)
     {

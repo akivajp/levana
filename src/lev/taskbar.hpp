@@ -20,7 +20,7 @@
 namespace lev
 {
 
-  class systray : public control
+  class systray : public handler
   {
     private:
       systray();
@@ -30,13 +30,11 @@ namespace lev
       static int create_l(lua_State *L);
       luabind::object get_menu_generator();
       virtual type_id get_type_id() const { return LEV_TSYSTRAY; }
-      virtual const char *get_type_name() const { return "systray"; }
+      virtual const char *get_type_name() const { return "lev.gui.systray"; }
       bool popup(menu *m);
+      bool remove_icon();
       bool set_icon(const icon& i, const char *tooltip = "");
-//      void set_menu(menu *m);
-//      static int set_menu_l(lua_State *L);
       bool set_menu_generator(luabind::object lua_func);
-      virtual bool set_onmenu(int id, luabind::object lua_func);
   };
 
 }

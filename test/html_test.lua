@@ -1,11 +1,11 @@
 require 'lev.std'
 
-frm = lev.gui.frame.create {}
-sizer = lev.gui.vsizer.create()
+frm = lev.gui.frame {}
+sizer = lev.gui.vsizer()
 frm.sizer = sizer
-txt = lev.gui.textbox.create {p = frm}
+txt = lev.gui.textbox {p = frm}
 sizer:add(txt,0)
-html = lev.gui.htmlview.create (frm)
+html = lev.gui.htmlview(frm)
 sizer:add(html,1)
 --sizer:fit(frm)
 --frm:fit()

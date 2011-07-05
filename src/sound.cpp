@@ -31,6 +31,12 @@ int luaopen_lev_sound(lua_State *L)
   [
     namespace_("sound")
     [
+      def("init", &sound::init),
+      def("play", &sound::play),
+      def("stop", &sound::stop_all)
+    ],
+    namespace_("classes")
+    [
       class_<channel, base>("channel")
         .def("clean", &channel::clean)
         .def("load", &channel::load)
@@ -57,13 +63,14 @@ int luaopen_lev_sound(lua_State *L)
         .scope
         [
           def("create_c", &mixer::create, adopt(result))
-        ],
-      def("init", &sound::init),
-      def("play", &sound::play),
-      def("stop", &sound::stop_all)
+        ]
     ]
   ];
-  register_to(L, globals(L)["lev"]["sound"]["mixer"], "create", &mixer::create_l);
+  object classes = globals(L)["lev"]["classes"];
+  object sound = globals(L)["lev"]["sound"];
+  register_to(L, classes["mixer"], "create", &mixer::create_l);
+  sound["mixer"] = classes["mixer"]["create"];
+
   return 0;
 }
 
@@ -368,7 +375,7 @@ namespace lev
   int mixer::create_l(lua_State *L)
   {
     using namespace luabind;
-    object func = globals(L)["lev"]["sound"]["mixer"]["create_c"];
+    object func = globals(L)["lev"]["classes"]["mixer"]["create_c"];
     object mx = func();
     if (mx)
     {

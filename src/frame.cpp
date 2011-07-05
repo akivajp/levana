@@ -12,7 +12,7 @@
 #include "lev/app.hpp"
 #include "lev/frame.hpp"
 #include "lev/util.hpp"
-#include "connect.hpp"
+#include "deriver.hpp"
 #include "register.hpp"
 
 #include <string>
@@ -24,17 +24,15 @@ using namespace boost;
 namespace lev
 {
 
-  class myFrame : public wxFrame
-  {
-    public:
-      inline myFrame() : wxFrame() {}
-      inline myFrame(wxWindow* parent, const wxString title, int height, int width, long style = wxDEFAULT_FRAME_STYLE)
-        : wxFrame(parent, -1, title, wxDefaultPosition, wxSize(height, width), style)
-      {}
-    private:
-      // Common Connect Interface
-      DECLARE_CONNECT();
-  };
+  typedef MyHandler<wxFrame> myFrame;
+//  class myFrame : public wxFrame
+//  {
+//    public:
+//      inline myFrame() : wxFrame() {}
+//      inline myFrame(wxWindow* parent, const wxString title, int height, int width, long style = wxDEFAULT_FRAME_STYLE)
+//        : wxFrame(parent, -1, title, wxDefaultPosition, wxSize(height, width), style)
+//      {}
+//  };
 
 
   bool frame::close(bool force)
@@ -50,22 +48,28 @@ namespace lev
 
   frame *frame::create(control *parent, const char *title, int w, int h, long style)
   {
-    gui_lock lock;
-    frame   *newfrm = NULL;
-    wxFrame *wxfrm  = NULL;
+    frame   *frm = NULL;
+    myFrame *obj = NULL;
     try {
-      newfrm = new frame();
+      frm = new frame();
       wxWindow *p = parent ? (wxWindow *)parent->get_rawobj() : NULL;
       if (style == -1) { style = wxDEFAULT_FRAME_STYLE; }
-      wxfrm = new myFrame(p, wxString(title, wxConvUTF8), w, h, style);
-      newfrm->_id = wxfrm->GetId();
-      newfrm->_obj = wxfrm;
-      newfrm->seticon(icon::levana_icon());
-      newfrm->wx_managed = true;
-      return newfrm;
+      obj = new myFrame;
+      if (not obj->Create(p, -1, wxString(title, wxConvUTF8), wxDefaultPosition, wxSize(w, h), style))
+      {
+        throw -1;
+      }
+      frm->_id = obj->GetId();
+      frm->_obj = obj;
+      frm->connector = obj->GetConnector();
+      frm->func_getter = obj->GetFuncGetter();
+      frm->seticon(icon::levana_icon());
+      frm->system_managed = true;
+      return frm;
     }
     catch (...) {
-      delete wxfrm;
+      delete obj;
+      delete frm;
       return NULL;
     }
   }
@@ -113,7 +117,7 @@ namespace lev
 
     if (strstr(s, "fixed")) { style = style & ~wxRESIZE_BORDER; }
 
-    object func = globals(L)["lev"]["gui"]["frame"]["create_c"];
+    object func = globals(L)["lev"]["classes"]["frame"]["create_c"];
     object frame = func(p, title, w, h, style);
     if (frame)
     {
@@ -128,11 +132,6 @@ namespace lev
   void frame::fit()
   {
     ((myFrame *)_obj)->Fit();
-  }
-
-  luabind::object frame::get_onkeydown()
-  {
-    return ((myFrame *)_obj)->_fmap[wxEVT_KEY_DOWN][-1];
   }
 
   const char * frame::getstatus()
@@ -184,31 +183,17 @@ namespace lev
       luabind::iterator j((*i)["fmap"]);
       for (; j != end; j++)
       {
-        frame_obj["set_onmenu"](frame_obj, j.key(), *j);
+        frame_obj["set_on_menu"](frame_obj, j.key(), *j);
       }
     }
     lua_pushboolean(L, true);
     return 1;
   }
 
-  bool frame::set_onkeydown(luabind::object lua_func)
-  {
-    ((myFrame *)_obj)->Connect(-1, wxEVT_KEY_DOWN, lua_func);
-    return true;
-  }
-
-  bool frame::set_onmenu(int id, luabind::object lua_func)
-  {
-    ((myFrame *)_obj)->Connect(id, wxEVT_COMMAND_MENU_SELECTED, lua_func);
-    return true;
-  }
-
   void frame::settop(frame *top)
   {
     wxTheApp->SetTopWindow((wxFrame *)top->_obj);
   }
-
-
 
   void frame::setstatus(const char *str_status)
   {

@@ -15,7 +15,7 @@
 namespace lev
 {
 
-  menu::menu() : control() {}
+  menu::menu() : handler() {}
 
   menu::~menu() {}
 
@@ -78,7 +78,7 @@ namespace lev
     wxMenu *obj = new wxMenu(wxString(title, wxConvUTF8));
     if (obj == NULL) { goto Error; }
     m->_obj = obj;
-    m->wx_managed = true;
+    m->system_managed = true;
     return m;
 
     Error:
@@ -106,7 +106,7 @@ namespace lev
     else if (t["t"]) { title = object_cast<const char *>(t["t"]); }
     else if (t["str1"]) { title = object_cast<const char *>(t["str1"]); }
 
-    object func = globals(L)["lev"]["gui"]["menu"]["create_c"];
+    object func = globals(L)["lev"]["classes"]["menu"]["create_c"];
     object menu = func(title);
     if (menu)
     {
@@ -184,7 +184,7 @@ namespace lev
     if (obj == NULL) { goto Error; }
     mb->_obj = obj;
     mb->_id = obj->GetId();
-    mb->wx_managed = true;
+    mb->system_managed = true;
     return mb;
 
     Error:
@@ -196,7 +196,7 @@ namespace lev
   {
     using namespace luabind;
 
-    object func = globals(L)["lev"]["gui"]["menubar"]["create_c"];
+    object func = globals(L)["lev"]["classes"]["menubar"]["create_c"];
     object mb = func();
     if (mb)
     {

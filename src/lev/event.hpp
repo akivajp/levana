@@ -12,31 +12,55 @@
 
 #include "base.hpp"
 #include "sizer.hpp"
-
-namespace luabind { class object; }
+#include <boost/function.hpp>
+#include <luabind/luabind.hpp>
 
 namespace lev
 {
-  class control : public base
+  using namespace luabind;
+
+  class handler : public base
+  {
+    protected:
+      handler();
+      virtual ~handler();
+    public:
+      bool connect(int type, object lua_func) { return connect(-1, type, lua_func); }
+      bool connect(int id, int type, object lua_func);
+      object get_func(int type) { return get_func(-1, type); }
+      object get_func(int id, int type);
+      object get_on_any();
+      object get_on_close();
+      object get_on_idle();
+      object get_on_keydown();
+      void *get_rawobj() { return _obj; }
+      virtual type_id get_type_id() const { return LEV_THANDLER; }
+      virtual const char *get_type_name() const { return "lev.handler"; }
+      bool set_on_any(object lua_func);
+      bool set_on_close(object lua_func);
+      bool set_on_idle(object lua_func);
+      bool set_on_keydown(object lua_func);
+      bool set_on_menu(int id, object lua_func);
+
+    protected:
+      boost::function<void (int, int, luabind::object)> connector;
+      boost::function<luabind::object (int, int)> func_getter;
+      bool system_managed;
+      void *_obj;
+  };
+
+  class control : public handler
   {
     protected:
       control();
       virtual ~control();
     public:
-      virtual bool connect(int type, luabind::object lua_func) { return false; }
-      virtual luabind::object get_onany() { return luabind::object(); }
-      virtual luabind::object get_onidle() { return luabind::object(); }
       virtual luabind::object get_onmenu(int id) { return luabind::object(); }
-      virtual luabind::object get_onkeydown() { return luabind::object(); }
-      void *get_rawobj() { return _obj; }
-      virtual bool set_onany(luabind::object lua_func) { return false; }
-      virtual bool set_onidle(luabind::object lua_func) { return false; }
-      virtual bool set_onkeydown(luabind::object lua_func) { return false; }
-      virtual bool set_onmenu(int id, luabind::object lua_func) { return false; }
       int getid();
       sizer *getsizer();
+      long get_style();
       virtual type_id get_type_id() const { return LEV_TCONTROL; }
-      virtual const char *get_type_name() const { return "control"; }
+      virtual const char *get_type_name() const { return "lev.gui.control"; }
       inline bool hide() { return setshown(false); }
       bool isshown();
       bool isvalid();
@@ -44,18 +68,8 @@ namespace lev
       bool setshown(bool showing);
       inline bool show() { return setshown(true); }
 
-      // friend classes
-//      friend class canvas;
-//      friend class frame;
-//      friend class htmlview;
-//      friend class player;
-//      friend class sizer;
-//      friend class textbox;
-
     protected:
-      bool wx_managed;
       sizer *_sz;
-      void *_obj;
       int _id;
   };
 
@@ -66,8 +80,8 @@ namespace lev
       event(void *e);
       ~event();
       int get_id() const;
-      const char *get_key() const;
-      int get_keycode() const;
+      const char *get_keystr() const;
+      long get_keycode() const;
       bool request();
       void skip();
     protected:

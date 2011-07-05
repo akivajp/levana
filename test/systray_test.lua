@@ -2,12 +2,12 @@ require 'lev'
 
 app = lev.app.get()
 
-frm = lev.gui.frame.create()
+frm = lev.gui.frame()
 frm:show()
 
-st = lev.gui.systray.create()
+st = lev.gui.systray()
 st.menu_generator = function()
-  menu = lev.gui.menu.create()
+  menu = lev.gui.menu()
   id = menu:append('Exit(&X)')
   menu.fmap[id] = function()
     lev.gui.msgbox('Bye!')
@@ -15,7 +15,6 @@ st.menu_generator = function()
   end
   return menu
 end
---st:set_menu(menu)
 
 app:autoloop(frm)
 

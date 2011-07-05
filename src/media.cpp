@@ -41,7 +41,7 @@ namespace lev
     }
     new_player->_obj = media;
     new_player->_id = media->GetId();
-    new_player->wx_managed = true;
+    new_player->system_managed = true;
     return new_player;
   }
 
@@ -74,7 +74,7 @@ namespace lev
     else if (t["h"]) { h = object_cast<int>(t["h"]); }
     else if (t["num2"]) { h = object_cast<int>(t["num2"]); }
 
-    object func = globals(L)["lev"]["gui"]["player"]["create_c"];
+    object func = globals(L)["lev"]["classes"]["player"]["create_c"];
     object new_player = func(p, w, h);
     if (new_player)
     {

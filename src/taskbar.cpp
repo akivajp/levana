@@ -9,128 +9,100 @@
 
 #include "prec.h"
 
-#include "connect.hpp"
-#include "lev/taskbar.hpp"
+#include "deriver.hpp"
 #include "register.hpp"
+#include "lev/taskbar.hpp"
 
 namespace lev
 {
 
-  class myTaskBarIcon : public wxTaskBarIcon
+  class myTaskBarIcon : public MyHandler<wxTaskBarIcon>
   {
     public:
-      myTaskBarIcon() : wxTaskBarIcon(), menu_generator(), owner() {}
-
-//      void SetRClickMenu(wxMenu *m) { this->menu = m; }
+      myTaskBarIcon() : menugen() {}
 
       virtual wxMenu *CreatePopupMenu()
       {
         luabind::object result;
-        if (luabind::type(menu_generator) != LUA_TFUNCTION) { return NULL; }
-        result = menu_generator();
+        if (menugen && luabind::type(menugen) != LUA_TFUNCTION) { return NULL; }
+        result = menugen();
         if (luabind::type(result) != LUA_TUSERDATA) { return NULL; }
         if (result["type_id"] != base::LEV_TMENU) { return NULL; }
-
         menu *m = luabind::object_cast<menu *>(result);
         luabind::iterator i(result["fmap"]), end;
         for (; i != end; i++)
         {
-          owner["set_onmenu"](owner, i.key(), *i);
+          Connect(object_cast<int>(i.key()), wxEVT_COMMAND_MENU_SELECTED, *i);
         }
         return (wxMenu *)m->get_rawobj();
       }
 
-//      wxMenu *menu;
-      luabind::object menu_generator;
-      luabind::object owner;
-      // Common Connect Interface
-      DECLARE_CONNECT();
+      luabind::object menugen;
   };
-  static inline myTaskBarIcon* cast_systray(void *obj) { return (myTaskBarIcon *)obj; }
+  static inline myTaskBarIcon* cast_tray(void *obj) { return (myTaskBarIcon *)obj; }
 
-  systray::systray() : control() { }
+  systray::systray() : handler() { }
+
   systray::~systray() {}
 
   systray* systray::create()
   {
-    systray *st = new systray();
-    if (st == NULL) { return NULL; }
-    myTaskBarIcon *obj = new myTaskBarIcon();
-    if (obj == NULL) { goto Error; }
-    st->_obj = obj;
-    st->wx_managed = true;
-    st->set_icon(icon::levana_icon(), "Levana Application");
-    return st;
-
-    Error:
-    delete st;
-    return NULL; }
+    systray *tray = NULL;
+    myTaskBarIcon *obj = NULL;
+    try {
+      tray = new systray();
+      obj = new myTaskBarIcon();
+      tray->_obj = obj;
+      tray->connector = obj->GetConnector();
+      tray->func_getter = obj->GetFuncGetter();
+      tray->system_managed = true;
+      tray->set_icon(icon::levana_icon(), "Levana Application");
+      return tray;
+    }
+    catch (...) {
+      delete obj;
+      delete tray;
+      return NULL;
+    }
+  }
 
   int systray::create_l(lua_State *L)
   {
     using namespace luabind;
-    object func = globals(L)["lev"]["gui"]["systray"]["create_c"];
+    object func = globals(L)["lev"]["classes"]["systray"]["create_c"];
     object st = func();
     systray *tray = object_cast<systray *>(st);
-    cast_systray(tray->_obj)->owner = st;
     st.push(L);
     return 1;
   }
 
   luabind::object systray::get_menu_generator()
   {
-    return cast_systray(_obj)->menu_generator;
+    return cast_tray(_obj)->menugen;
   }
 
   bool systray::popup(menu *m)
   {
-    return ((myTaskBarIcon *)_obj)->PopupMenu((wxMenu *)m->_obj);
+    return cast_tray(_obj)->PopupMenu((wxMenu *)m->_obj);
+  }
+
+  bool systray::remove_icon()
+  {
+    cast_tray(_obj)->RemoveIcon();
+    return true;
   }
 
   bool systray::set_icon(const icon& i, const char *tooltip)
   {
-    myTaskBarIcon *tray = (myTaskBarIcon *)_obj;
+    myTaskBarIcon *tray = cast_tray(_obj);
     return tray->SetIcon(*((wxIcon*)i._obj.get()), wxString(tooltip, wxConvUTF8));
   }
 
-//  void systray::set_menu(menu *m)
-//  {
-//    myTaskBarIcon *tray = (myTaskBarIcon *)_obj;
-//    tray->SetRClickMenu((wxMenu *)m->_obj);
-//  }
-
-//  int systray::set_menu_l(lua_State *L)
-//  {
-//    using namespace luabind;
-//
-//    luaL_checktype(L, 1, LUA_TUSERDATA);
-//    luaL_checktype(L, 2, LUA_TUSERDATA);
-//    object systray_obj(from_stack(L, 1));
-//    object menu_obj(from_stack(L, 2));
-//
-//    systray *st = object_cast<systray *>(systray_obj);
-//    menu *m = object_cast<menu *>(menu_obj);
-//    st->set_menu(m);
-//
-//    luabind::iterator i(menu_obj["fmap"]), end;
-//    for (; i != end; i++)
-//    {
-//      systray_obj["set_onmenu"](systray_obj, i.key(), *i);
-//    }
-//    lua_pushboolean(L, true);
-//    return 1;
-//  }
-
   bool systray::set_menu_generator(luabind::object lua_func)
   {
-    cast_systray(_obj)->menu_generator = lua_func;
+    cast_tray(_obj)->menugen = lua_func;
     return true;
   }
 
-  bool systray::set_onmenu(int id, luabind::object lua_func)
-  {
-    ((myTaskBarIcon *)_obj)->Connect(id, wxEVT_COMMAND_MENU_SELECTED, lua_func);
-    return true;
-  }
 }
 

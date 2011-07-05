@@ -9,7 +9,7 @@
 
 #include "prec.h"
 
-#include "connect.hpp"
+#include "deriver.hpp"
 #include "lev/gui.hpp"
 #include "lev/image.hpp"
 #include "lev/net.hpp"
@@ -20,6 +20,57 @@
 
 namespace lev
 {
+
+  int gui::msgbox_l(lua_State *L)
+  {
+    wxString msg, cap;
+    const char *m = "Message", *c = "Message", *s = "";
+    long style = 0;
+
+    int n = lua_gettop(L);
+    lua_pushcfunction(L, &util::merge);
+    newtable(L).push(L);
+    for (int i = 1; i <= n; i++)
+    {
+      object(from_stack(L, i)).push(L);
+    }
+    lua_call(L, n + 1, 1);
+    object t(from_stack(L, -1));
+    lua_remove(L, -1);
+
+    if (t["message"]) { m = object_cast<const char *>(t["message"]); }
+    else if (t["mes"]) { m = object_cast<const char *>(t["mes"]); }
+    else if (t["m"]) { m = object_cast<const char *>(t["m"]); }
+    else if (t["str1"]) { m = object_cast<const char *>(t["str1"]); }
+
+    if (t["caption"]) { c = object_cast<const char *>(t["caption"]); }
+    else if (t["cap"]) { c = object_cast<const char *>(t["cap"]); }
+    else if (t["c"]) { c = object_cast<const char *>(t["c"]); }
+    else if (t["str2"]) { c = object_cast<const char *>(t["str2"]); }
+
+    if (t["style"]) { s = object_cast<const char *>(t["style"]); }
+    else if (t["s"]) { s = object_cast<const char *>(t["s"]); }
+    else if (t["str3"]) { s = object_cast<const char *>(t["str3"]); }
+
+    msg = wxString(m, wxConvUTF8);
+    cap = wxString(c, wxConvUTF8);
+    if (strstr(s, "yes")) { style = style | wxYES_NO; }
+    if (strstr(s, "no")) { style = style | wxYES_NO; }
+    if (strstr(s, "cancel")) { style = style | wxCANCEL; }
+    if (strstr(s, "ok")) { style = style | wxOK; }
+    if (strstr(s, "exclamation")) { style = style | wxICON_EXCLAMATION; }
+    if (strstr(s, "hand")) { style = style | wxICON_HAND; }
+    if (strstr(s, "error")) { style = style | wxICON_ERROR; }
+    if (strstr(s, "question")) { style = style | wxICON_QUESTION; }
+    if (strstr(s, "info")) { style = style | wxICON_INFORMATION; }
+
+    int result = wxMessageBox(msg, cap, style);
+    if (result == wxYES || result == wxOK) { lua_pushboolean(L, true); }
+    else if (result == wxNO) { lua_pushboolean(L, false); }
+    else if (result == wxCANCEL) { return 0; }
+    return 1;
+  }
+
   const char *gui::file_selector(const char *message, const char *def_path, const char *def_file,
                                  const char *def_ext, const char *wildcard, control *parent)
   {
@@ -64,7 +115,7 @@ namespace lev
       html = new htmlview;
       if (parent) { p = (wxWindow *)parent->get_rawobj(); }
       obj = new myHtmlWindow(p, width, height);
-      html->wx_managed = true;
+      html->system_managed = true;
       html->_id = obj->GetId();
       html->_obj = obj;
       return html;
@@ -104,7 +155,7 @@ namespace lev
     else if (t["h"]) { h = object_cast<int>(t["h"]); }
     else if (t["num2"]) { h = object_cast<int>(t["num2"]); }
 
-    object func = globals(L)["lev"]["gui"]["htmlview"]["create_c"];
+    object func = globals(L)["lev"]["classes"]["htmlview"]["create_c"];
     object html = func(p, w, h);
     if (html)
     {
@@ -155,19 +206,10 @@ namespace lev
 
 
 
-  // text control definitions
-  class myTextCtrl : public wxTextCtrl
-  {
-    public:
-      inline myTextCtrl(wxWindow *parent, int width, int height, wxString &value, long style) :
-        wxTextCtrl(parent, -1, value, wxDefaultPosition, wxSize(width, height), style) {}
-    private:
-      // Common Connect Interface
-      DECLARE_CONNECT();
-  };
+  typedef MyHandler<wxTextCtrl> myTextCtrl;
+  static myTextCtrl *cast_txt(void *obj) { return (myTextCtrl *)obj; }
 
-
-  textbox* textbox::create(control *parent, int width, int height, const char *value)
+  textbox* textbox::create(control *parent, int width, int height, const char *value, long style)
   {
     textbox *tb = NULL;
     myTextCtrl *obj = NULL;
@@ -175,15 +217,25 @@ namespace lev
     wxString val = wxEmptyString;
     try {
       tb = new textbox;
-      if (parent) { p = (wxWindow *)parent->get_rawobj(); }
+      if (parent)
+      {
+        p = (wxWindow *)parent->get_rawobj();
+        tb->system_managed = true;
+      }
       if (value) { val = wxString(value, wxConvUTF8); }
-      obj = new myTextCtrl(p, width, height, val, 0);
-      tb->wx_managed = true;
-      tb->_id = obj->GetId();
+      obj = new myTextCtrl;
+      if (not obj->Create(p, -1, val, wxDefaultPosition, wxSize(width, height), style))
+      {
+        throw -1;
+      }
       tb->_obj = obj;
+      tb->_id = obj->GetId();
+      tb->connector = obj->GetConnector();
+      tb->func_getter = obj->GetFuncGetter();
       return tb;
     }
     catch (...) {
+      delete obj;
       delete tb;
       return NULL;
     }
@@ -195,6 +247,8 @@ namespace lev
     object p;
     int w = -1, h = -1;
     const char *v = "";
+    const char *s = "";
+    long style = 0;
 
     int n = lua_gettop(L);
     lua_pushcfunction(L, &util::merge);
@@ -222,20 +276,21 @@ namespace lev
     if (t["value"]) { v = object_cast<const char *>(t["value"]); }
     else if (t["val"]) { v = object_cast<const char *>(t["val"]); }
     else if (t["v"]) { v = object_cast<const char *>(t["v"]); }
+    else if (t["str1"]) { v = object_cast<const char *>(t["str1"]); }
 
-    object func = globals(L)["lev"]["gui"]["textbox"]["create_c"];
-    object tb = func(p, w, h, v);
+    if (t["style"]) { s = object_cast<const char *>(t["style"]); }
+    else if (t["s"]) { s = object_cast<const char *>(t["s"]); }
+
+    if (strstr(s, "multi")) { style = wxTE_MULTILINE; }
+
+    object func = globals(L)["lev"]["classes"]["textbox"]["create_c"];
+    object tb = func(p, w, h, v, style);
     if (tb)
     {
       // do something
     }
     tb.push(L);
     return 1;
-  }
-
-  luabind::object textbox::get_onkeydown()
-  {
-    return ((myTextCtrl *)_obj)->_fmap[wxEVT_KEY_DOWN][-1];
   }
 
   const char* textbox::get_value()
@@ -245,81 +300,16 @@ namespace lev
     return value.c_str();
   }
 
-  bool textbox::set_onkeydown(luabind::object lua_func)
+  bool textbox::set_multiline()
   {
-    ((myTextCtrl *)_obj)->Connect(-1, wxEVT_KEY_DOWN, lua_func);
+    long style = get_style();
+    cast_txt(_obj)->SetWindowStyle(style | wxTE_MULTILINE);
     return true;
   }
 
   void textbox::set_value(const char *value)
   {
     ((wxTextCtrl *)_obj)->SetValue(wxString(value, wxConvUTF8));
-  }
-
-  textedit* textedit::create(control *parent, int width, int height, const char *value)
-  {
-    textedit *txt = NULL;
-    myTextCtrl *obj = NULL;
-    wxWindow *p = NULL;
-    wxString val = wxEmptyString;
-    try {
-      txt = new textedit;
-      if (parent) { p = (wxWindow *)parent->get_rawobj(); }
-      if (value) { val = wxString(value, wxConvUTF8); }
-      obj = new myTextCtrl(p, width, height, val, wxTE_MULTILINE);
-      txt->wx_managed = true;
-      txt->_id = obj->GetId();
-      txt->_obj = obj;
-      return txt;
-    }
-    catch (...) {
-      delete txt;
-      return NULL;
-    }
-  }
-
-  int textedit::create_l(lua_State *L)
-  {
-    using namespace luabind;
-    object p;
-    int w = -1, h = -1;
-    const char *v = "";
-
-    int n = lua_gettop(L);
-    lua_pushcfunction(L, &util::merge);
-    newtable(L).push(L);
-    for (int i = 1; i <= n; i++)
-    {
-      object(from_stack(L, i)).push(L);
-    }
-    lua_call(L, n + 1, 1);
-    object t(from_stack(L, -1));
-    lua_remove(L, -1);
-
-    if (t["parent"]) { p = t["parent"]; }
-    else if (t["p"]) { p = t["p"]; }
-    else if (t["udata"]) { p = t["udata"]; }
-
-    if (t["width"]) { w = object_cast<int>(t["width"]); }
-    else if (t["w"]) { w = object_cast<int>(t["w"]); }
-    else if (t["num1"]) { w = object_cast<int>(t["num1"]); }
-
-    if (t["height"]) { h = object_cast<int>(t["height"]); }
-    else if (t["h"]) { h = object_cast<int>(t["h"]); }
-    else if (t["num2"]) { h = object_cast<int>(t["num2"]); }
-
-    if (t["value"]) { v = object_cast<const char *>(t["value"]); }
-    else if (t["val"]) { v = object_cast<const char *>(t["val"]); }
-    else if (t["v"]) { v = object_cast<const char *>(t["v"]); }
-
-    object func = globals(L)["lev"]["gui"]["textedit"]["create_c"];
-    object tb = func(p, w, h, v);
-    if (tb)
-    {
-      // do something
-    }
-    tb.push(L);
-    return 1;
   }
 
 }

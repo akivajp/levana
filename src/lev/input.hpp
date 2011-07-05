@@ -13,6 +13,7 @@
 
 #include "base.hpp"
 #include <lua.h>
+#include <string>
 
 extern "C" {
   int luaopen_lev_input(lua_State *L);
@@ -21,29 +22,23 @@ extern "C" {
 namespace lev
 {
 
-  class inbase : public base
+  class input
   {
-    protected:
-      inbase() {}
-      virtual ~inbase() {}
     public:
-      virtual bool get_left_down() const = 0;
-      virtual bool get_middle_down() const = 0;
-      virtual bool get_right_down() const = 0;
-      virtual type_id get_type_id() const { return LEV_TINPUT; }
-      virtual const char *get_type_name() const { return "lev.input.inbase"; }
+      static long to_keycode(const char *keystr);
+      static const char *to_keystr(long code);
   };
 
-  class instate : public inbase
+  class instate : public base
   {
     public:
       instate();
       virtual ~instate();
       int get_x() const;
       int get_y() const;
-      virtual bool get_left_down() const;
-      virtual bool get_middle_down() const;
-      virtual bool get_right_down() const;
+      bool get_left_down() const;
+      bool get_middle_down() const;
+      bool get_right_down() const;
       virtual type_id get_type_id() const { return LEV_TINSTATE; }
       virtual const char *get_type_name() const { return "lev.input.instate"; }
 
@@ -52,20 +47,23 @@ namespace lev
       void *_obj;
   };
 
-  class inrecord : public inbase
+  class inrecord : public base
   {
     public:
       inrecord();
       virtual ~inrecord();
       bool clear();
-      virtual bool get_left_down() const;
-      virtual bool get_middle_down() const;
-      virtual bool get_right_down() const;
+      bool get_keydown(const char *keystr) const;
+      bool get_left_down() const;
+      bool get_middle_down() const;
+      bool get_right_down() const;
+      int get_x() const;
+      int get_y() const;
       virtual type_id get_type_id() const { return LEV_TINRECORD; }
       virtual const char *get_type_name() const { return "lev.inrecord"; }
-      bool set_left_down();
-      bool set_middle_down();
-      bool set_right_down();
+      bool record();
+      bool track_key(const char *keystr);
+      bool track_mouse();
 
       friend class application;
     private:
