@@ -67,6 +67,9 @@ namespace lev
         old_loop = m_mainLoop;
         m_mainLoop = new wxEventLoop();
         wxEventLoop::SetActive(m_mainLoop);
+
+        wxSocketBase::Initialize();
+        wxInitAllImageHandlers();
         wxFileSystem::AddHandler(new wxInternetFSHandler);
 
         sw.Start();
@@ -134,7 +137,7 @@ namespace lev
     if (frm == NULL) { this->autoloop(); }
     else
     {
-      while (frm->isvalid())
+      while (frm->is_valid())
       {
         wxGetApp().Yield();
       }

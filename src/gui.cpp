@@ -10,6 +10,7 @@
 #include "prec.h"
 
 #include "deriver.hpp"
+#include "lev/frame.hpp"
 #include "lev/gui.hpp"
 #include "lev/image.hpp"
 #include "lev/net.hpp"
@@ -91,6 +92,93 @@ namespace lev
     return str.c_str();
   }
 
+  static wxWindow *cast_win(void *obj) { return (wxWindow *)obj; }
+
+  control::control() : handler(), _id(0), _sz(NULL)
+  { }
+
+  control::~control()
+  {
+    if (system_managed)
+    {
+      // wxWidgets will automatically delete
+    }
+    else if (_id && !is_valid())
+    {
+      // the object isn't already found
+      _obj = NULL;
+    }
+  }
+
+  int control::get_height()
+  {
+    int h;
+    cast_win(_obj)->GetSize(NULL, &h);
+    return h;
+  }
+
+  int control::getid()
+  {
+    return _id;
+  }
+
+  sizer *control::get_sizer()
+  {
+    return _sz;
+  }
+
+  long control::get_style()
+  {
+    return ((wxWindow *)_obj)->GetWindowStyle();
+  }
+
+  int control::get_width()
+  {
+    int w;
+    cast_win(_obj)->GetSize(&w, NULL);
+    return w;
+  }
+
+  bool control::is_shown()
+  {
+    return ((wxWindow *)_obj)->IsShown();
+  }
+
+  bool control::is_valid()
+  {
+    if (wxWindow::FindWindowById(_id)) { return true; }
+    return false;
+  }
+
+  bool control::set_height(int h)
+  {
+    cast_win(_obj)->SetSize(get_width(), h);
+    return true;
+  }
+
+  void control::set_sizer(sizer *s)
+  {
+    if (s)
+    {
+      ((wxWindow *)_obj)->SetSizer((wxSizer *)s->get_rawobj());
+      _sz = s;
+      s->wx_managed = true;
+    }
+  }
+
+  bool control::set_shown(bool showing)
+  {
+//    gui_lock();
+    return ((wxWindow *)_obj)->Show(showing);
+  }
+
+  bool control::set_width(int w)
+  {
+    cast_win(_obj)->SetSize(w, get_height());
+    return true;
+  }
+
+
 
   // html viewer control definitions
   class myHtmlWindow : public wxHtmlWindow
@@ -113,11 +201,21 @@ namespace lev
     wxWindow *p = NULL;
     try {
       html = new htmlview;
-      if (parent) { p = (wxWindow *)parent->get_rawobj(); }
+      if (parent)
+      {
+        p = (wxWindow *)parent->get_rawobj();
+        html->system_managed = true;
+      }
       obj = new myHtmlWindow(p, width, height);
-      html->system_managed = true;
       html->_id = obj->GetId();
       html->_obj = obj;
+      if (p)
+      {
+        obj->SetRelatedFrame((wxFrame *)p, wxT("%s"));
+        frame *frm = (frame *)parent;
+        frm->set_status("");
+        obj->SetRelatedStatusBar(0);
+      }
       return html;
     }
     catch (...) {

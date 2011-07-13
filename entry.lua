@@ -14,6 +14,8 @@ sizer:add(txt2,1)
 frm:show()
 
 txt.on_keydown = function(e)
+--  html = lev.net.url.connect('http://www.google.com')
+
   frm.status = e.key .. " was pressed"
 --  txt2.v = "key = " .. e.key .. "\n"
   e:skip()

@@ -15,7 +15,9 @@ src/tags
 
 ./*.mp3
 ./*.ogg
+./*.png
 ./*.wav
 ./lev.so
 ./levana-win32-*
+./tags
 

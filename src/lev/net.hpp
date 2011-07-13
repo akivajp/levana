@@ -120,9 +120,10 @@ namespace lev
       virtual ~url();
       static url* connect(const char *str_url);
       virtual const char *get_address();
-      virtual const char *get_hostname();
       const char *get_content_type();
-      const char *get_data();
+      virtual const char *get_hostname();
+      int get_response();
+      std::string get_data();
       virtual int get_port();
       const char *get_scheme();
       const char *get_server();

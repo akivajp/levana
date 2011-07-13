@@ -1,3 +1,6 @@
+#ifndef _GUI_HPP
+#define _GUI_HPP
+
 /////////////////////////////////////////////////////////////////////////////
 // Name:        src/lev/gui.hpp
 // Purpose:     header for GUI controls
@@ -19,6 +22,34 @@ namespace lev
       static const char *file_selector(const char *message, const char *def_path, const char *def_file,
                                        const char *def_ext, const char *wildcard, control *parent);
       static int file_selector_l(lua_State *L);
+  };
+
+  class control : public handler
+  {
+    protected:
+      control();
+      virtual ~control();
+    public:
+      virtual luabind::object get_onmenu(int id) { return luabind::object(); }
+      int get_height();
+      int getid();
+      sizer *get_sizer();
+      long get_style();
+      int get_width();
+      virtual type_id get_type_id() const { return LEV_TCONTROL; }
+      virtual const char *get_type_name() const { return "lev.gui.control"; }
+      bool hide() { return set_shown(false); }
+      bool is_shown();
+      bool is_valid();
+      bool set_height(int h);
+      void set_sizer(sizer *s);
+      bool set_shown(bool showing);
+      bool set_width(int w);
+      bool show() { return set_shown(true); }
+
+    protected:
+      sizer *_sz;
+      int _id;
   };
 
   class htmlview: public control
@@ -46,13 +77,7 @@ namespace lev
       void set_value(const char *value);
   };
 
-//  class textedit: public textbox
-//  {
-//    public:
-//      static textedit* create(control *parent, int width, int height, const char *value = "");
-//      static int create_l(lua_State *L);
-//      virtual type_id get_type_id() const { return LEV_TTEXTEDIT; }
-//      virtual const char *get_type_name() const { return "lev.gui.textedit"; }
-//  };
 }
+
+#endif // _GUI_HPP
 

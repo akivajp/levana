@@ -34,6 +34,7 @@ namespace lev
       static int create_l(lua_State *L);
       void fit();
       luabind::object get_onkeydown();
+      const char *get_status();
       virtual type_id get_type_id() const { return LEV_TFRAME; }
       virtual const char *get_type_name() const { return "frame"; }
       void seticon(const icon &i);
@@ -41,9 +42,7 @@ namespace lev
       static int set_menubar_l(lua_State *L);
       bool set_onkeydown(luabind::object lua_func);
       bool set_onmenu(int id, luabind::object lua_func);
-      // statusbar property
-      const char *getstatus();
-      void setstatus(const char *str_status);
+      void set_status(const char *str_status);
       // title property
       const char *gettitle();
       void settitle(const char *title);

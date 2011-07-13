@@ -63,6 +63,7 @@ int luaopen_lev_net(lua_State *L)
       class_<url, net_base>("url")
         .property("content_type", &url::get_content_type)
         .property("data", &url::get_data)
+        .property("response", &url::get_response)
         .property("scheme", &url::get_scheme)
         .property("size", &url::get_size)
         .property("server", &url::get_server)
@@ -702,13 +703,20 @@ namespace lev
     return str.c_str();
   }
 
-  const char *url::get_data()
+  std::string url::get_data()
   {
-//    if (get_size() <= 0) { return NULL; }
     wxStringOutputStream out;
     cast_url(_obj)->data->Read(out);
     std::string str = (const char *)out.GetString().mb_str(wxConvUTF8);
-    return str.c_str();
+    return str;
+  }
+
+  int url::get_response()
+  {
+    wxProtocol &protocol = cast_url(_obj)->url->GetProtocol();
+    wxHTTP *http = dynamic_cast<wxHTTP *>(&protocol);
+    if (http == NULL) { return -1; }
+    else { return http->GetResponse(); }
   }
 
   const char *url::get_scheme()

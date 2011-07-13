@@ -134,7 +134,7 @@ namespace lev
     ((myFrame *)_obj)->Fit();
   }
 
-  const char * frame::getstatus()
+  const char * frame::get_status()
   {
     return status;
   }
@@ -195,7 +195,7 @@ namespace lev
     wxTheApp->SetTopWindow((wxFrame *)top->_obj);
   }
 
-  void frame::setstatus(const char *str_status)
+  void frame::set_status(const char *str_status)
   {
     wxStatusBar *sb = ((myFrame *)_obj)->GetStatusBar();
     status = str_status;

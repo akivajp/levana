@@ -24,6 +24,8 @@ namespace lev
         LEV_TBASE = 1,
           LEV_TCHANNEL,
 
+          LEV_TCOLOR,
+
           LEV_THANDLER,
             LEV_TCONTROL,
               LEV_TAPP,

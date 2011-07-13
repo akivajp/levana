@@ -49,31 +49,6 @@ namespace lev
       void *_obj;
   };
 
-  class control : public handler
-  {
-    protected:
-      control();
-      virtual ~control();
-    public:
-      virtual luabind::object get_onmenu(int id) { return luabind::object(); }
-      int getid();
-      sizer *getsizer();
-      long get_style();
-      virtual type_id get_type_id() const { return LEV_TCONTROL; }
-      virtual const char *get_type_name() const { return "lev.gui.control"; }
-      inline bool hide() { return setshown(false); }
-      bool isshown();
-      bool isvalid();
-      void setsizer(sizer *s);
-      bool setshown(bool showing);
-      inline bool show() { return setshown(true); }
-
-    protected:
-      sizer *_sz;
-      int _id;
-  };
-
-
   class event : public base
   {
     public:

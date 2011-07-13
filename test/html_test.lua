@@ -11,12 +11,14 @@ sizer:add(html,1)
 --frm:fit()
 frm:show()
 
-txt.onkeydown = function(e)
+txt.on_keydown = function(e)
   print("id  = " .. e.id)
   print("key = " .. e.key)
-  if e.key == "RETURN" then
-    local url = 'http://info.babylon.com/onlinebox.cgi?rt=ol&tid=pop&cid=CD1&tl=ja&term=' .. txt.value
-    local sock = lev.net.url.connect(url)
+  if e.keystr == "return" then
+    web = lev.net.url.connect('http://www.google.com')
+--    local url = 'http://info.babylon.com/onlinebox.cgi?rt=ol&tid=pop&cid=CD1&tl=ja&term=' .. txt.value
+--    html:loadpage(url)
+--    local sock = lev.net.url.connect(url)
 --    local body = sock.data
 --    local defs = ''
 --    for w in body:gmatch('<div class="definition" dir="">.-</div>') do
@@ -31,5 +33,7 @@ txt.onkeydown = function(e)
   end
 end
 
+--html:loadpage('http://www.boost.org')
+html:loadpage('http://www.kde.org')
 app:autoloop(frm)
 

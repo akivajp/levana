@@ -10,7 +10,7 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
-#include "event.hpp"
+#include "gui.hpp"
 #include <lua.h>
 #include <luabind/luabind.hpp>
 

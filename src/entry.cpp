@@ -111,12 +111,17 @@ extern int luaopen_lev(lua_State *L)
       class_<control, handler>("control")
         .def("hide", &control::hide)
         .def("show", &control::show)
+        .property("exists", &control::is_valid)
         .property("id", &control::getid)
-        .property("is_valid", &control::isvalid)
-        .property("isvalid", &control::isvalid)
-        .property("is_shown", &control::isshown, &control::setshown)
-        .property("isshown", &control::isshown, &control::setshown)
-        .property("sizer", &control::getsizer, &control::setsizer),
+        .property("h", &control::get_height, &control::set_height)
+        .property("height", &control::get_height, &control::set_height)
+        .property("is_valid", &control::is_valid)
+        .property("isvalid", &control::is_valid)
+        .property("is_shown", &control::is_shown, &control::set_shown)
+        .property("isshown", &control::is_shown, &control::set_shown)
+        .property("sizer", &control::get_sizer, &control::set_sizer)
+        .property("w", &control::get_width, &control::set_width)
+        .property("width", &control::get_width, &control::set_width),
       class_<canvas, control>("canvas")
         .def("blendmode", &canvas::blendmode)
         .def("clear", &canvas::clear)
@@ -135,7 +140,7 @@ extern int luaopen_lev(lua_State *L)
         .def("close", &frame::close)
         .def("close", &frame::close_noforce)
         .def("fit", &frame::fit)
-        .property("status", &frame::getstatus, &frame::setstatus)
+        .property("status", &frame::get_status, &frame::set_status)
         .property("title", &frame::gettitle, &frame::settitle)
         .scope
         [
@@ -281,41 +286,6 @@ extern int luaopen_lev(lua_State *L)
   gui["vsizer"] = classes["vsizer"]["create"];
 
 
-  // primitives
-  module(L, "lev")
-  [
-    class_<color>("color")
-      .def(constructor<>())
-      .def(constructor<unsigned char,unsigned char,unsigned char>())
-      .def(constructor<unsigned char,unsigned char,unsigned char,unsigned char>())
-      .def(constructor<wxUint32>())
-      .property("a", &color::get_a, &color::set_a)
-      .property("alpha", &color::get_a, &color::set_a)
-      .property("b", &color::get_b, &color::set_b)
-      .property("blue", &color::get_b, &color::set_b)
-      .property("g", &color::get_g, &color::set_g)
-      .property("green", &color::get_g, &color::set_g)
-      .property("r", &color::get_r, &color::set_r)
-      .property("red", &color::get_r, &color::set_r),
-    class_<vector>("vector")
-      .def(constructor<>())
-      .def(constructor<int,int>())
-      .def(constructor<int,int,int>())
-      .def(self + vector())
-      .property("x", &vector::getx, &vector::setx)
-      .property("y", &vector::gety, &vector::sety)
-      .property("z", &vector::getz, &vector::setz),
-    class_<size>("size")
-      .def(constructor<int,int>())
-      .def(constructor<int,int,int>())
-      .property("d", &size::geth, &size::setd)
-      .property("depth", &size::geth, &size::setd)
-      .property("h", &size::geth, &size::seth)
-      .property("height", &size::geth, &size::seth)
-      .property("w", &size::getw, &size::setw)
-      .property("width", &size::getw, &size::setw)
-  ];
-
   module(L, "lev")
   [
     class_<icon>("icon")
@@ -336,6 +306,7 @@ extern int luaopen_lev(lua_State *L)
 
   set_preloaders(L);
   luaopen_lev_input(L);
+  luaopen_lev_prim(L);
 //    register_to(L, globals(L)["package"]["preload"], "load_util", &util::luaopen_util);
 //  register_to(L, globals(L)["lev"], "load_util", &util::luaopen_util);
   return 0;
@@ -361,7 +332,7 @@ int luaopen_lev_std(lua_State *L)
   globals(L)["require"]("lev.sound");
 
   globals(L)["app"] = globals(L)["lev"]["app"]["get"]();
-  globals(L)["mixer"] = globals(L)["lev"]["sound"]["mixer"]["create"]();
+  globals(L)["mixer"] = globals(L)["lev"]["sound"]["mixer"]();
   globals(L)["collectgarbage"]();
   return 0;
 }

@@ -58,65 +58,6 @@ namespace lev
     return connect(id, wxEVT_COMMAND_MENU_SELECTED, lua_func);
   }
 
-  control::control() : handler(), _id(0), _sz(NULL)
-  { }
-
-  control::~control()
-  {
-    if (system_managed)
-    {
-      // wxWidgets will automatically delete
-    }
-    else if (_id && !isvalid())
-    {
-      // the object isn't already found
-      _obj = NULL;
-    }
-  }
-
-  int control::getid()
-  {
-    return _id;
-  }
-
-  sizer *control::getsizer()
-  {
-    return _sz;
-  }
-
-  long control::get_style()
-  {
-    return ((wxWindow *)_obj)->GetWindowStyle();
-  }
-
-  bool control::isshown()
-  {
-    return ((wxWindow *)_obj)->IsShown();
-  }
-
-  bool control::isvalid()
-  {
-    if (wxWindow::FindWindowById(_id)) { return true; }
-    return false;
-  }
-
-  void control::setsizer(sizer *s)
-  {
-    if (s)
-    {
-      ((wxWindow *)_obj)->SetSizer((wxSizer *)s->get_rawobj());
-      _sz = s;
-      s->wx_managed = true;
-    }
-  }
-
-  bool control::setshown(bool showing)
-  {
-//    gui_lock();
-    return ((wxWindow *)_obj)->Show(showing);
-  }
-
-
   // event methods
   event::event(void *e) : base()
   {
