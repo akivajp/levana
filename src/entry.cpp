@@ -97,129 +97,6 @@ extern int luaopen_lev(lua_State *L)
   ];
   object classes = globals(L)["lev"]["classes"];
 
-
-  // GUI control, event handling
-  module(L, "lev")
-  [
-    namespace_("gui")
-    [
-      def("file_selector", &gui::file_selector)
-    ],
-    namespace_("classes")
-    [
-      // base class
-      class_<control, handler>("control")
-        .def("hide", &control::hide)
-        .def("show", &control::show)
-        .property("exists", &control::is_valid)
-        .property("id", &control::getid)
-        .property("h", &control::get_height, &control::set_height)
-        .property("height", &control::get_height, &control::set_height)
-        .property("is_valid", &control::is_valid)
-        .property("isvalid", &control::is_valid)
-        .property("is_shown", &control::is_shown, &control::set_shown)
-        .property("isshown", &control::is_shown, &control::set_shown)
-        .property("sizer", &control::get_sizer, &control::set_sizer)
-        .property("w", &control::get_width, &control::set_width)
-        .property("width", &control::get_width, &control::set_width),
-      class_<canvas, control>("canvas")
-        .def("blendmode", &canvas::blendmode)
-        .def("clear", &canvas::clear)
-        .def("clearcolor", &canvas::clearcolor)
-        .def("draw", &canvas::draw_image)
-        .def("flush", &canvas::flush)
-        .def("line",  &canvas::line)
-        .def("set2d", &canvas::set2d)
-        .def("setcurrent", &canvas::setcurrent)
-        .def("swap", &canvas::swap)
-        .scope
-        [
-          def("create_c", &canvas::create, adopt(result))
-        ],
-      class_<frame, control>("frame")
-        .def("close", &frame::close)
-        .def("close", &frame::close_noforce)
-        .def("fit", &frame::fit)
-        .property("status", &frame::get_status, &frame::set_status)
-        .property("title", &frame::gettitle, &frame::settitle)
-        .scope
-        [
-          def("create_c", &frame::create, adopt(result) )
-        ],
-      class_<htmlview, control>("htmlview")
-        .def("loadpage", &htmlview::loadpage)
-        .def("totext", &htmlview::totext)
-        .property("page", &htmlview::get_page, &htmlview::set_page)
-        .scope
-        [
-          def("create_c", &htmlview::create, adopt(result))
-        ],
-      class_<player, control>("player")
-        .def("loadlocal", &player::loadlocal)
-        .def("loaduri", &player::loaduri)
-        .def("pause", &player::pause)
-        .def("play", &player::play)
-        .def("stop", &player::stop)
-        .property("bestsize", &player::getbestsize)
-        .property("ispaused", &player::ispaused)
-        .property("isplaying", &player::isplaying)
-        .property("isstopped", &player::isstopped)
-        .property("volume", &player::getvolume, &player::setvolume)
-        .scope
-        [
-          def("create_c", &player::create, adopt(result))
-        ],
-      class_<menu, handler>("menu")
-        .scope
-        [
-          def("create_c", &menu::create, adopt(result))
-        ],
-      class_<menubar, control>("menubar")
-        .scope
-        [
-          def("create_c", &menubar::create, adopt(result))
-        ],
-      class_<systray, handler>("systray")
-        .def("popup", &systray::popup)
-        .def("remove_icon", &systray::remove_icon)
-        .def("set_icon", &systray::set_icon)
-        .property("menugen", &systray::get_menu_generator, &systray::set_menu_generator)
-        .property("menu_generator", &systray::get_menu_generator, &systray::set_menu_generator)
-        .scope
-        [
-          def("create_c", &systray::create, adopt(result))
-        ],
-      class_<textbox, control>("textbox")
-        .def("set_multiline", &textbox::set_multiline)
-        .property("v", &textbox::get_value, &textbox::set_value)
-        .property("val", &textbox::get_value, &textbox::set_value)
-        .property("value", &textbox::get_value, &textbox::set_value)
-        .scope
-        [
-          def("create_c", &textbox::create)
-        ]
-    ]
-  ];
-  object gui = globals(L)["lev"]["gui"];
-  register_to(L, gui, "msgbox", &gui::msgbox_l);
-  register_to(L, classes["canvas"], "create", &canvas::create_l);
-  register_to(L, classes["frame"], "create", &frame::create_l);
-  register_to(L, classes["htmlview"], "create", &htmlview::create_l);
-  register_to(L, classes["menu"], "create", &menu::create_l);
-  register_to(L, classes["menubar"], "create", &menubar::create_l);
-  register_to(L, classes["player"], "create", &player::create_l);
-  register_to(L, classes["systray"], "create", &systray::create_l);
-  register_to(L, classes["textbox"], "create", &textbox::create_l);
-  gui["canvas"]   = classes["canvas"]["create"];
-  gui["frame"]    = classes["frame"]["create"];
-  gui["htmlview"] = classes["htmlview"]["create"];
-  gui["menu"]     = classes["menu"]["create"];
-  gui["menubar"]  = classes["menubar"]["create"];
-  gui["player"]   = classes["player"]["create"];
-  gui["systray"]  = classes["systray"]["create"];
-  gui["textbox"]  = classes["textbox"]["create"];
-
-
   // Application management module
   module(L, "lev")
   [
@@ -241,6 +118,7 @@ extern int luaopen_lev(lua_State *L)
         .property("inrecord", &application::get_inrecord)
         .property("instate", &application::get_instate)
         .property("interval", &application::get_interval, &application::set_interval)
+        .property("locale", &application::get_locale)
         .property("name", &application::get_name, &application::set_name)
         .property("title", &application::get_name, &application::set_name)
         .property("top",  &application::get_top,  &application::settop)
@@ -251,40 +129,6 @@ extern int luaopen_lev(lua_State *L)
       def("get", &application::get_app)
     ]
   ];
-
-  // sizers
-  module(L, "lev")
-  [
-    namespace_("classes")
-    [
-      class_<sizer, base>("sizer")
-        .def("fit", &sizer::fit)
-        .def("fitinside", &sizer::fitinside)
-        .def("layout", &sizer::layout),
-      class_<gsizer, sizer>("gsizer")
-        .scope
-        [
-          def("create_c", &gsizer::create, adopt(result))
-        ],
-      class_<hsizer, sizer>("hsizer")
-        .scope
-        [
-          def("create_c", &hsizer::create, adopt(result))
-        ],
-      class_<vsizer, sizer>("vsizer")
-        .scope
-        [
-          def("create_c", &vsizer::create, adopt(result))
-        ]
-    ]
-  ];
-  register_to(L, classes["gsizer"], "create", &gsizer::create_l);
-  register_to(L, classes["hsizer"], "create", &hsizer::create_l);
-  register_to(L, classes["vsizer"], "create", &vsizer::create_l);
-  gui["gsizer"] = classes["gsizer"]["create"];
-  gui["hsizer"] = classes["hsizer"]["create"];
-  gui["vsizer"] = classes["vsizer"]["create"];
-
 
   module(L, "lev")
   [
@@ -304,8 +148,13 @@ extern int luaopen_lev(lua_State *L)
     def("get_app", &application::get_app)
   ];
 
+  globals(L)["package"]["loaded"]["lev"] = globals(L)["lev"];
   set_preloaders(L);
+  luaopen_lev_db(L);
+  luaopen_lev_fs(L);
+  luaopen_lev_gui(L);
   luaopen_lev_input(L);
+  luaopen_lev_locale(L);
   luaopen_lev_prim(L);
 //    register_to(L, globals(L)["package"]["preload"], "load_util", &util::luaopen_util);
 //  register_to(L, globals(L)["lev"], "load_util", &util::luaopen_util);
@@ -345,8 +194,13 @@ namespace lev
   {
     using namespace luabind;
     register_to(L, globals(L)["package"]["preload"], "lev", luaopen_lev);
+    register_to(L, globals(L)["package"]["preload"], "lev.db", luaopen_lev_db);
+    register_to(L, globals(L)["package"]["preload"], "lev.fs", luaopen_lev_fs);
     register_to(L, globals(L)["package"]["preload"], "lev.gl", luaopen_lev_gl);
+    register_to(L, globals(L)["package"]["preload"], "lev.gui", luaopen_lev_gui);
     register_to(L, globals(L)["package"]["preload"], "lev.image", luaopen_lev_image);
+    register_to(L, globals(L)["package"]["preload"], "lev.input", luaopen_lev_input);
+    register_to(L, globals(L)["package"]["preload"], "lev.locale", luaopen_lev_locale);
     register_to(L, globals(L)["package"]["preload"], "lev.net", luaopen_lev_net);
     register_to(L, globals(L)["package"]["preload"], "lev.sound", luaopen_lev_sound);
     register_to(L, globals(L)["package"]["preload"], "lev.std", luaopen_lev_std);

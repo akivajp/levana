@@ -20,8 +20,9 @@ menu.fmap[id] = function()
   frm:close()
 end
 
-frm:set_menubar(mb)
+frm.menubar = mb
 frm:show()
 
 app:autoloop()
+collectgarbage()
 

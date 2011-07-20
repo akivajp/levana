@@ -13,10 +13,12 @@
 
 
 #include "app.hpp"
+#include "db.hpp"
 #include "draw.hpp"
 #include "entry.hpp"
 #include "event.hpp"
 #include "frame.hpp"
+#include "fs.hpp"
 #include "gl.hpp"
 #include "gui.hpp"
 #include "image.hpp"

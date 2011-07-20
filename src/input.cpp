@@ -20,6 +20,9 @@ int luaopen_lev_input(lua_State *L)
   using namespace luabind;
   using namespace lev;
 
+  open(L);
+  globals(L)["require"]("lev");
+
   module(L, "lev")
   [
     namespace_("input")
@@ -44,6 +47,7 @@ int luaopen_lev_input(lua_State *L)
     ]
   ];
 
+  globals(L)["package"]["loaded"]["lev.input"] = true;
   return 0;
 }
 

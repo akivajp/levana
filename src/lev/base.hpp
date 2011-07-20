@@ -23,8 +23,8 @@ namespace lev
       {
         LEV_TBASE = 1,
           LEV_TCHANNEL,
-
           LEV_TCOLOR,
+          LEV_TDB,
 
           LEV_THANDLER,
             LEV_TCONTROL,

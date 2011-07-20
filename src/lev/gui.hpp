@@ -10,19 +10,18 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
+#include "base.hpp"
 #include "event.hpp"
 #include <lua.h>
 
+extern "C" {
+  int luaopen_lev_gui(lua_State *L);
+}
+
 namespace lev
 {
-  class gui
-  {
-    public:
-      static int msgbox_l(lua_State *L);
-      static const char *file_selector(const char *message, const char *def_path, const char *def_file,
-                                       const char *def_ext, const char *wildcard, control *parent);
-      static int file_selector_l(lua_State *L);
-  };
+
+  class sizer;
 
   class control : public handler
   {
@@ -50,6 +49,30 @@ namespace lev
     protected:
       sizer *_sz;
       int _id;
+  };
+
+  class gui
+  {
+    public:
+      static int msgbox_l(lua_State *L);
+      static const char *file_selector(const char *message, const char *def_path, const char *def_file,
+                                       const char *def_ext, const char *wildcard, control *parent);
+      static int file_selector_l(lua_State *L);
+  };
+
+  class code_edit: public control
+  {
+    public:
+      static code_edit* create(control *parent, int width, int height);
+      static int create_l(lua_State *L);
+      int get_language();
+//      virtual type_id get_type_id() const { return LEV_TCODE_EDIT; }
+      virtual const char *get_type_name() const { return "lev.gui.code_edit"; }
+      bool set_language(const char *language);
+      bool update();
+
+    protected:
+      std::string lang;
   };
 
   class htmlview: public control

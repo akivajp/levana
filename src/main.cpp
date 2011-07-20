@@ -58,7 +58,8 @@ int main(int argc, char **argv)
           if (luaL_dostring(L, argv[i]))
           {
             wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
-            exit(-1);
+            return -1;
+//            exit(-1);
           }
           done_something = true;
         }
@@ -77,7 +78,8 @@ int main(int argc, char **argv)
         if (luaL_dofile(L, argv[i]))
         {
           wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
-          exit(-1);
+          return -1;
+//          exit(-1);
         }
         done_something = true;
         break;
@@ -94,12 +96,15 @@ int main(int argc, char **argv)
       if (luaL_dofile(L, entry[i]))
       {
         wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
-        exit(-1);
+        return -1;
+//        exit(-1);
       }
       return 0;
     }
     wxMessageBox(_("Usage: create \"entry.txt\" file and put in the same directory with the program"), _("About usage"));
   }
+
+  lua_close(L);
 
   return 0;
 }

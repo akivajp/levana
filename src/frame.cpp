@@ -24,16 +24,16 @@ using namespace boost;
 namespace lev
 {
 
-  typedef MyHandler<wxFrame> myFrame;
-//  class myFrame : public wxFrame
-//  {
-//    public:
-//      inline myFrame() : wxFrame() {}
-//      inline myFrame(wxWindow* parent, const wxString title, int height, int width, long style = wxDEFAULT_FRAME_STYLE)
-//        : wxFrame(parent, -1, title, wxDefaultPosition, wxSize(height, width), style)
-//      {}
-//  };
+  class myFrame : public myHandler<wxFrame>
+  {
+    public:
+      myFrame() : mb(NULL) { }
+      virtual ~myFrame() { }
 
+      menubar *mb;
+      luabind::object mb_holder;
+  };
+  static myFrame* cast_frm(void *obj) { return (myFrame *)obj; }
 
   bool frame::close(bool force)
   {
@@ -121,8 +121,6 @@ namespace lev
     object frame = func(p, title, w, h, style);
     if (frame)
     {
-      register_to(L, frame, "set_menubar", &frame::set_menubar_l);
-      register_to(L, frame, "setmenubar", &frame::set_menubar_l);
     }
     frame.push(L);
     return 1;
@@ -132,6 +130,11 @@ namespace lev
   void frame::fit()
   {
     ((myFrame *)_obj)->Fit();
+  }
+
+  menubar* frame::get_menubar()
+  {
+    return cast_frm(_obj)->mb;
   }
 
   const char * frame::get_status()
@@ -161,33 +164,35 @@ namespace lev
     ((wxFrame *)_obj)->SetIcon(*((wxIcon *)i._obj.get()));
   }
 
-  void frame::set_menubar(menubar *mb)
-  {
-    ((wxFrame *)_obj)->SetMenuBar((wxMenuBar *)mb->_obj);
-  }
-
-  int frame::set_menubar_l(lua_State *L)
+  bool frame::set_menubar(luabind::object mb)
   {
     using namespace luabind;
+    menubar *mbar = NULL;
 
-    luaL_checktype(L, 1, LUA_TUSERDATA);
-    luaL_checktype(L, 2, LUA_TUSERDATA);
-    object frame_obj(from_stack(L, 1));
-    object mb(from_stack(L, 2));
+    if (not mb) { return false; }
+    else if (luabind::type(mb) != LUA_TUSERDATA) { return false; }
+    else if (mb["type_id"] != LEV_TMENUBAR) { return false; }
+    mbar = object_cast<menubar *>(mb);
+    if (mbar == NULL) { return false; }
 
-    frame *frm = object_cast<frame *>(frame_obj);
-    frm->set_menubar(object_cast<menubar *>(mb));
+    cast_frm(_obj)->SetMenuBar((wxMenuBar *)mbar->get_rawobj());
+    mbar->hold();
+    cast_frm(_obj)->mb = mbar;
+    cast_frm(_obj)->mb_holder = mb;
+
     luabind::iterator i(mb["menus"]), end;
     for (; i != end; i++)
     {
       luabind::iterator j((*i)["fmap"]);
       for (; j != end; j++)
       {
-        frame_obj["set_on_menu"](frame_obj, j.key(), *j);
+        if (*j && luabind::type(*j) == LUA_TFUNCTION)
+        {
+          set_on_menu(object_cast<int>(j.key()), *j);
+        }
       }
     }
-    lua_pushboolean(L, true);
-    return 1;
+    return true;
   }
 
   void frame::settop(frame *top)

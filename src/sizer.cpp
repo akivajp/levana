@@ -9,7 +9,9 @@
 
 #include "prec.h"
 #include "lev/sizer.hpp"
+
 #include "lev/event.hpp"
+#include "lev/gui.hpp"
 #include "lev/util.hpp"
 #include "register.hpp"
 

@@ -49,6 +49,13 @@ namespace lev
   object handler::get_on_idle() { return get_func(wxEVT_IDLE); }
   object handler::get_on_keydown() { return get_func(wxEVT_KEY_DOWN); }
 
+  bool handler::hold()
+  {
+    if (not system_managed) { return false; }
+    system_managed = false;
+    return true;
+  }
+
   bool handler::set_on_any(object lua_func) { return connect(-1, lua_func); }
   bool handler::set_on_close(object lua_func) { return connect(wxEVT_CLOSE_WINDOW, lua_func); }
   bool handler::set_on_idle(object lua_func) { return connect(wxEVT_IDLE, lua_func); }

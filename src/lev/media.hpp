@@ -11,7 +11,7 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
-#include "event.hpp"
+#include "gui.hpp"
 #include "prim.hpp"
 
 #include <lua.h>

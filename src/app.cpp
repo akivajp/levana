@@ -18,10 +18,12 @@
 namespace lev
 {
 
-  class myApp : public MyHandler<wxApp>
+  class myApp : public myHandler<wxApp>
   {
     public:
-      inline myApp() : istate(), rec(), fps(60), offset(0), sw() {}
+      inline myApp()
+        : istate(), rec(), fps(60), locale(wxLANGUAGE_DEFAULT),
+          offset(0), sw() { }
 
       void set_argv()
       {
@@ -72,6 +74,8 @@ namespace lev
         wxInitAllImageHandlers();
         wxFileSystem::AddHandler(new wxInternetFSHandler);
 
+        locale.AddCatalogLookupPathPrefix(wxT("locale"));
+
         sw.Start();
         return true;
       }
@@ -100,6 +104,7 @@ namespace lev
       double fps, offset;
       instate  istate;
       inrecord rec;
+      wxLocale locale;
       wxStopWatch sw;
   };
   static myApp* cast_app(void *obj) { return (myApp *)obj; }
@@ -197,6 +202,14 @@ namespace lev
       *((wxMouseState *)in._obj) = wxGetMouseState();
       return &in;
     }
+  }
+
+  locale* application::get_locale()
+  {
+    static locale loc;
+    if (loc._obj) { return &loc; }
+    loc._obj = &(wxGetApp().locale);
+    return &loc;
   }
 
   const char *application::get_name()

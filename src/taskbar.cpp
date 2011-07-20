@@ -16,7 +16,7 @@
 namespace lev
 {
 
-  class myTaskBarIcon : public MyHandler<wxTaskBarIcon>
+  class myTaskBarIcon : public myHandler<wxTaskBarIcon>
   {
     public:
       myTaskBarIcon() : menugen() {}

@@ -17,19 +17,21 @@
 namespace lev
 {
 
-  template<typename T> class MyHandler : public T
+  template<typename T> class myHandler : public T
   {
     public:
+      myHandler() : T() { }
+      virtual ~myHandler() { }
 
       void Connect(int id, wxEventType eventType, luabind::object lua_func)
       {
         fmap[eventType][id] = lua_func;
-        T::Connect(id, eventType, (wxObjectEventFunction)&MyHandler<T>::ProcEvent);
+        T::Connect(id, eventType, (wxObjectEventFunction)&myHandler<T>::ProcEvent);
       }
 
       boost::function<void (int, int, luabind::object)> GetConnector()
       {
-        return boost::bind(&MyHandler<T>::Connect, this, _1, _2, _3);
+        return boost::bind(&myHandler<T>::Connect, this, _1, _2, _3);
       }
 
       luabind::object GetFunc(int id, wxEventType eventType)
@@ -39,7 +41,7 @@ namespace lev
 
       boost::function<luabind::object (int, int)> GetFuncGetter()
       {
-        return boost::bind(&MyHandler<T>::GetFunc, this, _1, _2);
+        return boost::bind(&myHandler<T>::GetFunc, this, _1, _2);
       }
 
       void ProcEvent(wxEvent &evt)

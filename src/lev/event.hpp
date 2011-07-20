@@ -36,6 +36,7 @@ namespace lev
       void *get_rawobj() { return _obj; }
       virtual type_id get_type_id() const { return LEV_THANDLER; }
       virtual const char *get_type_name() const { return "lev.handler"; }
+      bool hold();
       bool set_on_any(object lua_func);
       bool set_on_close(object lua_func);
       bool set_on_idle(object lua_func);

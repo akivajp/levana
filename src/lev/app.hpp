@@ -13,6 +13,7 @@
 
 #include "event.hpp"
 #include "frame.hpp"
+#include "locale.hpp"
 #include "input.hpp"
 #include <luabind/luabind.hpp>
 
@@ -34,6 +35,7 @@ namespace lev
       bool get_keydown(const char *key);
       inrecord* get_inrecord();
       instate* get_instate();
+      locale* get_locale();
       const char* get_name();
       frame *get_top();
       virtual type_id get_type_id() const { return LEV_TAPP; }

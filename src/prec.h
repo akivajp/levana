@@ -34,6 +34,8 @@ extern "C" {
 #include <wx/socket.h>
 #include <wx/sound.h>
 #include <wx/sstream.h>
+#include <wx/stc/stc.h>
+#include <wx/stdpaths.h>
 #include <wx/taskbar.h>
 #include <wx/thread.h>
 #include <wx/url.h>

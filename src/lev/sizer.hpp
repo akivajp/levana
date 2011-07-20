@@ -15,6 +15,7 @@
 
 namespace lev
 {
+
   class control;
 
   class sizer : public base

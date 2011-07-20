@@ -15,6 +15,9 @@ int luaopen_lev_prim(lua_State *L)
   using namespace lev;
   using namespace luabind;
 
+  open(L);
+  globals(L)["require"]("lev");
+
   // primitives
   module(L, "lev")
   [
@@ -58,6 +61,7 @@ int luaopen_lev_prim(lua_State *L)
   lev["vector"] = classes["vector"];
   lev["size"] = classes["size"];
 
+  globals(L)["package"]["loaded"]["lev.prim"] = true;
   return 0;
 }
 

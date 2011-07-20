@@ -119,12 +119,6 @@ namespace lev
 
 
 
-
-
-  menubar::menubar() : control() { }
-
-  menubar::~menubar() { }
-
   bool menubar::append(menu *m, const char *title)
   {
     wxString new_title(title, wxConvUTF8);
@@ -136,7 +130,7 @@ namespace lev
     using namespace luabind;
     object obj(from_stack(L, 1));
     object menu_obj;
-    const char *title = "(DEFAULT)";
+    const char *title = NULL;
 
     int n = lua_gettop(L);
     lua_pushcfunction(L, &util::merge);
@@ -152,10 +146,12 @@ namespace lev
     if (t["menu"]) { menu_obj = t["menu"]; }
     else if (t["m"]) { menu_obj = t["m"]; }
     else if (t["udata"]) { menu_obj = t["udata"]; }
+    if (not menu_obj) { luaL_error(L, "menu (lev.gui.menu) is not specified"); }
 
     if (t["title"]) { title = object_cast<const char *>(t["title"]); }
     else if (t["t"]) { title = object_cast<const char *>(t["t"]); }
     else if (t["str"]) { title = object_cast<const char *>(t["str"]); }
+    if (title == NULL) { luaL_error(L, "title (string) is not specified"); }
 
     if (not menu_obj)
     {
@@ -178,33 +174,36 @@ namespace lev
 
   menubar* menubar::create()
   {
-    menubar *mb = new menubar;
-    if (mb == NULL) { return NULL; }
-    wxMenuBar *obj = new wxMenuBar();
-    if (obj == NULL) { goto Error; }
-    mb->_obj = obj;
-    mb->_id = obj->GetId();
-    mb->system_managed = true;
-    return mb;
-
-    Error:
-    delete mb;
-    return NULL;
+    menubar *mb = NULL;
+    wxMenuBar *obj = NULL;
+    try {
+      mb = new menubar;
+      mb->_obj = obj = new wxMenuBar();
+      mb->_id = obj->GetId();
+      return mb;
+    }
+    catch (...) {
+      delete mb;
+      return NULL;
+    }
   }
 
   int menubar::create_l(lua_State *L)
   {
     using namespace luabind;
+    object classes = globals(L)["lev"]["classes"];
 
-    object func = globals(L)["lev"]["classes"]["menubar"]["create_c"];
+    object func = classes["menubar"]["create_c"];
     object mb = func();
     if (mb)
     {
-      register_to(L, mb, "append", &menubar::append_l);
+      register_to(L, classes["menubar"], "append", &menubar::append_l);
+      mb["append"] = classes["menubar"]["append"];
       mb["menus"] = newtable(L);
     }
     mb.push(L);
     return 1;
   }
+
 }
 
