@@ -25,6 +25,7 @@ namespace lev
           LEV_TCHANNEL,
           LEV_TCOLOR,
           LEV_TDB,
+          LEV_TEVENT,
 
           LEV_THANDLER,
             LEV_TCONTROL,

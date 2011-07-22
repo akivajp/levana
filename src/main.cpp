@@ -54,12 +54,24 @@ int main(int argc, char **argv)
       case '-':
         if (argv[i][1] == 'e' && argc > i + 1)
         {
+          // -e stat
           i++;
           if (luaL_dostring(L, argv[i]))
           {
             wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
             return -1;
-//            exit(-1);
+          }
+          done_something = true;
+        }
+        else if (argv[i][1] == '\0')
+        {
+          // - (stdin)
+          typedef std::istreambuf_iterator<char> iterator;
+          std::string input(iterator(std::cin), iterator());
+          if (luaL_dostring(L, input.c_str()))
+          {
+            wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
+            return -1;
           }
           done_something = true;
         }
@@ -79,7 +91,6 @@ int main(int argc, char **argv)
         {
           wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
           return -1;
-//          exit(-1);
         }
         done_something = true;
         break;
@@ -97,7 +108,6 @@ int main(int argc, char **argv)
       {
         wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
         return -1;
-//        exit(-1);
       }
       return 0;
     }

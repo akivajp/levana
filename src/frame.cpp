@@ -15,6 +15,7 @@
 #include "deriver.hpp"
 #include "register.hpp"
 
+#include <boost/format.hpp>
 #include <string>
 #include <map>
 #include <luabind/luabind.hpp>
@@ -27,11 +28,10 @@ namespace lev
   class myFrame : public myHandler<wxFrame>
   {
     public:
-      myFrame() : mb(NULL) { }
+      myFrame() : mb() { }
       virtual ~myFrame() { }
 
-      menubar *mb;
-      luabind::object mb_holder;
+      luabind::object mb;
   };
   static myFrame* cast_frm(void *obj) { return (myFrame *)obj; }
 
@@ -132,7 +132,7 @@ namespace lev
     ((myFrame *)_obj)->Fit();
   }
 
-  menubar* frame::get_menubar()
+  luabind::object frame::get_menubar()
   {
     return cast_frm(_obj)->mb;
   }
@@ -142,14 +142,14 @@ namespace lev
     return status;
   }
 
-  const char *frame::gettitle()
+  const char *frame::get_title()
   {
     const std::string str = (const char *)((wxFrame *)_obj)->GetTitle().mb_str(wxConvUTF8);
     return str.c_str();
   }
 
 
-  frame *frame::gettop()
+  frame *frame::get_top()
   {
     static frame top;
     wxWindow *frm = wxTheApp->GetTopWindow();
@@ -168,6 +168,7 @@ namespace lev
   {
     using namespace luabind;
     menubar *mbar = NULL;
+    lua_State *L = mb.interpreter();
 
     if (not mb) { return false; }
     else if (luabind::type(mb) != LUA_TUSERDATA) { return false; }
@@ -177,8 +178,7 @@ namespace lev
 
     cast_frm(_obj)->SetMenuBar((wxMenuBar *)mbar->get_rawobj());
     mbar->hold();
-    cast_frm(_obj)->mb = mbar;
-    cast_frm(_obj)->mb_holder = mb;
+    cast_frm(_obj)->mb = mb;
 
     luabind::iterator i(mb["menus"]), end;
     for (; i != end; i++)
@@ -190,12 +190,39 @@ namespace lev
         {
           set_on_menu(object_cast<int>(j.key()), *j);
         }
+        else if (*j && luabind::type(*j) == LUA_TSTRING)
+        {
+          const char *fbase =
+            "return function(e)\n"
+            "  if %1% then\n"
+            "    %1%(e)\n"
+            "  else\n"
+            "    e:skip()\n"
+            "  end\n"
+            "end\n";
+//          const char *fbase = "return function(frm)\n"
+//                              "  return function(e)\n"
+//                              "    if %1% then\n"
+//                              "      %1%(e)\n"
+//                              "    elseif frm and frm.%1% then\n"
+//                              "      frm.%1%(e)\n"
+//                              "    end\n"
+//                              "  end\n"
+//                              "end\n";
+          std::string func = (boost::format(fbase) % *j).str();
+          if (luaL_loadstring(L, func.c_str()) == 0)
+          {
+            object loaded(from_stack(L, -1));
+            lua_pop(L, 1);
+            set_on_menu(object_cast<int>(j.key()), loaded());
+          }
+        }
       }
     }
     return true;
   }
 
-  void frame::settop(frame *top)
+  void frame::set_top(frame *top)
   {
     wxTheApp->SetTopWindow((wxFrame *)top->_obj);
   }
@@ -217,7 +244,7 @@ namespace lev
     }
   }
 
-  void frame::settitle(const char *title)
+  void frame::set_title(const char *title)
   {
     ((wxFrame *)_obj)->SetTitle(wxString(title, wxConvUTF8));
   }

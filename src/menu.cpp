@@ -15,6 +15,8 @@
 namespace lev
 {
 
+  static wxMenu* cast_menu(void *obj) { return (wxMenu *)obj; }
+
   menu::menu() : handler() {}
 
   menu::~menu() {}
@@ -32,20 +34,14 @@ namespace lev
   {
     using namespace luabind;
     object obj(from_stack(L, 1));
-    const char *str = "(DEFAULT)";
+    const char *str = NULL;
     const char *help_str = NULL;
     object f;
+    bool enable = true;
+    int id;
+    const char *id_name = NULL;
 
-    int n = lua_gettop(L);
-    lua_pushcfunction(L, &util::merge);
-    newtable(L).push(L);
-    for (int i = 2; i <= n; i++)
-    {
-      object(from_stack(L, i)).push(L);
-    }
-    lua_call(L, n, 1);
-    object t(from_stack(L, -1));
-    lua_pop(L, 1);
+    object t = util::get_merged(L, 2, -1);
 
     if (t["string"]) { str = object_cast<const char *>(t["string"]); }
     else if (t["str1"]) { str = object_cast<const char *>(t["str1"]); }
@@ -57,33 +53,90 @@ namespace lev
     else if (t["help"]) { str = object_cast<const char *>(t["help"]); }
     else if (t["str2"]) { str = object_cast<const char *>(t["str2"]); }
 
+    if (t["id_name"]) { id_name = object_cast<const char *>(t["id_name"]); }
+    else if (t["idname"]) { id_name = object_cast<const char *>(t["idname"]); }
+    else if (t["id"]) { id_name = object_cast<const char *>(t["id"]); }
+    else if (t["name"]) { id_name = object_cast<const char *>(t["name"]); }
+    else if (t["str3"]) { id_name = object_cast<const char *>(t["str3"]); }
+
+    if (t["enabling"]) { enable = t["enabling"]; }
+    else if (t["enable"]) { enable = t["enable"]; }
+    else if (t["ena"]) { enable = t["ena"]; }
+    else if (t["e"]) { enable = t["e"]; }
+    else if (t["bool1"]) { enable = t["bool1"]; }
+
     if (t["function"]) { f = t["function"]; }
     else if (t["func"]) { f = t["func"]; }
     else if (t["f"]) { f = t["f"]; }
 
     menu *m = object_cast<menu *>(obj);
-    int id = m->append(-1, str, help_str);
+    if (str == NULL)
+    {
+      wxMenuItem *item = cast_menu(m->get_rawobj())->AppendSeparator();
+      id = item->GetId();
+    }
+    else
+    {
+      id = m->append(-1, str, help_str);
+    }
+
+    if (!enable) { m->enable(id, false); }
     if (id and f)
     {
       obj["fmap"][id] = f;
+    }
+    if (id and id_name)
+    {
+      obj[id_name] = id;
     }
     lua_pushnumber(L, id);
     return 1;
   }
 
+  luabind::object menu::build(luabind::object setting)
+  {
+    using namespace luabind;
+    lua_State *L = setting.interpreter();
+    const char *title = NULL;
+    object m;
+
+    if (!setting || luabind::type(setting) != LUA_TTABLE) { return m; }
+
+    iterator i(setting), end;
+    if (setting["title"]) { title = object_cast<const char *>(setting["title"]); }
+    else if (setting["t"]) { title = object_cast<const char *>(setting["t"]); }
+    else if (setting["label"]) { title = object_cast<const char *>(setting["label"]); }
+    else if (type(*i) == LUA_TSTRING)
+    {
+      title = object_cast<const char *>(*i);
+      i++;
+    }
+
+    m = globals(L)["lev"]["gui"]["menu"](title);
+    for (; i != end; i++)
+    {
+      if (type(*i) == LUA_TTABLE)
+      {
+        m["append"](m, *i);
+      }
+    }
+    return m;
+  }
+
   menu* menu::create(const char *title)
   {
-    menu *m = new menu;
-    if (m == NULL) { return m; }
-    wxMenu *obj = new wxMenu(wxString(title, wxConvUTF8));
-    if (obj == NULL) { goto Error; }
-    m->_obj = obj;
-    m->system_managed = true;
-    return m;
-
-    Error:
-    delete m;
-    return NULL;
+    menu *m = NULL;
+    wxMenu *obj = NULL;
+    try {
+      m = new menu;
+      m->_obj = obj = new wxMenu(wxString(title, wxConvUTF8));
+      m->system_managed = false;
+      return m;
+    }
+    catch (...) {
+      delete m;
+      return NULL;
+    }
   }
 
   int menu::create_l(lua_State *L)
@@ -117,12 +170,24 @@ namespace lev
     return 1;
   }
 
+  bool menu::enable(int id, bool enabling)
+  {
+    cast_menu(_obj)->Enable(id, enabling);
+    return true;
+  }
 
+
+  static wxMenuBar* cast_mb(void *obj) { return (wxMenuBar *)obj; }
 
   bool menubar::append(menu *m, const char *title)
   {
     wxString new_title(title, wxConvUTF8);
-    return ((wxMenuBar *)_obj)->Append((wxMenu *)m->_obj, new_title);
+    if (cast_mb(_obj)->Append(cast_menu(m->get_rawobj()), new_title))
+    {
+      m->hold();
+      return true;
+    }
+    return false;
   }
 
   int menubar::append_l(lua_State *L)
@@ -131,6 +196,7 @@ namespace lev
     object obj(from_stack(L, 1));
     object menu_obj;
     const char *title = NULL;
+    const char *name = NULL;
 
     int n = lua_gettop(L);
     lua_pushcfunction(L, &util::merge);
@@ -150,8 +216,12 @@ namespace lev
 
     if (t["title"]) { title = object_cast<const char *>(t["title"]); }
     else if (t["t"]) { title = object_cast<const char *>(t["t"]); }
-    else if (t["str"]) { title = object_cast<const char *>(t["str"]); }
+    else if (t["str1"]) { title = object_cast<const char *>(t["str1"]); }
     if (title == NULL) { luaL_error(L, "title (string) is not specified"); }
+
+    if (t["id"]) { name = object_cast<const char *>(t["id"]); }
+    else if (t["name"]) { name = object_cast<const char *>(t["name"]); }
+    else if (t["str2"]) { name = object_cast<const char *>(t["str2"]); }
 
     if (not menu_obj)
     {
@@ -167,9 +237,50 @@ namespace lev
       int i;
       for (i = 1; obj["menus"][i]; i++) {}
       obj["menus"][i] = menu_obj;
+      if (name)
+      {
+        obj[name] = menu_obj;
+      }
     }
     lua_pushboolean(L, result);
     return 1;
+  }
+
+  luabind::object menubar::build(luabind::object setting)
+  {
+    using namespace luabind;
+    lua_State *L = setting.interpreter();
+    object mb;
+
+    if (!setting || type(setting) != LUA_TTABLE) { return mb; }
+    mb = globals(L)["lev"]["gui"]["menubar"]();
+
+    for (iterator i(setting), end; i != end; i++)
+    {
+      object m, name;
+      const char *label1 = NULL, *label2 = NULL;
+
+      iterator j(*i);
+      if (j == end || type(*j) != LUA_TSTRING) { continue; }
+      label1 = object_cast<const char *>(*j++);
+      if (j != end && type(*j) == LUA_TSTRING)
+      {
+        label2 = object_cast<const char *>(*j++);
+      }
+      if (j != end && type(*j) == LUA_TSTRING) { name = *j++; }
+      else if ((*i)["id"]) { name = (*i)["id"]; }
+      else if ((*i)["name"]) { name = (*i)["name"]; }
+      m = globals(L)["lev"]["gui"]["menu"](label2);
+      for (; j != end; j++)
+      {
+        if (type(*j) == LUA_TTABLE)
+        {
+          m["append"](m, *j);
+        }
+      }
+      mb["append"](mb, m, label1, name);
+    }
+    return mb;
   }
 
   menubar* menubar::create()
@@ -203,6 +314,12 @@ namespace lev
     }
     mb.push(L);
     return 1;
+  }
+
+  bool menubar::enable(int id, bool enabling)
+  {
+    cast_mb(_obj)->Enable(id, enabling);
+    return true;
   }
 
 }

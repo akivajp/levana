@@ -44,7 +44,7 @@ namespace lev
       bool set_fps(double fps);
       bool set_interval(double interval_msec);
       void set_name(const char *name);
-      void settop(frame *top);
+      void set_top(frame *top);
       bool sleep(int delay_in_msec);
       bool sleep_def() { sleep(0); }
       bool track_key(const char *keystr);

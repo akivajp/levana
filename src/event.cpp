@@ -45,18 +45,24 @@ namespace lev
   }
 
   object handler::get_on_any() { return get_func(-1); }
+  object handler::get_on_char() { return get_func(wxEVT_CHAR); }
   object handler::get_on_close() { return get_func(wxEVT_CLOSE_WINDOW); }
   object handler::get_on_idle() { return get_func(wxEVT_IDLE); }
   object handler::get_on_keydown() { return get_func(wxEVT_KEY_DOWN); }
+  object handler::get_on_menu(int id)
+  {
+    return get_func(id, wxEVT_COMMAND_MENU_SELECTED);
+  }
 
   bool handler::hold()
   {
-    if (not system_managed) { return false; }
-    system_managed = false;
+    if (system_managed) { return false; }
+    system_managed = true;
     return true;
   }
 
   bool handler::set_on_any(object lua_func) { return connect(-1, lua_func); }
+  bool handler::set_on_char(object lua_func) { return connect(wxEVT_CHAR, lua_func); }
   bool handler::set_on_close(object lua_func) { return connect(wxEVT_CLOSE_WINDOW, lua_func); }
   bool handler::set_on_idle(object lua_func) { return connect(wxEVT_IDLE, lua_func); }
   bool handler::set_on_keydown(object lua_func) { return connect(wxEVT_KEY_DOWN, lua_func); }
@@ -64,6 +70,7 @@ namespace lev
   {
     return connect(id, wxEVT_COMMAND_MENU_SELECTED, lua_func);
   }
+
 
   // event methods
   event::event(void *e) : base()
@@ -76,6 +83,13 @@ namespace lev
   int event::get_id() const
   {
     return ((wxEvent *)_obj)->GetId();
+  }
+
+  const char *event::get_char() const
+  {
+    const char character[2] = {((wxKeyEvent *)_obj)->GetKeyCode(), '\0'};
+    std::string str(character);
+    return str.c_str();
   }
 
   const char *event::get_keystr() const

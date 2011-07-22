@@ -28,10 +28,7 @@ int luaopen_lev_gui(lua_State *L)
   // GUI control, event handling
   module(L, "lev")
   [
-    namespace_("gui")
-    [
-      def("file_selector", &gui::file_selector)
-    ],
+    namespace_("gui"),
     namespace_("classes")
     [
       // base class
@@ -64,8 +61,20 @@ int luaopen_lev_gui(lua_State *L)
           def("create_c", &canvas::create, adopt(result))
         ],
       class_<code_edit, control>("code_edit")
+        .def("can_redo", &code_edit::can_redo)
+        .def("can_undo", &code_edit::can_undo)
+        .def("clear", &code_edit::clear)
+        .def("copy", &code_edit::copy)
+        .def("cut", &code_edit::cut)
+        .def("redo", &code_edit::redo)
+        .def("paste", &code_edit::paste)
+        .def("save", &code_edit::save_file)
+        .def("save_file", &code_edit::save_file)
+        .def("select_all", &code_edit::select_all)
+        .def("undo", &code_edit::undo)
         .property("lang", &code_edit::get_language, &code_edit::set_language)
         .property("language", &code_edit::get_language, &code_edit::set_language)
+        .property("text", &code_edit::get_text, &code_edit::set_text)
         .scope
         [
           def("create_c", &code_edit::create)
@@ -74,9 +83,13 @@ int luaopen_lev_gui(lua_State *L)
         .def("close", &frame::close)
         .def("close", &frame::close_noforce)
         .def("fit", &frame::fit)
+        .property("cap", &frame::get_title, &frame::set_title)
+        .property("caption", &frame::get_title, &frame::set_title)
+        .property("mb", &frame::get_menubar, &frame::set_menubar)
+        .property("mbar", &frame::get_menubar, &frame::set_menubar)
         .property("menubar", &frame::get_menubar, &frame::set_menubar)
         .property("status", &frame::get_status, &frame::set_status)
-        .property("title", &frame::gettitle, &frame::settitle)
+        .property("title", &frame::get_title, &frame::set_title)
         .scope
         [
           def("create_c", &frame::create, adopt(result) )
@@ -105,13 +118,17 @@ int luaopen_lev_gui(lua_State *L)
           def("create_c", &player::create, adopt(result))
         ],
       class_<menu, handler>("menu")
+        .def("enable", &menu::enable)
         .scope
         [
+          def("build", &menu::build),
           def("create_c", &menu::create, adopt(result))
         ],
       class_<menubar, control>("menubar")
+        .def("enable", &menubar::enable)
         .scope
         [
+          def("build", &menubar::build),
           def("create_c", &menubar::create, adopt(result))
         ],
       class_<systray, handler>("systray")
@@ -138,6 +155,7 @@ int luaopen_lev_gui(lua_State *L)
   object classes = globals(L)["lev"]["classes"];
   object gui = globals(L)["lev"]["gui"];
   register_to(L, gui, "msgbox", &gui::msgbox_l);
+  register_to(L, gui, "file_selector", &gui::file_selector_l);
   register_to(L, classes["canvas"],    "create", &canvas::create_l);
   register_to(L, classes["code_edit"], "create", &code_edit::create_l);
   register_to(L, classes["frame"],     "create", &frame::create_l);
@@ -147,15 +165,17 @@ int luaopen_lev_gui(lua_State *L)
   register_to(L, classes["player"],    "create", &player::create_l);
   register_to(L, classes["systray"],   "create", &systray::create_l);
   register_to(L, classes["textbox"],   "create", &textbox::create_l);
-  gui["canvas"]    = classes["canvas"]["create"];
-  gui["code_edit"] = classes["code_edit"]["create"];
-  gui["frame"]     = classes["frame"]["create"];
-  gui["htmlview"]  = classes["htmlview"]["create"];
-  gui["menu"]      = classes["menu"]["create"];
-  gui["menubar"]   = classes["menubar"]["create"];
-  gui["player"]    = classes["player"]["create"];
-  gui["systray"]   = classes["systray"]["create"];
-  gui["textbox"]   = classes["textbox"]["create"];
+  gui["build_menu"]    = classes["menu"]["build"];
+  gui["build_menubar"] = classes["menubar"]["build"];
+  gui["canvas"]        = classes["canvas"]["create"];
+  gui["code_edit"]     = classes["code_edit"]["create"];
+  gui["frame"]         = classes["frame"]["create"];
+  gui["htmlview"]      = classes["htmlview"]["create"];
+  gui["menu"]          = classes["menu"]["create"];
+  gui["menubar"]       = classes["menubar"]["create"];
+  gui["player"]        = classes["player"]["create"];
+  gui["systray"]       = classes["systray"]["create"];
+  gui["textbox"]       = classes["textbox"]["create"];
 
 
   // sizers
@@ -284,6 +304,106 @@ namespace lev
   }
 
 
+  const char *gui::file_selector(const char *message, const char *def_path, const char *def_file,
+                                 const char *def_ext, const char *wildcard, control *parent)
+  {
+    wxString msg, path, file, ext, wild, result;
+    std::string str;
+    int flags = 0;
+    wxWindow *p = NULL;
+    if (message) { msg = wxString(message, wxConvUTF8); }
+    else { msg = wxT("Choose a file"); }
+    if (def_path) { path = wxString(def_path, wxConvUTF8); }
+    if (def_file) { file = wxString(def_file, wxConvUTF8); }
+    if (def_ext)  { ext  = wxString(def_ext,  wxConvUTF8); }
+    if (wildcard) { wild = wxString(wildcard, wxConvUTF8); }
+    else { wild = wxT("*.*"); }
+    if (parent) { p = (wxWindow *)parent->get_rawobj(); }
+    result = wxFileSelector(msg, path, file, ext, wild, flags, p);
+    str = (const char *)result.mb_str(wxConvUTF8);
+    return str.c_str();
+  }
+
+  int gui::file_selector_l(lua_State *L)
+  {
+    using namespace lev;
+    using namespace luabind;
+    const char *msg = "Choose a file to open";
+    const char *def_path = "", *def_file = "";
+    const char *def_ext = "", *wildcard = "*.*", *flags = "";
+    control *parent = NULL;
+    long f = 0;
+    wxWindow *p = NULL;
+    std::string filename;
+
+    int n = lua_gettop(L);
+    lua_pushcfunction(L, &util::merge);
+    newtable(L).push(L);
+    for (int i = 1; i <= n; i++)
+    {
+      object(from_stack(L, i)).push(L);
+    }
+    lua_call(L, n + 1, 1);
+    object t(from_stack(L, -1));
+    lua_remove(L, -1);
+
+    if (t["message"])   { msg = object_cast<const char *>(t["message"]); }
+    else if (t["msg"])  { msg = object_cast<const char *>(t["msg"]); }
+    else if (t["mes"])  { msg = object_cast<const char *>(t["mes"]); }
+    else if (t["m"])    { msg = object_cast<const char *>(t["m"]); }
+    else if (t["str1"]) { msg = object_cast<const char *>(t["str1"]); }
+
+    if (t["default_path"])  { def_path = object_cast<const char *>(t["default_path"]); }
+    else if (t["def_path"]) { def_path = object_cast<const char *>(t["def_path"]); }
+    else if (t["path"])     { def_path = object_cast<const char *>(t["path"]); }
+    else if (t["str2"])     { def_path = object_cast<const char *>(t["str2"]); }
+
+    if (t["default_file"])  { def_file = object_cast<const char *>(t["default_file"]); }
+    else if (t["def_file"])  { def_file = object_cast<const char *>(t["def_file"]); }
+    else if (t["file"])  { def_file = object_cast<const char *>(t["file"]); }
+    else if (t["str3"])  { def_file = object_cast<const char *>(t["str3"]); }
+
+    if (t["default_extension"]) { def_ext = object_cast<const char *>(t["default_extension"]); }
+    else if (t["default_ext"])  { def_ext = object_cast<const char *>(t["default_ext"]); }
+    else if (t["def_ext"])      { def_ext = object_cast<const char *>(t["def_ext"]); }
+    else if (t["extension"])    { def_ext = object_cast<const char *>(t["extension"]); }
+    else if (t["ext"])          { def_ext = object_cast<const char *>(t["ext"]); }
+    else if (t["str4"])         { def_ext = object_cast<const char *>(t["str4"]); }
+
+    if (t["wildcard"]) { wildcard = object_cast<const char *>(t["wildcard"]); }
+    else if (t["wild"]) { wildcard = object_cast<const char *>(t["wild"]); }
+    else if (t["wc"]) { wildcard = object_cast<const char *>(t["wc"]); }
+    else if (t["str5"]) { wildcard = object_cast<const char *>(t["str5"]); }
+
+    if (t["flags"]) { flags = object_cast<const char *>(t["flags"]); }
+    else if (t["flag"]) { flags = object_cast<const char *>(t["flag"]); }
+    else if (t["f"]) { flags = object_cast<const char *>(t["f"]); }
+    else if (t["str6"]) { flags = object_cast<const char *>(t["str6"]); }
+
+    if (t["parent"]) { parent = object_cast<control *>(t["parent"]); }
+    else if (t["p"]) { parent = object_cast<control *>(t["p"]); }
+    else if (t["udata1"]) { parent = object_cast<control *>(t["udata1"]); }
+    if (parent) { p = (wxWindow *)parent->get_rawobj(); }
+
+    if (strcmp(flags, "r") == 0) { f = f | wxFD_OPEN; }
+    if (strstr(flags, "open")) { f = f | wxFD_OPEN; }
+    if (strcmp(flags, "w") == 0) { f = f | wxFD_SAVE; }
+    if (strstr(flags, "save")) { f = f | wxFD_SAVE; }
+    if (strstr(flags, "overwrite")) { f = f | wxFD_OVERWRITE_PROMPT; }
+    if (strstr(flags, "must_exist")) { f = f | wxFD_FILE_MUST_EXIST; }
+
+    filename = (const char *)wxFileSelector(
+        wxString(msg, wxConvUTF8),
+        wxString(def_path, wxConvUTF8),
+        wxString(def_file, wxConvUTF8),
+        wxString(def_ext, wxConvUTF8),
+        wxString(wildcard, wxConvUTF8),
+        f, p).mb_str();
+    lua_pushstring(L, filename.c_str());
+    return 1;
+  }
+
+
   int gui::msgbox_l(lua_State *L)
   {
     wxString msg, cap;
@@ -302,6 +422,7 @@ namespace lev
     lua_remove(L, -1);
 
     if (t["message"]) { m = object_cast<const char *>(t["message"]); }
+    else if (t["msg"]) { m = object_cast<const char *>(t["msg"]); }
     else if (t["mes"]) { m = object_cast<const char *>(t["mes"]); }
     else if (t["m"]) { m = object_cast<const char *>(t["m"]); }
     else if (t["str1"]) { m = object_cast<const char *>(t["str1"]); }
@@ -334,25 +455,6 @@ namespace lev
     return 1;
   }
 
-  const char *gui::file_selector(const char *message, const char *def_path, const char *def_file,
-                                 const char *def_ext, const char *wildcard, control *parent)
-  {
-    wxString msg, path, file, ext, wild, result;
-    std::string str;
-    int flags = 0;
-    wxWindow *p = NULL;
-    if (message) { msg = wxString(message, wxConvUTF8); }
-    else { msg = wxT("Choose a file"); }
-    if (def_path) { path = wxString(def_path, wxConvUTF8); }
-    if (def_file) { file = wxString(def_file, wxConvUTF8); }
-    if (def_ext)  { ext  = wxString(def_ext,  wxConvUTF8); }
-    if (wildcard) { wild = wxString(wildcard, wxConvUTF8); }
-    else { wild = wxT("*.*"); }
-    if (parent) { p = (wxWindow *)parent->get_rawobj(); }
-    result = wxFileSelector(msg, path, file, ext, wild, flags, p);
-    str = (const char *)result.mb_str(wxConvUTF8);
-    return str.c_str();
-  }
 
 
   class mySTC : public myHandler<wxStyledTextCtrl>
@@ -486,6 +588,17 @@ namespace lev
   };
   static mySTC* cast_stc(void *obj) { return (mySTC *)obj; }
 
+
+  bool code_edit::can_redo()
+  {
+    return cast_stc(_obj)->CanRedo();
+  }
+
+  bool code_edit::can_undo()
+  {
+    return cast_stc(_obj)->CanUndo();
+  }
+
   code_edit* code_edit::create(control *parent, int width, int height)
   {
     code_edit *stc = NULL;
@@ -550,10 +663,58 @@ namespace lev
   }
 
 
+  bool code_edit::clear()
+  {
+    cast_stc(_obj)->Clear();
+    return true;
+  }
+
+  bool code_edit::copy()
+  {
+    cast_stc(_obj)->Copy();
+    return true;
+  }
+
+  bool code_edit::cut()
+  {
+    cast_stc(_obj)->Cut();
+    return true;
+  }
+
   int code_edit::get_language()
   {
     return cast_stc(_obj)->GetLexer();
 //    return lang.c_str();
+  }
+
+  std::string code_edit::get_text()
+  {
+    std::string text = (const char *)cast_stc(_obj)->GetTextRaw();
+    return text;
+  }
+
+  bool code_edit::paste()
+  {
+    cast_stc(_obj)->Paste();
+    return true;
+  }
+
+  bool code_edit::save_file(const char *file)
+  {
+    cast_stc(_obj)->SaveFile(wxString(file, wxConvUTF8));
+    return true;
+  }
+
+  bool code_edit::select_all()
+  {
+    cast_stc(_obj)->SelectAll();
+    return true;
+  }
+
+  bool code_edit::redo()
+  {
+    cast_stc(_obj)->Redo();
+    return true;
   }
 
   bool code_edit::set_language(const char *language)
@@ -562,6 +723,18 @@ namespace lev
     this->lang = language;
     cast_stc(_obj)->SetLexerLanguage(lang);
     cast_stc(_obj)->SetHighlightGuide(1);
+    return true;
+  }
+
+  bool code_edit::set_text(const char *text)
+  {
+    cast_stc(_obj)->SetTextRaw(text);
+    return true;
+  }
+
+  bool code_edit::undo()
+  {
+    cast_stc(_obj)->Undo();
     return true;
   }
 

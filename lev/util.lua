@@ -14,7 +14,6 @@
 
 -- dependency
 require 'lev'
-lev.load_util()
 local _G = _G
 
 -- modulizing

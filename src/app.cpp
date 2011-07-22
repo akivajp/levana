@@ -221,7 +221,7 @@ namespace lev
 
   frame *application::get_top()
   {
-    return frame::gettop();
+    return frame::get_top();
   }
 
   void application::mainloop()
@@ -247,9 +247,9 @@ namespace lev
     wxGetApp().SetAppName(wxString(name, wxConvUTF8));
   }
 
-  void application::settop(frame *top)
+  void application::set_top(frame *top)
   {
-    frame::settop(top);
+    frame::set_top(top);
   }
 
   bool application::sleep(int delay_in_msec)

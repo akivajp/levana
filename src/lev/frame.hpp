@@ -26,25 +26,23 @@ namespace lev
       frame() : control(), status(NULL) { }
     public:
       virtual ~frame() { }
-      static frame *gettop();
-      static void settop(frame *top);
+      static frame *get_top();
       bool close(bool force);
       bool close_noforce() { return close(false); }
       static frame *create(control *parent, const char *title, int w, int h, long style);
       static int create_l(lua_State *L);
       void fit();
-      menubar *get_menubar();
+      luabind::object get_menubar();
       const char *get_status();
+      const char *get_title();
       virtual type_id get_type_id() const { return LEV_TFRAME; }
       virtual const char *get_type_name() const { return "frame"; }
       void seticon(const icon &i);
-//      void set_menubar(menubar *mb);
       bool set_menubar(luabind::object mb);
 //      static int set_menubar_l(lua_State *L);
       void set_status(const char *str_status);
-      // title property
-      const char *gettitle();
-      void settitle(const char *title);
+      void set_title(const char *title);
+      static void set_top(frame *top);
     private:
       const char *status;
   };

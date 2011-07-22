@@ -82,14 +82,17 @@ extern int luaopen_lev(lua_State *L)
       class_<event, base>("event")
         .def("request", &event::request)
         .def("skip", &event::skip)
+        .property("char", &event::get_char)
         .property("id", &event::get_id)
         .property("key", &event::get_keystr)
         .property("keystr", &event::get_keystr)
         .property("keycode", &event::get_keycode),
       // event handler class
       class_<handler, base>("handler")
+        .def("get_on_menu", &handler::get_on_menu)
         .def("set_on_menu", &handler::set_on_menu)
         .property("on_any", &handler::get_on_any, &handler::set_on_any)
+        .property("on_char", &handler::get_on_char, &handler::set_on_char)
         .property("on_close", &handler::get_on_close, &handler::set_on_close)
         .property("on_idle", &handler::get_on_idle, &handler::set_on_idle)
         .property("on_keydown", &handler::get_on_keydown, &handler::set_on_keydown)
@@ -121,8 +124,8 @@ extern int luaopen_lev(lua_State *L)
         .property("locale", &application::get_locale)
         .property("name", &application::get_name, &application::set_name)
         .property("title", &application::get_name, &application::set_name)
-        .property("top",  &application::get_top,  &application::settop)
-        .property("top_window",  &application::get_top,  &application::settop)
+        .property("top",  &application::get_top,  &application::set_top)
+        .property("top_window",  &application::get_top,  &application::set_top)
     ],
     namespace_("app")
     [
@@ -156,8 +159,7 @@ extern int luaopen_lev(lua_State *L)
   luaopen_lev_input(L);
   luaopen_lev_locale(L);
   luaopen_lev_prim(L);
-//    register_to(L, globals(L)["package"]["preload"], "load_util", &util::luaopen_util);
-//  register_to(L, globals(L)["lev"], "load_util", &util::luaopen_util);
+  luaopen_lev_util(L);
   return 0;
 }
 
@@ -204,6 +206,7 @@ namespace lev
     register_to(L, globals(L)["package"]["preload"], "lev.net", luaopen_lev_net);
     register_to(L, globals(L)["package"]["preload"], "lev.sound", luaopen_lev_sound);
     register_to(L, globals(L)["package"]["preload"], "lev.std", luaopen_lev_std);
+    register_to(L, globals(L)["package"]["preload"], "lev.util", luaopen_lev_util);
   }
 
 }

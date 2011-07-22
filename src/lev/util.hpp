@@ -12,13 +12,20 @@
 
 #include <lua.h>
 
+extern "C" {
+  int luaopen_lev_util(lua_State *L);
+}
+
 namespace lev
 {
-  namespace util
+  class util
   {
-    int luaopen_util(lua_State *L);
-    int merge(lua_State *L);
-  }
+    public:
+      static luabind::object get_merged(lua_State *L, int start, int end);
+      static int merge(lua_State *L);
+      static int remove_first(lua_State *L);
+      static int using_l(lua_State *L);
+  };
 }
 
 #endif // _UTIL_HPP

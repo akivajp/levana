@@ -30,14 +30,17 @@ namespace lev
       object get_func(int type) { return get_func(-1, type); }
       object get_func(int id, int type);
       object get_on_any();
+      object get_on_char();
       object get_on_close();
       object get_on_idle();
       object get_on_keydown();
+      object get_on_menu(int id);
       void *get_rawobj() { return _obj; }
       virtual type_id get_type_id() const { return LEV_THANDLER; }
       virtual const char *get_type_name() const { return "lev.handler"; }
       bool hold();
       bool set_on_any(object lua_func);
+      bool set_on_char(object lua_func);
       bool set_on_close(object lua_func);
       bool set_on_idle(object lua_func);
       bool set_on_keydown(object lua_func);
@@ -55,9 +58,12 @@ namespace lev
     public:
       event(void *e);
       ~event();
+      const char *get_char() const;
       int get_id() const;
       const char *get_keystr() const;
       long get_keycode() const;
+      virtual type_id get_type_id() const { return LEV_TEVENT; }
+      virtual const char *get_type_name() const { return "lev.event"; }
       bool request();
       void skip();
     protected:

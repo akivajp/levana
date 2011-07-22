@@ -54,21 +54,33 @@ namespace lev
   class gui
   {
     public:
-      static int msgbox_l(lua_State *L);
       static const char *file_selector(const char *message, const char *def_path, const char *def_file,
                                        const char *def_ext, const char *wildcard, control *parent);
       static int file_selector_l(lua_State *L);
+      static int msgbox_l(lua_State *L);
   };
 
   class code_edit: public control
   {
     public:
+      bool can_redo();
+      bool can_undo();
       static code_edit* create(control *parent, int width, int height);
       static int create_l(lua_State *L);
+      bool clear();
+      bool copy();
+      bool cut();
       int get_language();
+      std::string get_text();
 //      virtual type_id get_type_id() const { return LEV_TCODE_EDIT; }
       virtual const char *get_type_name() const { return "lev.gui.code_edit"; }
+      bool paste();
+      bool redo();
+      bool save_file(const char *file);
+      bool select_all();
       bool set_language(const char *language);
+      bool set_text(const char *text);
+      bool undo();
       bool update();
 
     protected:
