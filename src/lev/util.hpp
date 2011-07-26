@@ -24,6 +24,7 @@ namespace lev
       static luabind::object get_merged(lua_State *L, int start, int end);
       static int merge(lua_State *L);
       static int remove_first(lua_State *L);
+      static int reverse(lua_State *L);
       static int using_l(lua_State *L);
   };
 }

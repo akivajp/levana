@@ -117,6 +117,15 @@ int luaopen_lev_gui(lua_State *L)
         [
           def("create_c", &player::create, adopt(result))
         ],
+      class_<menuitem, base>("menuitem")
+        .def("disable", &menuitem::disable)
+        .def("enable", &menuitem::enable)
+        .def("enable", &menuitem::enable_on)
+        .property("id", &menuitem::get_id)
+        .scope
+        [
+          def("create_c", &menuitem::create)
+        ],
       class_<menu, handler>("menu")
         .def("enable", &menu::enable)
         .scope

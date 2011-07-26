@@ -45,6 +45,7 @@ extern "C" {
 #include <sstream>
 #include <string>
 #include <vector>
+#include <boost/format.hpp>
 #include <boost/shared_ptr.hpp>
 
 #endif // _PREC_H

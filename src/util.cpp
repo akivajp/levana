@@ -20,6 +20,7 @@ int luaopen_lev_util(lua_State *L)
   using namespace luabind;
 
   open(L);
+  globals(L)["require"]("table");
   globals(L)["require"]("lev");
 
   module(L, "lev")
@@ -28,6 +29,9 @@ int luaopen_lev_util(lua_State *L)
   ];
   object util = globals(L)["lev"]["util"];
   register_to(L, util, "merge", &util::merge);
+  register_to(L, util, "remove_first", &util::remove_first);
+  register_to(L, util, "reverse", &util::reverse);
+  register_to(L, util, "using", &util::using_l);
 
   globals(L)["package"]["loaded"] = util;
   return 0;
@@ -127,7 +131,20 @@ namespace lev
               tmp.push(L);
               lua_call(L, 2, 0);
             }
-            else { target[i.key()] = *i; }
+            else if (type(i.key()) == LUA_TSTRING)
+            {
+              target[i.key()] = *i;
+              for (int j = 1; ; ++j)
+              {
+                std::string key = (boost::format("%1%%2%") % i.key() % j).str();
+                if (!target[key.c_str()])
+                {
+                  target[key.c_str()] = *i;
+                  break;
+                }
+              }
+            }
+//            else { target[i.key()] = *i; }
           }
           break;
         case LUA_TUSERDATA:
@@ -155,6 +172,74 @@ namespace lev
   int util::remove_first(lua_State *L)
   {
     using namespace luabind;
+
+    luaL_checktype(L, 1, LUA_TTABLE);
+    luaL_checkany(L, 2);
+    object table(from_stack(L, 1));
+    object value(from_stack(L, 2));
+    object fn_remove = globals(L)["table"]["remove"];
+
+    for (iterator i(table), end; i != end; i++)
+    {
+      if (*i == value)
+      {
+        object res = (*i);
+        res.push(L);
+        fn_remove(table, i.key());
+        return 1;
+      }
+    }
+    return 0;
+  }
+
+  int util::reverse(lua_State *L)
+  {
+    using namespace luabind;
+
+    luaL_checktype(L, 1, LUA_TTABLE);
+    object table(from_stack(L, 1));
+    object rev = newtable(L);
+    object fn_insert = globals(L)["table"]["insert"];
+
+    for (iterator i(table), end; i != end; i++)
+    {
+      fn_insert(rev, 1, *i);
+    }
+    rev.push(L);
+    return 1;
+  }
+
+  static int lookup(lua_State *L)
+  {
+    using namespace luabind;
+
+    luaL_checktype(L, 1, LUA_TTABLE);
+    luaL_checkstring(L, 2);
+    object env(from_stack(L, 1));
+    object varname(from_stack(L, 2));
+    object meta = getmetatable(env);
+    if (meta["__owner"][varname] != nil)
+    {
+      meta["__owner"][varname].push(L);
+      return 1;
+    }
+    for (iterator i(meta["__lookup"]), end; i != end; i++)
+    {
+      if ((*i)[varname] != nil)
+      {
+        (*i)[varname].push(L);
+        return 1;
+      }
+    }
+    // non sense to look up twice for the same table
+    if (meta["__parent"] == meta["__owner"]) { return 0; }
+    if (meta["__parent"][varname] != nil)
+    {
+      meta["__parent"][varname].push(L);
+      return 1;
+    }
+
+    return 0;
   }
 
   int util::using_l(lua_State *L)
@@ -166,27 +251,6 @@ namespace lev
 --   * using() : clearing the lookup setting
 --   * using(...) : adding tables to the lookup setting where ... is a list of tables
 --   * using(nil, ...) : clearing and resetting the lookup tables
-
--- find "value" from "t" and remove first one
-local find_and_remove = function(t, value)
-  for i,j in _G.ipairs(t) do
-    if (j == value) then
-      _G.table.remove(t, i)
-      return
-    end
-  end
-end
-
-
--- return new order-reversed table of "t"
-local reverse = function(t, ...)
-  local r = {}
-  for i,val in _G.ipairs(t) do
-    _G.table.insert(r, 1, val)
-  end
-  return r
-end
-
 
 -- looking up of "varnames"
 local lookup = function(env, varname)

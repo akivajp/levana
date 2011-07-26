@@ -15,6 +15,96 @@
 namespace lev
 {
 
+  static wxMenuItem* cast_item(void *obj) { return (wxMenuItem *)obj; }
+
+  menuitem::~menuitem()
+  {
+    if (! system_managed)
+    {
+      delete cast_item(_obj);
+      _obj = NULL;
+    }
+  }
+
+  menuitem* menuitem::create(const char *text, const char *help, long kind)
+  {
+    menuitem* item = NULL;
+    wxMenuItem *obj = NULL;
+    wxString t, h;
+    try {
+      item = new menuitem;
+      if (text) { t = wxString(text, wxConvUTF8); }
+      if (help) { h = wxString(text, wxConvUTF8); }
+      if (kind == wxITEM_SEPARATOR)
+      {
+        item->_obj = obj = new wxMenuItem(NULL, wxID_SEPARATOR);
+      }
+      else
+      {
+        item->_obj = obj = new wxMenuItem(NULL, -1, t, h, kind);
+      }
+      return item;
+    }
+    catch (...) {
+      delete item;
+      return NULL;
+    }
+  }
+
+  int menuitem::create_l(lua_State *L)
+  {
+    using namespace luabind;
+    const char *text = NULL, *help = NULL, *style = "normal";
+    long kind = wxITEM_NORMAL;
+
+    object t = util::get_merged(L, 1, -1);
+
+    if (t["text"]) { text = object_cast<const char *>(t["text"]); }
+    else if (t["label"]) { text = object_cast<const char *>(t["label"]); }
+    else if (t["str1"]) { text = object_cast<const char *>(t["str1"]); }
+
+    if (t["help"]) { help = object_cast<const char *>(t["help"]); }
+    else if (t["str2"]) { help = object_cast<const char *>(t["str2"]); }
+
+    if (t["style"]) { style = object_cast<const char *>(t["style"]); }
+    else if (t["kind"]) { style = object_cast<const char *>(t["kind"]); }
+    else if (t["type"]) { style = object_cast<const char *>(t["type"]); }
+    else if (t["s"]) { style = object_cast<const char *>(t["s"]); }
+    else if (t["str3"]) { style = object_cast<const char *>(t["str3"]); }
+
+    if (text == NULL) { kind == wxITEM_SEPARATOR; }
+    else if (strstr(style, "sep")) { kind = wxITEM_SEPARATOR; }
+    else if (strstr(style, "norm")) { kind = wxITEM_NORMAL; }
+    else if (strstr(style, "check")) { kind = wxITEM_CHECK; }
+    else if (strstr(style, "radio")) { kind = wxITEM_RADIO; }
+//    else if (strstr(style, "drop")) { kind = wxITEM_DROPDOWN; }
+    else if (strstr(style, "max")) { kind = wxITEM_MAX; }
+
+    object func = globals(L)["lev"]["classes"]["menuitem"]["create_c"];
+    object obj = func(text, help, kind);
+    obj.push(L);
+    return 1;
+  }
+
+  bool menuitem::enable(bool enabling)
+  {
+    cast_item(_obj)->Enable(enabling);
+    return true;
+  }
+
+  int menuitem::get_id()
+  {
+    return cast_item(_obj)->GetId();
+  }
+
+  bool menuitem::hold()
+  {
+    if (system_managed) { return false; }
+    system_managed = true;
+    return true;
+  }
+
+
   static wxMenu* cast_menu(void *obj) { return (wxMenu *)obj; }
 
   menu::menu() : handler() {}
@@ -35,7 +125,7 @@ namespace lev
     using namespace luabind;
     object obj(from_stack(L, 1));
     const char *str = NULL;
-    const char *help_str = NULL;
+    const char *help = NULL;
     object f;
     bool enable = true;
     int id;
@@ -43,15 +133,15 @@ namespace lev
 
     object t = util::get_merged(L, 2, -1);
 
-    if (t["string"]) { str = object_cast<const char *>(t["string"]); }
+    if (t["text"]) { str = object_cast<const char *>(t["text"]); }
+    else if (t["label"]) { str = object_cast<const char *>(t["label"]); }
+    else if (t["string"]) { str = object_cast<const char *>(t["string"]); }
     else if (t["str1"]) { str = object_cast<const char *>(t["str1"]); }
-    else if (t["str"]) { str = object_cast<const char *>(t["str"]); }
-    else if (t["s"]) { str = object_cast<const char *>(t["s"]); }
 
-    if (t["help_string"]) { str = object_cast<const char *>(t["help_string"]); }
-    else if (t["help_str"]) { str = object_cast<const char *>(t["help_str"]); }
-    else if (t["help"]) { str = object_cast<const char *>(t["help"]); }
-    else if (t["str2"]) { str = object_cast<const char *>(t["str2"]); }
+    if (t["help_string"]) { help = object_cast<const char *>(t["help_string"]); }
+    else if (t["help_str"]) { help = object_cast<const char *>(t["help_str"]); }
+    else if (t["help"]) { help = object_cast<const char *>(t["help"]); }
+    else if (t["str2"]) { help = object_cast<const char *>(t["str2"]); }
 
     if (t["id_name"]) { id_name = object_cast<const char *>(t["id_name"]); }
     else if (t["idname"]) { id_name = object_cast<const char *>(t["idname"]); }
@@ -70,15 +160,22 @@ namespace lev
     else if (t["f"]) { f = t["f"]; }
 
     menu *m = object_cast<menu *>(obj);
+    object func = globals(L)["lev"]["classes"]["menuitem"]["create_c"];
+    object item;
     if (str == NULL)
     {
-      wxMenuItem *item = cast_menu(m->get_rawobj())->AppendSeparator();
-      id = item->GetId();
+      item = func("", "", wxITEM_SEPARATOR);
+//      wxMenuItem *item = cast_menu(m->get_rawobj())->AppendSeparator();
+//      id = item->GetId();
     }
     else
     {
-      id = m->append(-1, str, help_str);
+      item = func(str, help, wxITEM_NORMAL);
+//      id = m->append(-1, str, help);
     }
+    menuitem* i = object_cast<menuitem*>(item);
+    cast_menu(m->get_rawobj())->Append(cast_item(i->get_rawobj()));
+    id = i->get_id();
 
     if (!enable) { m->enable(id, false); }
     if (id and f)
@@ -87,7 +184,8 @@ namespace lev
     }
     if (id and id_name)
     {
-      obj[id_name] = id;
+//      obj[id_name] = id;
+      obj[id_name] = item;
     }
     lua_pushnumber(L, id);
     return 1;

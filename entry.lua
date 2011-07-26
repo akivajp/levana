@@ -99,8 +99,8 @@ stc.on_idle = function(e)
   else
     frm.title = 'Levana Editor'
   end
-  mb:enable(mb.edit.redo, stc:can_redo())
-  mb:enable(mb.edit.undo, stc:can_undo())
+  mb.edit.redo:enable(stc:can_redo())
+  mb.edit.undo:enable(stc:can_undo())
 end
 
 stc.on_keydown = function(e)

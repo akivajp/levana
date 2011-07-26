@@ -17,6 +17,27 @@
 namespace lev
 {
 
+  class menuitem : public base
+  {
+    protected:
+      menuitem() : base(), _obj(NULL), system_managed(false) { }
+    public:
+      virtual ~menuitem();
+      static menuitem* create(const char *text, const char *help, long kind);
+      static int create_l(lua_State *L);
+      bool disable() { return enable(false); }
+      bool enable_on() { return enable(true); }
+      bool enable(bool enabling = true);
+      int get_id();
+      void *get_rawobj() { return _obj; }
+//      virtual type_id get_type_id() const { return LEV_TMENUITEM; }
+      virtual const char *get_type_name() const { return "lev.gui.menuitem"; }
+      bool hold();
+    protected:
+      void *_obj;
+      bool system_managed;
+  };
+
   class menu : public handler
   {
     private:
