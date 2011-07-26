@@ -14,6 +14,72 @@
 #include <boost/format.hpp>
 #include <luabind/luabind.hpp>
 
+static const char *using_test =
+"-- looking up of varnames\n\
+local lookup = function(env, varname)\n\
+  meta = getmetatable(env)\n\
+  if meta.__owner[varname] ~= nil then\n\
+    return meta.__owner[varname]\n\
+  end\n\
+  for i,t in ipairs(meta.__lookup) do\n\
+    if t[varname] ~= nil then\n\
+      return t[varname]\n\
+    end\n\
+  end\n\
+  if (meta.__parent == meta.__owner) then\n\
+    -- non sense to look up twice for the same table\n\
+    return nil\n\
+  end\n\
+  return meta.__parent[varname]\n\
+end\n\
+\n\
+-- subtituting the new value\n\
+local substitute = function(env, key, value)\n\
+  meta = getmetatable(env)\n\
+  meta.__owner[key] = value\n\
+end\n\
+\n\
+-- like using directive\n\
+return function(...)\n\
+  -- getting environment of the caller and its metatable\n\
+  local env  = getfenv(2)\n\
+  local meta = getmetatable(env) or {}\n\
+  -- getting the caller itself\n\
+  local f = _G.setfenv(2, env)\n\
+  if (meta.__caller == f) then\n\
+    -- setup was already done, changing looking up preference\n\
+    if (...) == nil then\n\
+      -- 1st arg is nil, resetting looking up setting\n\
+      if #{...} >= 2 then\n\
+        meta.__lookup = lev.util.reverse({_G.select(2, ...)})\n\
+      else\n\
+        meta.__lookup = {}\n\
+      end\n\
+      return env\n\
+    end\n\
+    for i,val in _G.ipairs({...}) do\n\
+      lev.util.remove_first(meta.__lookup, val)\n\
+      table.insert(meta.__lookup, 1, val)\n\
+    end\n\
+    return env\n\
+  end\n\
+\n\
+  -- setting new looking up mechanism\n\
+  local newenv  = {}\n\
+  local newmeta = {}\n\
+  newmeta.__caller = f\n\
+  newmeta.__index = lookup\n\
+  newmeta.__lookup = lev.util.reverse({...})\n\
+  newmeta.__newindex = substitute\n\
+  newmeta.__owner = meta.__owner or env\n\
+  newmeta.__parent = env\n\
+  setmetatable(newenv, newmeta)\n\
+  setfenv(2, newenv)\n\
+  return newenv\n\
+end\n\
+";
+
+
 int luaopen_lev_util(lua_State *L)
 {
   using namespace lev;
@@ -28,10 +94,11 @@ int luaopen_lev_util(lua_State *L)
     namespace_("util")
   ];
   object util = globals(L)["lev"]["util"];
-  register_to(L, util, "merge", &util::merge);
-  register_to(L, util, "remove_first", &util::remove_first);
-  register_to(L, util, "reverse", &util::reverse);
-  register_to(L, util, "using", &util::using_l);
+  register_to(util, "merge", &util::merge);
+  register_to(util, "remove_first", &util::remove_first);
+  register_to(util, "reverse", &util::reverse);
+//  register_to(util, "using", &util::using_l);
+  load_to(util, "using", using_test);
 
   globals(L)["package"]["loaded"] = util;
   return 0;
@@ -169,6 +236,7 @@ namespace lev
     return 1;
   }
 
+  // find "value" from "t" and remove first one
   int util::remove_first(lua_State *L)
   {
     using namespace luabind;
@@ -192,6 +260,7 @@ namespace lev
     return 0;
   }
 
+  // return new order-reversed table of "t"
   int util::reverse(lua_State *L)
   {
     using namespace luabind;
@@ -209,6 +278,7 @@ namespace lev
     return 1;
   }
 
+  // looking up of "varnames"
   static int lookup(lua_State *L)
   {
     using namespace luabind;
@@ -217,6 +287,7 @@ namespace lev
     luaL_checkstring(L, 2);
     object env(from_stack(L, 1));
     object varname(from_stack(L, 2));
+
     object meta = getmetatable(env);
     if (meta["__owner"][varname] != nil)
     {
@@ -233,97 +304,99 @@ namespace lev
     }
     // non sense to look up twice for the same table
     if (meta["__parent"] == meta["__owner"]) { return 0; }
-    if (meta["__parent"][varname] != nil)
-    {
-      meta["__parent"][varname].push(L);
-      return 1;
-    }
+    meta["__parent"][varname].push(L);
+    return 1;
+  }
 
+  // subtituting the new value
+  static int substitute(lua_State *L)
+  {
+    using namespace luabind;
+
+    luaL_checktype(L, 1, LUA_TTABLE);
+    luaL_checkstring(L, 2);
+    luaL_checkany(L, 3);
+    object env(from_stack(L, 1));
+    object key(from_stack(L, 2));
+    object value(from_stack(L, 3));
+
+    object meta = getmetatable(env);
+    meta["__owner"][key] = value;
     return 0;
   }
 
+  // like "using directive"
   int util::using_l(lua_State *L)
   {
+    using namespace luabind;
+    int n = lua_gettop(L);
 
-/*
+printf("N: %d\n", n);
+printf("USING0\n");
+    // getting environment of the caller and its metatable
+    object env = globals(L)["getfenv"](2);
+globals(L)["print"](env);
+printf("USING0.1\n");
+    object meta = getmetatable(env);
+printf("USING0.2\n");
+    if (!meta) { meta = newtable(L); }
+printf("USING0.3\n");
+    // getting the caller itself
+printf("USING0.4\n");
+    object f = globals(L)["setfenv"](2, env);
 
--- usage:
---   * using() : clearing the lookup setting
---   * using(...) : adding tables to the lookup setting where ... is a list of tables
---   * using(nil, ...) : clearing and resetting the lookup tables
+printf("USING1\n");
+    if (meta["__caller"] != f)
+    {
+printf("USING1.1\n");
+      // setting new looking up mechanism
+      object newenv = newtable(L);
+      object newmeta = newtable(L);
+      newmeta["__caller"] = f;
+      register_to(newmeta, "__index", &lookup);
+      register_to(newmeta, "__newindex", &substitute);
+      newmeta["__owner"] == meta["__owner"];
+      if (!newmeta["__owner"]) { newmeta["__owner"] = env; }
+      newmeta["__parent"] == env;
+      setmetatable(newenv, newmeta);
+      globals(L)["setfenv"](2, newenv);
 
--- looking up of "varnames"
-local lookup = function(env, varname)
-  meta = _G.getmetatable(env)
-  if meta.__owner[varname] ~= nil then
-    return meta.__owner[varname]
-  end
-  for i,t in _G.ipairs(meta.__lookup) do
-    if t[varname] ~= nil then
-      return t[varname]
-    end
-  end
-  if (meta.__parent == meta.__owner) then
-    -- non sense to look up twice for the same table
-    return nil
-  end
-  return meta.__parent[varname]
-end
+      env = newenv;
+      meta = newmeta;
+    }
 
-
--- subtituting the new value
-local substitute = function(env, key, value)
-  meta = _G.getmetatable(env)
-  meta.__owner[key] = value
-end
-
-
--- like "using directive"
-function using(...)
-  -- getting environment of the caller and its metatable
-  local env  = _G.getfenv(2)
-  local meta = _G.getmetatable(env) or {}
-  -- getting the caller itself
-  local f = _G.setfenv(2, env)
-  if (meta.__caller == f) then
-    -- setup was already done, changing looking up preference
-    if (...) == nil then
-      -- 1st arg is nil, resetting looking up setting
-      if #{...} >= 2 then
-        meta.__lookup = reverse({_G.select(2, ...)})
-      else
-        meta.__lookup = {}
-      end
-      return env
-    end
-    for i,val in _G.ipairs({...}) do
-      find_and_remove(meta.__lookup, val)
-      _G.table.insert(meta.__lookup, 1, val)
-    end
-    return env
-  end
-
-  -- setting new looking up mechanism
-  local newenv  = {}
-  local newmeta = {}
-  newmeta.__caller = f
-  newmeta.__index = lookup
-  newmeta.__lookup = reverse({...})
-  newmeta.__newindex = substitute
-  newmeta.__owner = meta.__owner or env
-  newmeta.__parent = env
-  _G.setmetatable(newenv, newmeta)
-  _G.setfenv(2, newenv)
-  return newenv
-end
-
-
--- enabling to call using without module prefix
-_G.using = using
-
-*/
-
-    return 0;
+printf("USING2\n");
+    // setup was already done, changing looking up preference
+    if (n == 0 || !object(from_stack(L, 1)))
+    {
+printf("TYPE: %d\n", type(object(from_stack(L, 1))));
+printf("USING2.1\n");
+      // 1st arg is nil, resetting looking up setting
+      meta["__lookup"] == newtable(L);
+printf("USING2.2\n");
+      if (n >= 2)
+      {
+printf("USING2.3\n");
+        object lookup = meta["__lookup"];
+printf("USING2.4\n");
+        for (int i = n; i >= 2; i--)
+        {
+printf("USING2.5\n");
+          lookup[n + 1 - i] = from_stack(L, n);
+        }
+      }
+      env.push(L);
+      return 1;
+    }
+printf("USING3\n");
+    for (int i = 1; i <= n; i++)
+    {
+      object val(from_stack(L, i));
+      globals(L)["lev"]["util"]["remove_first"](meta["__lookup"], val);
+      globals(L)["table"]["insert"](meta["__lookup"], 1, val);
+    }
+    env.push(L);
+    return 1;
   }
 
 }

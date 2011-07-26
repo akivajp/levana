@@ -14,13 +14,26 @@
 
 namespace lev
 {
+  using namespace luabind;
 
-  inline void register_to(lua_State *L, luabind::object to, const char *funcname, lua_CFunction func)
+  inline bool register_to(object to, const char *funcname, lua_CFunction func)
   {
+    lua_State *L = to.interpreter();
     lua_pushcfunction(L, func);
     luabind::object f(luabind::from_stack(L, -1));
     lua_pop(L, 1);
     to[funcname] = f;
+    return true;
+  }
+
+  inline bool load_to(object to, const char *funcname, const char *code)
+  {
+    lua_State *L = to.interpreter();
+    if (luaL_loadstring(L, code) != 0) { return false; }
+    object loaded(from_stack(L, -1));
+    lua_pop(L, 1);
+    to[funcname] = loaded();
+    return true;
   }
 
 }

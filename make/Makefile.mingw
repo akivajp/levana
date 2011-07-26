@@ -25,7 +25,6 @@ build:
 	install -d $(PACK_DIR)/lev
 	install -d $(PACK_DIR)/doc
 	install -d $(PACK_DIR)/test
-	install lev/* $(PACK_DIR)/lev/
 	install src/$(WIN_OUT) $(PACK_DIR)/$(WIN_OUT)
 	install COPYRIGHT     $(PACK_DIR)/doc/COPYRIGHT.txt
 	install MANUAL.ja     $(PACK_DIR)/doc/MANUAL.ja.txt

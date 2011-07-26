@@ -200,15 +200,6 @@ namespace lev
             "    e:skip()\n"
             "  end\n"
             "end\n";
-//          const char *fbase = "return function(frm)\n"
-//                              "  return function(e)\n"
-//                              "    if %1% then\n"
-//                              "      %1%(e)\n"
-//                              "    elseif frm and frm.%1% then\n"
-//                              "      frm.%1%(e)\n"
-//                              "    end\n"
-//                              "  end\n"
-//                              "end\n";
           std::string func = (boost::format(fbase) % *j).str();
           if (luaL_loadstring(L, func.c_str()) == 0)
           {

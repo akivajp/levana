@@ -195,18 +195,18 @@ namespace lev
   void set_preloaders(lua_State *L)
   {
     using namespace luabind;
-    register_to(L, globals(L)["package"]["preload"], "lev", luaopen_lev);
-    register_to(L, globals(L)["package"]["preload"], "lev.db", luaopen_lev_db);
-    register_to(L, globals(L)["package"]["preload"], "lev.fs", luaopen_lev_fs);
-    register_to(L, globals(L)["package"]["preload"], "lev.gl", luaopen_lev_gl);
-    register_to(L, globals(L)["package"]["preload"], "lev.gui", luaopen_lev_gui);
-    register_to(L, globals(L)["package"]["preload"], "lev.image", luaopen_lev_image);
-    register_to(L, globals(L)["package"]["preload"], "lev.input", luaopen_lev_input);
-    register_to(L, globals(L)["package"]["preload"], "lev.locale", luaopen_lev_locale);
-    register_to(L, globals(L)["package"]["preload"], "lev.net", luaopen_lev_net);
-    register_to(L, globals(L)["package"]["preload"], "lev.sound", luaopen_lev_sound);
-    register_to(L, globals(L)["package"]["preload"], "lev.std", luaopen_lev_std);
-    register_to(L, globals(L)["package"]["preload"], "lev.util", luaopen_lev_util);
+    register_to(globals(L)["package"]["preload"], "lev", luaopen_lev);
+    register_to(globals(L)["package"]["preload"], "lev.db", luaopen_lev_db);
+    register_to(globals(L)["package"]["preload"], "lev.fs", luaopen_lev_fs);
+    register_to(globals(L)["package"]["preload"], "lev.gl", luaopen_lev_gl);
+    register_to(globals(L)["package"]["preload"], "lev.gui", luaopen_lev_gui);
+    register_to(globals(L)["package"]["preload"], "lev.image", luaopen_lev_image);
+    register_to(globals(L)["package"]["preload"], "lev.input", luaopen_lev_input);
+    register_to(globals(L)["package"]["preload"], "lev.locale", luaopen_lev_locale);
+    register_to(globals(L)["package"]["preload"], "lev.net", luaopen_lev_net);
+    register_to(globals(L)["package"]["preload"], "lev.sound", luaopen_lev_sound);
+    register_to(globals(L)["package"]["preload"], "lev.std", luaopen_lev_std);
+    register_to(globals(L)["package"]["preload"], "lev.util", luaopen_lev_util);
   }
 
 }
