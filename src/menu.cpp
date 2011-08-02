@@ -261,7 +261,7 @@ namespace lev
     object menu = func(title);
     if (menu)
     {
-      register_to(L, menu, "append", &menu::append_l);
+      register_to(menu, "append", &menu::append_l);
       menu["fmap"] = newtable(L);
     }
     menu.push(L);
@@ -406,7 +406,7 @@ namespace lev
     object mb = func();
     if (mb)
     {
-      register_to(L, classes["menubar"], "append", &menubar::append_l);
+      register_to(classes["menubar"], "append", &menubar::append_l);
       mb["append"] = classes["menubar"]["append"];
       mb["menus"] = newtable(L);
     }

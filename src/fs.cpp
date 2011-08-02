@@ -55,8 +55,8 @@ int luaopen_lev_fs(lua_State *L)
   object lev = globals(L)["lev"];
   object classes = lev["classes"];
   object fs = lev["fs"];
-  register_to(L, classes["filepath"], "create", &filepath::create_l);
-  register_to(L, classes["file_system"], "create", &file_system::create_l);
+  register_to(classes["filepath"], "create", &filepath::create_l);
+  register_to(classes["file_system"], "create", &file_system::create_l);
   fs["create"] = classes["file_system"]["create"];
   fs["cwd"] = classes["file_system"]["get_cwd"];
   fs["exe_path"] = classes["file_system"]["get_executable_path"];

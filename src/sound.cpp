@@ -68,9 +68,10 @@ int luaopen_lev_sound(lua_State *L)
   ];
   object classes = globals(L)["lev"]["classes"];
   object sound = globals(L)["lev"]["sound"];
-  register_to(L, classes["mixer"], "create", &mixer::create_l);
+  register_to(classes["mixer"], "create", &mixer::create_l);
   sound["mixer"] = classes["mixer"]["create"];
 
+  globals(L)["package"]["loaded"]["lev.sound"] = sound;
   return 0;
 }
 

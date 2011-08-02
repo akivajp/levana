@@ -36,12 +36,12 @@ int main(int argc, char **argv)
   lua_call(L, 1, 0);
 
   // lev library registration
-  register_to(L, globals(L)["package"]["preload"], LUA_DBLIBNAME, &luaopen_debug);
-  register_to(L, globals(L)["package"]["preload"], LUA_IOLIBNAME, &luaopen_io);
-  register_to(L, globals(L)["package"]["preload"], LUA_MATHLIBNAME, &luaopen_math);
-  register_to(L, globals(L)["package"]["preload"], LUA_OSLIBNAME, &luaopen_os);
-  register_to(L, globals(L)["package"]["preload"], LUA_STRLIBNAME, &luaopen_string);
-  register_to(L, globals(L)["package"]["preload"], LUA_TABLIBNAME, &luaopen_table);
+  register_to(globals(L)["package"]["preload"], LUA_DBLIBNAME, &luaopen_debug);
+  register_to(globals(L)["package"]["preload"], LUA_IOLIBNAME, &luaopen_io);
+  register_to(globals(L)["package"]["preload"], LUA_MATHLIBNAME, &luaopen_math);
+  register_to(globals(L)["package"]["preload"], LUA_OSLIBNAME, &luaopen_os);
+  register_to(globals(L)["package"]["preload"], LUA_STRLIBNAME, &luaopen_string);
+  register_to(globals(L)["package"]["preload"], LUA_TABLIBNAME, &luaopen_table);
   lev::set_preloaders(L);
 
   // lev entry

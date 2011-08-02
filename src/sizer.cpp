@@ -176,7 +176,7 @@ namespace lev
     {
       if (not sz["add"])
       {
-        register_to(L, sz, "add", &sizer::add_l);
+        register_to(sz, "add", &sizer::add_l);
       }
     }
     sz.push(L);
@@ -213,7 +213,7 @@ namespace lev
     {
       if (not sz["add"])
       {
-        register_to(L, sz, "add", &sizer::add_l);
+        register_to(sz, "add", &sizer::add_l);
       }
     }
     sz.push(L);
@@ -249,7 +249,7 @@ namespace lev
     {
       if (not sz["add"])
       {
-        register_to(L, sz, "add", &sizer::add_l);
+        register_to(sz, "add", &sizer::add_l);
       }
     }
     sz.push(L);

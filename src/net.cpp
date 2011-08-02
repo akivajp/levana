@@ -73,8 +73,9 @@ int luaopen_lev_net(lua_State *L)
         ]
     ]
   ];
-  register_to(L, globals(L)["lev"]["net"], "connect", &connector::connect_l);
+  register_to(globals(L)["lev"]["net"], "connect", &connector::connect_l);
 
+  globals(L)["package"]["loaded"]["lev.net"] = globals(L)["lev"]["net"];
   return 0;
 }
 
@@ -445,8 +446,8 @@ namespace lev
     {
       if (not client["read_all"])
       {
-        register_to(L, client, "read_all", &socket::read_all_l);
-        register_to(L, client, "read_line", &socket::read_line_l);
+        register_to(client, "read_all", &socket::read_all_l);
+        register_to(client, "read_line", &socket::read_line_l);
       }
     }
     client.push(L);

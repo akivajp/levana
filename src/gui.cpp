@@ -163,17 +163,17 @@ int luaopen_lev_gui(lua_State *L)
   ];
   object classes = globals(L)["lev"]["classes"];
   object gui = globals(L)["lev"]["gui"];
-  register_to(L, gui, "msgbox", &gui::msgbox_l);
-  register_to(L, gui, "file_selector", &gui::file_selector_l);
-  register_to(L, classes["canvas"],    "create", &canvas::create_l);
-  register_to(L, classes["code_edit"], "create", &code_edit::create_l);
-  register_to(L, classes["frame"],     "create", &frame::create_l);
-  register_to(L, classes["htmlview"],  "create", &htmlview::create_l);
-  register_to(L, classes["menu"],      "create", &menu::create_l);
-  register_to(L, classes["menubar"],   "create", &menubar::create_l);
-  register_to(L, classes["player"],    "create", &player::create_l);
-  register_to(L, classes["systray"],   "create", &systray::create_l);
-  register_to(L, classes["textbox"],   "create", &textbox::create_l);
+  register_to(gui, "msgbox", &gui::msgbox_l);
+  register_to(gui, "file_selector", &gui::file_selector_l);
+  register_to(classes["canvas"],    "create", &canvas::create_l);
+  register_to(classes["code_edit"], "create", &code_edit::create_l);
+  register_to(classes["frame"],     "create", &frame::create_l);
+  register_to(classes["htmlview"],  "create", &htmlview::create_l);
+  register_to(classes["menu"],      "create", &menu::create_l);
+  register_to(classes["menubar"],   "create", &menubar::create_l);
+  register_to(classes["player"],    "create", &player::create_l);
+  register_to(classes["systray"],   "create", &systray::create_l);
+  register_to(classes["textbox"],   "create", &textbox::create_l);
   gui["build_menu"]    = classes["menu"]["build"];
   gui["build_menubar"] = classes["menubar"]["build"];
   gui["canvas"]        = classes["canvas"]["create"];
@@ -213,13 +213,14 @@ int luaopen_lev_gui(lua_State *L)
         ]
     ]
   ];
-  register_to(L, classes["gsizer"], "create", &gsizer::create_l);
-  register_to(L, classes["hsizer"], "create", &hsizer::create_l);
-  register_to(L, classes["vsizer"], "create", &vsizer::create_l);
+  register_to(classes["gsizer"], "create", &gsizer::create_l);
+  register_to(classes["hsizer"], "create", &hsizer::create_l);
+  register_to(classes["vsizer"], "create", &vsizer::create_l);
   gui["gsizer"] = classes["gsizer"]["create"];
   gui["hsizer"] = classes["hsizer"]["create"];
   gui["vsizer"] = classes["vsizer"]["create"];
 
+  globals(L)["package"]["loaded"]["lev.gui"] = gui;
   return 0;
 }
 
