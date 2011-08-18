@@ -84,16 +84,7 @@ namespace lev
     long style = wxDEFAULT_FRAME_STYLE;
     frame *frm = NULL;
 
-    int n = lua_gettop(L);
-    lua_pushcfunction(L, &util::merge);
-    newtable(L).push(L);
-    for (int i = 1; i <= n; i++)
-    {
-      object(from_stack(L, i)).push(L);
-    }
-    lua_call(L, n + 1, 1);
-    object t(from_stack(L, -1));
-    lua_remove(L, -1);
+    object t = util::get_merged(L, 1, -1);
 
     if (t["parent"]) { p = object_cast<control *>(t["parent"]); }
     else if (t["p"]) { p = object_cast<control *>(t["p"]); }

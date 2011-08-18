@@ -17,6 +17,7 @@
 #include "draw.hpp"
 #include "entry.hpp"
 #include "event.hpp"
+#include "font.hpp"
 #include "frame.hpp"
 #include "fs.hpp"
 #include "gl.hpp"

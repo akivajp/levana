@@ -46,20 +46,6 @@ int luaopen_lev_gui(lua_State *L)
         .property("sizer", &control::get_sizer, &control::set_sizer)
         .property("w", &control::get_width, &control::set_width)
         .property("width", &control::get_width, &control::set_width),
-      class_<canvas, control>("canvas")
-        .def("blendmode", &canvas::blendmode)
-        .def("clear", &canvas::clear)
-        .def("clearcolor", &canvas::clearcolor)
-        .def("draw", &canvas::draw_image)
-        .def("flush", &canvas::flush)
-        .def("line",  &canvas::line)
-        .def("set2d", &canvas::set2d)
-        .def("setcurrent", &canvas::setcurrent)
-        .def("swap", &canvas::swap)
-        .scope
-        [
-          def("create_c", &canvas::create, adopt(result))
-        ],
       class_<code_edit, control>("code_edit")
         .def("can_redo", &code_edit::can_redo)
         .def("can_undo", &code_edit::can_undo)
@@ -165,7 +151,6 @@ int luaopen_lev_gui(lua_State *L)
   object gui = globals(L)["lev"]["gui"];
   register_to(gui, "msgbox", &gui::msgbox_l);
   register_to(gui, "file_selector", &gui::file_selector_l);
-  register_to(classes["canvas"],    "create", &canvas::create_l);
   register_to(classes["code_edit"], "create", &code_edit::create_l);
   register_to(classes["frame"],     "create", &frame::create_l);
   register_to(classes["htmlview"],  "create", &htmlview::create_l);
@@ -176,7 +161,6 @@ int luaopen_lev_gui(lua_State *L)
   register_to(classes["textbox"],   "create", &textbox::create_l);
   gui["build_menu"]    = classes["menu"]["build"];
   gui["build_menubar"] = classes["menubar"]["build"];
-  gui["canvas"]        = classes["canvas"]["create"];
   gui["code_edit"]     = classes["code_edit"]["create"];
   gui["frame"]         = classes["frame"]["create"];
   gui["htmlview"]      = classes["htmlview"]["create"];

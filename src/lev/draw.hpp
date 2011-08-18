@@ -16,6 +16,10 @@
 
 #include <lua.h>
 
+extern "C" {
+  int luaopen_lev_draw(lua_State *L);
+}
+
 namespace lev
 {
   class canvas : public control
@@ -24,16 +28,21 @@ namespace lev
       canvas() : control() {}
     public:
       ~canvas();
-      void blendmode(bool enable);
       void clear();
-      void clearcolor(unsigned char r, unsigned char g, unsigned char b);
+      void clear_color(unsigned char r, unsigned char g, unsigned char b);
       static canvas* create(control *parent, int width, int height);
       static int create_l(lua_State *L);
-      bool draw_image(image *bmp, int x, int y);
+      bool draw_image(image *bmp, int x = 0, int y = 0, unsigned char alpha = 255);
+      bool draw_image1(image *bmp) { return draw_image(bmp); }
+      bool draw_image3(image *bmp, int x, int y) { return draw_image(bmp, x, y); }
+      static int draw_l(lua_State *L);
+      bool enable_alpha_blending(bool enable);
+      bool enable_alpha_blending0() { return enable_alpha_blending(true); }
       void flush();
       void line(int x1, int y1, int x2, int y2);
-      void set2d();
-      void setcurrent();
+      bool map2d_auto();
+      bool map2d(int left, int right, int top, int bottom);
+      void set_current();
       void swap();
   };
 }

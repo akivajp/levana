@@ -8,7 +8,7 @@ frm:show()
 
 --draw:using()
 gl = lev.gl
-draw:setcurrent()
+draw:set_current()
 gl.NewList(1, gl.COMPILE)
 gl.Begin(gl.QUADS)
   gl.Color3ub(255, 0, 0)
@@ -23,7 +23,7 @@ gl.End()
 gl.EndList()
 
 while frm.isvalid do
-  draw:setcurrent()
+  draw:set_current()
   gl.ClearColor(0, 0, 0, 0)
   gl.Clear(gl.COLOR_BUFFER_BIT)
   gl.LoadIdentity()

@@ -100,7 +100,7 @@ int luaopen_lev_util(lua_State *L)
 //  register_to(util, "using", &util::using_l);
   load_to(util, "using", using_test);
 
-  globals(L)["package"]["loaded"] = util;
+  globals(L)["package"]["loaded"]["lev.util"] = util;
   return 0;
 }
 

@@ -27,6 +27,7 @@ extern "C" {
 
 #include <wx/wx.h>
 #include <wx/evtloop.h>
+#include <wx/fontdlg.h>
 #include <wx/fs_inet.h>
 #include <wx/glcanvas.h>
 #include <wx/mediactrl.h>

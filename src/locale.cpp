@@ -26,6 +26,10 @@ int luaopen_lev_locale(lua_State *L)
 
   module(L, "lev")
   [
+    namespace_("locale")
+    [
+      def("translate", &locale::translate)
+    ],
     namespace_("classes")
     [
       class_<locale, base>("locale")
@@ -39,7 +43,7 @@ int luaopen_lev_locale(lua_State *L)
     ]
   ];
 
-  globals(L)["package"]["loaded"]["lev.locale"] = true;
+  globals(L)["package"]["loaded"]["lev.locale"] = globals(L)["lev"]["locale"];
   return 0;
 }
 

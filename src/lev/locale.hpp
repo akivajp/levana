@@ -33,7 +33,7 @@ namespace lev
       const char *get_encoding();
       const char *get_language();
       const char *get_name();
-//      virtual type_id get_type_id() const { return LEV_TLOCALE; }
+      virtual type_id get_type_id() const { return LEV_TLOCALE; }
       virtual const char *get_type_name() const { return "lev.locale"; }
       static const char *translate(const char *src);
 

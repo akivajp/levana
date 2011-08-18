@@ -26,25 +26,36 @@ int luaopen_lev_image(lua_State *L)
 
   module(L, "lev")
   [
-    class_<image, base>("image")
-      .def("clear", &image::clear)
-      .def("clear", &image::clear_with)
-      .def("draw_circle", &image::draw_circle)
-      .def("draw_circle", &image::draw_circle_fill)
-      .def("draw_text", &image::draw_text)
-      .def("save", &image::save)
-      .property("h", &image::get_h)
-      .property("height", &image::get_h)
-      .property("w", &image::get_w)
-      .property("width", &image::get_w)
-      .scope
-      [
-        def("create", &image::create),
-        def("init", &image::init),
-        def("load", &image::load)
-      ]
+    namespace_("image"),
+    namespace_("classes")
+    [
+      class_<image, base>("image")
+        .def("clear", &image::clear)
+        .def("clear", &image::clear_with)
+        .def("draw_circle", &image::draw_circle)
+        .def("draw_circle", &image::draw_circle_fill)
+        .def("draw_text", &image::draw_text)
+        .def("save", &image::save)
+        .property("h", &image::get_h)
+        .property("height", &image::get_h)
+        .property("w", &image::get_w)
+        .property("width", &image::get_w)
+        .scope
+        [
+          def("create", &image::create),
+          def("init", &image::init),
+          def("load", &image::load)
+        ]
+    ]
   ];
+  object lev = globals(L)["lev"];
+  object classes = lev["classes"];
+  object image = lev["image"];
+  image["create"] = classes["image"]["create"];
+  image["init"]   = classes["image"]["init"];
+  image["load"]   = classes["image"]["load"];
 
+  globals(L)["package"]["loaded"]["lev.image"] = image;
   return 0;
 }
 
@@ -79,7 +90,7 @@ namespace lev
     wxAlphaPixelData data(*bmp);
     data.UseAlpha();
     wxAlphaPixelData::Iterator p(data), rawStart;
-    for (int y = 0 ; y < get_h() ; y ++)
+    for (int y = 0 ; y < get_h() ; y++)
     {
       rawStart = p;
       for (int x = 0 ; x < get_w() ; x++)

@@ -26,6 +26,7 @@ namespace lev
           LEV_TCOLOR,
           LEV_TDB,
           LEV_TEVENT,
+          LEV_TFONT,
 
           LEV_THANDLER,
             LEV_TCONTROL,
@@ -46,6 +47,8 @@ namespace lev
             LEV_TINRECORD,
           LEV_TINPUT_END,
           LEV_TMIXER,
+
+          LEV_TLOCALE,
 
           LEV_TNET_BASE,
             LEV_TACCEPTOR,

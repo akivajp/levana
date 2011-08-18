@@ -35,14 +35,13 @@ namespace lev
       bool draw_circle_fill(int x, int y, int radius, color border_color, color filling_color);
       void draw_text(const char *text, int x, int y, double angle = 0, color c = color::black());
       int get_h() const;
+      void* get_rawobj() { return _obj; }
       virtual type_id get_type_id() const { return LEV_TIMAGE; }
       virtual const char *get_type_name() const { return "image"; }
       int get_w() const;
       static bool init();
       static image* load(const char *filename);
       bool save(const char *filename) const;
-      // friend classes
-      friend class canvas;
     private:
       void *_obj;
   };
