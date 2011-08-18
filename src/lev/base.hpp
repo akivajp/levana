@@ -58,11 +58,15 @@ namespace lev
             LEV_TURL,
           LEV_TNET_BASE_END,
 
+          LEV_TSIZE,
+
           LEV_TSIZER,
             LEV_TGSIZER,
             LEV_THSIZER,
             LEV_TVSIZER,
           LEV_TSIZER_END,
+
+          LEV_TVECTOR,
         LEV_TBASE_END,
       };
     protected:

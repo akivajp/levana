@@ -11,6 +11,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "base.hpp"
+
 #include <luabind/luabind.hpp>
 #include <string>
 #include <wx/wx.h>
@@ -28,12 +29,13 @@ namespace lev
       color(unsigned char r = 0, unsigned char g = 0, unsigned char b = 0, unsigned char a = 255);
       color(wxUint32 argb_code);
       static color* create(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
+      static int create_l(lua_State *L);
       unsigned char get_a() const { return _a; }
       unsigned char get_b() const { return _b; }
       unsigned char get_g() const { return _g; }
       unsigned char get_r() const { return _r; }
       wxUint32 get_code32() const;
-      std::string get_codestr() const;
+      const std::string get_codestr() const;
       bool set_a(unsigned char a) { _a = a; return true; }
       bool set_b(unsigned char b) { _b = b; return true; }
       bool set_g(unsigned char g) { _g = g; return true; }
@@ -51,17 +53,43 @@ namespace lev
       unsigned char _r, _g, _b, _a;
   };
 
-  class vector
+
+  class size : public base
+  {
+    public:
+      size(int w, int h, int d = 0) : _w(w), _h(h), _d(d), base() {}
+      static size* create(int w, int h, int d = 0);
+      static int create_l(lua_State *L);
+      inline int get_d() const { return _d; }
+      inline int get_h() const { return _h; }
+      inline int get_w() const { return _w; }
+      virtual type_id get_type_id() const { return LEV_TSIZE; }
+      virtual const char *get_type_name() const { return "lev.size"; }
+      inline void set_d(int d) { _d = d; }
+      inline void set_h(int h) { _h = h; }
+      inline void set_w(int w) { _w = w; }
+    private:
+      int _w;
+      int _h;
+      int _d;
+  };
+
+
+  class vector : public base
   {
     public:
       inline vector(int x = 0, int y = 0, int z = 0)
         : _x(x), _y(y), _z(z) {}
-      inline int getx() const { return _x; }
-      inline int gety() const { return _y; }
-      inline int getz() const { return _z; }
-      inline void setx(int x) { _x = x; }
-      inline void sety(int y) { _y = y; }
-      inline void setz(int z) { _z = z; }
+      static vector* create(int x = 0, int y = 0, int z = 0);
+      static int create_l(lua_State *L);
+      inline int get_x() const { return _x; }
+      inline int get_y() const { return _y; }
+      inline int get_z() const { return _z; }
+      virtual type_id get_type_id() const { return LEV_TVECTOR; }
+      virtual const char *get_type_name() const { return "lev.vector"; }
+      inline void set_x(int x) { _x = x; }
+      inline void set_y(int y) { _y = y; }
+      inline void set_z(int z) { _z = z; }
       inline vector operator+(vector &rhs)
       { return vector(_x + rhs._x, _y + rhs._y, _z + rhs._z); }
     private:
@@ -70,22 +98,6 @@ namespace lev
       int _z;
   };
 
-
-  class size
-  {
-    public:
-      inline size(int w, int h, int d = 0) : _w(w), _h(h), _d(d) {}
-      inline int getd() const { return _d; }
-      inline int geth() const { return _h; }
-      inline int getw() const { return _w; }
-      inline void setd(int d) { _d = d; }
-      inline void seth(int h) { _h = h; }
-      inline void setw(int w) { _w = w; }
-    private:
-      int _w;
-      int _h;
-      int _d;
-  };
 }
 
 #endif // _PRIM_HPP

@@ -36,6 +36,7 @@ namespace lev
       bool draw_image1(image *bmp) { return draw_image(bmp); }
       bool draw_image3(image *bmp, int x, int y) { return draw_image(bmp, x, y); }
       static int draw_l(lua_State *L);
+      static int draw_points(lua_State *L);
       bool enable_alpha_blending(bool enable);
       bool enable_alpha_blending0() { return enable_alpha_blending(true); }
       void flush();

@@ -261,6 +261,24 @@ namespace lev
   }
 
 
+  int canvas::draw_points(lua_State *L)
+  {
+    using namespace luabind;
+
+    int n = lua_gettop(L);
+    luaL_checktype(L, 1, LUA_TUSERDATA);
+    glBegin(GL_POINTS);
+    for (int i = 2; i <= n; i++)
+    {
+      object o(from_stack(L, i));
+      if (type(o) == LUA_TUSERDATA && o["type_id"] == LEV_TVECTOR)
+      {
+      }
+    }
+    glEnd();
+  }
+
+
   bool canvas::enable_alpha_blending(bool enable)
   {
     if (enable)

@@ -8,7 +8,12 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "prec.h"
+
 #include "lev/prim.hpp"
+#include "lev/util.hpp"
+#include "register.hpp"
+#include <sstream>
+#include <boost/format.hpp>
 
 int luaopen_lev_prim(lua_State *L)
 {
@@ -23,43 +28,58 @@ int luaopen_lev_prim(lua_State *L)
   [
     namespace_("classes")
     [
-      class_<color>("color")
-        .def(constructor<>())
-        .def(constructor<unsigned char,unsigned char,unsigned char>())
-        .def(constructor<unsigned char,unsigned char,unsigned char,unsigned char>())
-        .def(constructor<wxUint32>())
+      class_<color, base>("color")
         .property("a", &color::get_a, &color::set_a)
         .property("alpha", &color::get_a, &color::set_a)
         .property("b", &color::get_b, &color::set_b)
         .property("blue", &color::get_b, &color::set_b)
+        .property("code", &color::get_code32)
+        .property("code32", &color::get_code32)
+        .property("codestr", &color::get_codestr)
         .property("g", &color::get_g, &color::set_g)
         .property("green", &color::get_g, &color::set_g)
         .property("r", &color::get_r, &color::set_r)
-        .property("red", &color::get_r, &color::set_r),
-      class_<vector>("vector")
-        .def(constructor<>())
-        .def(constructor<int,int>())
-        .def(constructor<int,int,int>())
+        .property("red", &color::get_r, &color::set_r)
+        .property("str", &color::get_codestr)
+        .property("string", &color::get_codestr)
+        .scope
+        [
+          def("create_c", &color::create, adopt(result))
+        ],
+      class_<size, base>("size")
+        .property("d", &size::get_d, &size::set_d)
+        .property("depth", &size::get_h, &size::set_d)
+        .property("h", &size::get_h, &size::set_h)
+        .property("height", &size::get_h, &size::set_h)
+        .property("w", &size::get_w, &size::set_w)
+        .property("width", &size::get_w, &size::set_w)
+        .scope
+        [
+          def("create_c", &size::create, adopt(result))
+        ],
+      class_<vector, base>("vector")
         .def(self + vector())
-        .property("x", &vector::getx, &vector::setx)
-        .property("y", &vector::gety, &vector::sety)
-        .property("z", &vector::getz, &vector::setz),
-      class_<size>("size")
-        .def(constructor<int,int>())
-        .def(constructor<int,int,int>())
-        .property("d", &size::geth, &size::setd)
-        .property("depth", &size::geth, &size::setd)
-        .property("h", &size::geth, &size::seth)
-        .property("height", &size::geth, &size::seth)
-        .property("w", &size::getw, &size::setw)
-        .property("width", &size::getw, &size::setw)
+        .property("x", &vector::get_x, &vector::set_x)
+        .property("y", &vector::get_y, &vector::set_y)
+        .property("z", &vector::get_z, &vector::set_z)
+        .scope
+        [
+          def("create_c", &vector::create, adopt(result))
+        ]
     ]
   ];
-  object classes = globals(L)["lev"]["classes"];
   object lev = globals(L)["lev"];
-  lev["color"] = classes["color"];
-  lev["vector"] = classes["vector"];
-  lev["size"] = classes["size"];
+  object classes = lev["classes"];
+
+  register_to(classes["color"],    "create", &color::create_l);
+  register_to(classes["size"],     "create", &size::create_l);
+  register_to(classes["vector"],   "create", &vector::create_l);
+
+  lev["color"]    = classes["color"]["create"];
+  lev["size"]     = classes["size"]["create"];
+  lev["point"]    = classes["vector"]["create"];
+  lev["position"] = classes["vector"]["create"];
+  lev["vector"]   = classes["vector"]["create"];
 
   globals(L)["package"]["loaded"]["lev.prim"] = true;
   return 0;
@@ -83,16 +103,125 @@ namespace lev
   {
     color *c = NULL;
     try {
-      c = new color;
+      c = new color(r, g, b, a);
+      return c;
     }
     catch (...) {
       return NULL;
     }
   }
 
+  int color::create_l(lua_State *L)
+  {
+    using namespace luabind;
+    unsigned char r = 0, g = 0, b = 0, a = 255;
+
+    object t = util::get_merged(L, 1, -1);
+
+    if (t["red"]) { r = object_cast<unsigned char>(t["red"]); }
+    else if (t["r"]) { r = object_cast<unsigned char>(t["r"]); }
+    else if (t["num1"]) { r = object_cast<unsigned char>(t["num1"]); }
+
+    if (t["green"]) { g = object_cast<unsigned char>(t["green"]); }
+    else if (t["g"]) { g = object_cast<unsigned char>(t["g"]); }
+    else if (t["num2"]) { g = object_cast<unsigned char>(t["num2"]); }
+
+    if (t["blue"]) { b = object_cast<unsigned char>(t["blue"]); }
+    else if (t["b"]) { b = object_cast<unsigned char>(t["b"]); }
+    else if (t["num3"]) { b = object_cast<unsigned char>(t["num3"]); }
+
+    if (t["alpha"]) { a = object_cast<unsigned char>(t["alpha"]); }
+    else if (t["a"]) { a = object_cast<unsigned char>(t["a"]); }
+    else if (t["num4"]) { a = object_cast<unsigned char>(t["num4"]); }
+
+    object o = globals(L)["lev"]["classes"]["color"]["create_c"](r, g, b, a);
+    o.push(L);
+    return 1;
+  }
+
   wxUint32 color::get_code32() const
   {
-    return (_a << 24) && (_r << 16) && (_g << 8) && (_b << 0);
+    return (_a << 24) | (_r << 16) | (_g << 8) | (_b << 0);
+  }
+
+  const std::string color::get_codestr() const
+  {
+    char str[9];
+    sprintf(str, "%02x%02x%02x%02x", _a, _r, _g, _b);
+    return str;
+  }
+
+
+  size* size::create(int w, int h, int d)
+  {
+    size* s = NULL;
+    try {
+      s = new size(w, h, d);
+      return s;
+    }
+    catch (...) {
+      return NULL;
+    }
+  }
+
+
+  int size::create_l(lua_State *L)
+  {
+    using namespace luabind;
+    int w = 0, h = 0, d = 0;
+
+    object t = util::get_merged(L, 1, -1);
+
+    if (t["width"]) { w = object_cast<int>(t["width"]); }
+    else if (t["w"]) { w = object_cast<int>(t["w"]); }
+    else if (t["num1"]) { w = object_cast<int>(t["num1"]); }
+
+    if (t["height"]) { h = object_cast<int>(t["height"]); }
+    else if (t["h"]) { h = object_cast<int>(t["h"]); }
+    else if (t["num2"]) { h = object_cast<int>(t["num2"]); }
+
+    if (t["depth"]) { d = object_cast<int>(t["depth"]); }
+    else if (t["d"]) { d = object_cast<int>(t["d"]); }
+    else if (t["num3"]) { d = object_cast<int>(t["num3"]); }
+
+    object o = globals(L)["lev"]["classes"]["size"]["create_c"](w, h, d);
+    o.push(L);
+    return 1;
+  }
+
+
+  vector* vector::create(int x, int y, int z)
+  {
+    vector* vec = NULL;
+    try {
+      vec = new vector(x, y, z);
+      return vec;
+    }
+    catch (...) {
+      return NULL;
+    }
+  }
+
+
+  int vector::create_l(lua_State *L)
+  {
+    using namespace luabind;
+    int x = 0, y = 0, z = 0;
+
+    object t = util::get_merged(L, 1, -1);
+
+    if (t["x"]) { x = object_cast<int>(t["x"]); }
+    else if (t["num1"]) { x = object_cast<int>(t["num1"]); }
+
+    if (t["y"]) { y = object_cast<int>(t["y"]); }
+    else if (t["num2"]) { y = object_cast<int>(t["num2"]); }
+
+    if (t["z"]) { z = object_cast<int>(t["z"]); }
+    else if (t["num3"]) { z = object_cast<int>(t["num3"]); }
+
+    object o = globals(L)["lev"]["classes"]["vector"]["create_c"](x, y, z);
+    o.push(L);
+    return 1;
   }
 
 }
