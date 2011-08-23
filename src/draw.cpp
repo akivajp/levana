@@ -40,12 +40,14 @@ int luaopen_lev_draw(lua_State *L)
         .def("draw_image", &canvas::draw_image)
         .def("draw_image", &canvas::draw_image1)
         .def("draw_image", &canvas::draw_image3)
+        .def("draw_point", &canvas::draw_point)
         .def("enable_alpha_blending", &canvas::enable_alpha_blending0)
         .def("enable_alpha_blending", &canvas::enable_alpha_blending)
         .def("flush", &canvas::flush)
         .def("line",  &canvas::line)
         .def("map2d", &canvas::map2d)
         .def("map2d", &canvas::map2d_auto)
+        .def("print", &canvas::print)
         .def("set_current", &canvas::set_current)
         .def("swap", &canvas::swap)
         .scope
@@ -109,12 +111,14 @@ namespace lev
 
   void canvas::clear()
   {
+    set_current();
     glClear(GL_COLOR_BUFFER_BIT);
   }
 
 
   void canvas::clear_color(unsigned char r, unsigned char g, unsigned char b)
   {
+    set_current();
 //    glClearColor(r / 255.0, g / 255.0, b / 255.0, 1.0);
     glClearColor(r / 255.0, g / 255.0, b / 255.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -205,6 +209,8 @@ namespace lev
         p = rawStart;
         p.OffsetY(pixels, 1);
       }
+
+      set_current();
       glRasterPos2i(x, y + h);
       glDrawPixels(bmp->get_w(), bmp->get_h(), GL_RGBA, GL_UNSIGNED_BYTE, data);
       delete[] data;
@@ -216,34 +222,21 @@ namespace lev
     }
   }
 
-
   int canvas::draw_l(lua_State *L)
   {
     using namespace luabind;
     canvas *cv = NULL;
-    image *img = NULL;
-    int x = 0, y = 0;
-    unsigned char alpha = 255;
 
     luaL_checktype(L, 1, LUA_TUSERDATA);
     cv = object_cast<canvas *>(object(from_stack(L, 1)));
     object t = util::get_merged(L, 2, -1);
 
-    if (t["udata1"])
+    if (t["lev.image"])
     {
-      object o = t["udata1"];
-      switch(object_cast<int>(o["type_id"])) {
-        case LEV_TIMAGE:
-          img = object_cast<image *>(o);
-          break;
-        default:
-          lua_pushboolean(L, false);
-          return 1;
-      }
-    }
+      image *img = object_cast<image *>(t["lev.image"]);
+      int x = 0, y = 0;
+      unsigned char alpha = 255;
 
-    if (img)
-    {
       if (t["x"]) { x = object_cast<int>(t["x"]); }
       else if (t["num1"]) { x = object_cast<int>(t["num1"]); }
 
@@ -258,6 +251,32 @@ namespace lev
       lua_pushboolean(L, true);
       return 1;
     }
+    if (t["lev.prim.point"])
+    {
+      point *pt = object_cast<point *>(t["lev.prim.point"]);
+      cv->draw_point(pt);
+      lua_pushboolean(L, true);
+      return 1;
+    }
+  }
+
+  bool canvas::draw_point(point *pt)
+  {
+    set_current();
+
+    glBegin(GL_POINTS);
+    {
+      color *c = pt->get_color();
+      vector *v = pt->get_vertex();
+      if (c)
+      {
+        glColor4ub(c->get_r(), c->get_g(), c->get_b(), c->get_a());
+      }
+      glVertex3i(v->get_x(), v->get_y(), v->get_z());
+    }
+    glEnd();
+
+    return true;
   }
 
 
@@ -281,6 +300,7 @@ namespace lev
 
   bool canvas::enable_alpha_blending(bool enable)
   {
+    set_current();
     if (enable)
     {
       glEnable(GL_BLEND);
@@ -311,7 +331,7 @@ namespace lev
   {
     int w, h;
     ((wxGLCanvas *)_obj)->GetSize(&w, &h);
-    this->set_current();
+    set_current();
     glLoadIdentity();
     glOrtho(0, w, h, 0, -1, 1);
     return true;
@@ -319,9 +339,27 @@ namespace lev
 
   bool canvas::map2d(int left, int right, int top, int bottom)
   {
-    this->set_current();
+    set_current();
     glLoadIdentity();
     glOrtho(left, right, bottom, top, -1, 1);
+    return true;
+  }
+
+
+  bool canvas::print(const char *text)
+  {
+    image *img = NULL;
+    try {
+      img = image::create(600, 400);
+//      img->clear_with(color(0, 255, 0));
+      img->draw_text(text, 0, 0, 0, color::white());
+      draw_image(img, 200, 80, 200);
+    }
+    catch (...) {
+      delete img;
+      return false;
+    }
+    delete img;
     return true;
   }
 

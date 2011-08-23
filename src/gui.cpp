@@ -36,7 +36,7 @@ int luaopen_lev_gui(lua_State *L)
         .def("hide", &control::hide)
         .def("show", &control::show)
         .property("exists", &control::is_valid)
-        .property("id", &control::getid)
+        .property("id", &control::get_id)
         .property("h", &control::get_height, &control::set_height)
         .property("height", &control::get_height, &control::set_height)
         .property("is_valid", &control::is_valid)
@@ -213,8 +213,7 @@ namespace lev
 
   static wxWindow *cast_win(void *obj) { return (wxWindow *)obj; }
 
-  control::control() : handler(), _id(0), _sz(NULL)
-  { }
+  control::control() : handler(), _id(0), _sz(NULL) { }
 
   control::~control()
   {
@@ -229,6 +228,7 @@ namespace lev
     }
   }
 
+
   int control::get_height()
   {
     int h;
@@ -236,7 +236,7 @@ namespace lev
     return h;
   }
 
-  int control::getid()
+  int control::get_id()
   {
     return _id;
   }

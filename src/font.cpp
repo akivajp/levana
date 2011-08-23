@@ -33,6 +33,10 @@ int luaopen_lev_font(lua_State *L)
         .property("face", &font::get_face_name, &font::set_face_name)
         .property("face_name", &font::get_face_name, &font::set_face_name)
         .property("name", &font::get_face_name, &font::set_face_name)
+        .property("point_size", &font::get_point_size, &font::set_point_size)
+        .property("pt_size", &font::get_point_size, &font::set_point_size)
+        .property("size", &font::get_point_size, &font::set_point_size)
+        .property("sz", &font::get_point_size, &font::set_point_size)
         .scope
         [
           def("create", &font::create),
@@ -136,8 +140,9 @@ namespace lev
   {
     font *f = NULL;
     wxFont *obj = NULL;
+    wxFontData data;
     try {
-      wxFontDialog dlg;
+      wxFontDialog dlg(NULL, data);
       if (dlg.ShowModal() != wxID_OK) { throw -1; }
       f = new font;
       f->_obj = obj = new wxFont(dlg.GetFontData().GetChosenFont());
@@ -152,6 +157,12 @@ namespace lev
   bool font::set_face_name(const char *face)
   {
     return cast_font(_obj)->SetFaceName(wxString(face, wxConvUTF8));
+  }
+
+  bool font::set_point_size(int size)
+  {
+    cast_font(_obj)->SetPointSize(size);
+    return true;
   }
 
 }

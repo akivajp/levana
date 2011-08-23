@@ -26,6 +26,7 @@ int luaopen_lev_prim(lua_State *L)
   // primitives
   module(L, "lev")
   [
+    namespace_("prim"),
     namespace_("classes")
     [
       class_<color, base>("color")
@@ -65,38 +66,65 @@ int luaopen_lev_prim(lua_State *L)
         .scope
         [
           def("create_c", &vector::create, adopt(result))
+        ],
+      class_<point, base>("point")
+        .property("c", &point::get_color, &point::set_color)
+        .property("col", &point::get_color, &point::set_color)
+        .property("color", &point::get_color, &point::set_color)
+        .property("colour", &point::get_color, &point::set_color)
+        .property("p", &point::get_vertex, &point::set_vertex)
+        .property("pos", &point::get_vertex, &point::set_vertex)
+        .property("position", &point::get_vertex, &point::set_vertex)
+        .property("vec", &point::get_vertex, &point::set_vertex)
+        .property("vector", &point::get_vertex, &point::set_vertex)
+        .property("vert", &point::get_vertex, &point::set_vertex)
+        .property("vertex", &point::get_vertex, &point::set_vertex)
+        .scope
+        [
+          def("create_c", &point::create, adopt(result))
+        ],
+      class_<text, base>("text")
+        .scope
+        [
+          def("create", &text::create)
         ]
     ]
   ];
   object lev = globals(L)["lev"];
   object classes = lev["classes"];
+  object prim = lev["prim"];
 
-  register_to(classes["color"],    "create", &color::create_l);
-  register_to(classes["size"],     "create", &size::create_l);
-  register_to(classes["vector"],   "create", &vector::create_l);
+  register_to(classes["color"],  "create", &color::create_l);
+  register_to(classes["point"],  "create", &point::create_l);
+  register_to(classes["size"],   "create", &size::create_l);
+  register_to(classes["vector"], "create", &vector::create_l);
 
-  lev["color"]    = classes["color"]["create"];
-  lev["size"]     = classes["size"]["create"];
-  lev["point"]    = classes["vector"]["create"];
-  lev["position"] = classes["vector"]["create"];
-  lev["vector"]   = classes["vector"]["create"];
+  prim["color"]    = classes["color"]["create"];
+  prim["colour"]   = classes["color"]["create"];
+  prim["point"]    = classes["point"]["create"];
+  prim["position"] = classes["vector"]["create"];
+  prim["size"]     = classes["size"]["create"];
+  prim["vector"]   = classes["vector"]["create"];
 
-  globals(L)["package"]["loaded"]["lev.prim"] = true;
+  globals(L)["package"]["loaded"]["lev.prim"] = prim;
   return 0;
 }
 
 namespace lev
 {
 
+  color::color(const color &orig)
+    : r(orig.r), g(orig.g), b(orig.b), a(orig.a) { }
+
   color::color(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
-    : _r(r), _g(g), _b(b), _a(a) { }
+    : r(r), g(g), b(b), a(a) { }
 
   color::color(wxUint32 argb_code)
   {
-    _a = (argb_code & 0xFF000000) >> 24;
-    _r = (argb_code & 0x00FF0000) >> 16;
-    _g = (argb_code & 0x0000FF00) >>  8;
-    _b = (argb_code & 0x000000FF) >>  0;
+    a = (argb_code & 0xFF000000) >> 24;
+    r = (argb_code & 0x00FF0000) >> 16;
+    g = (argb_code & 0x0000FF00) >>  8;
+    b = (argb_code & 0x000000FF) >>  0;
   }
 
   color* color::create(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
@@ -141,13 +169,13 @@ namespace lev
 
   wxUint32 color::get_code32() const
   {
-    return (_a << 24) | (_r << 16) | (_g << 8) | (_b << 0);
+    return (a << 24) | (r << 16) | (g << 8) | (b << 0);
   }
 
   const std::string color::get_codestr() const
   {
     char str[9];
-    sprintf(str, "%02x%02x%02x%02x", _a, _r, _g, _b);
+    sprintf(str, "%02x%02x%02x%02x", a, r, g, b);
     return str;
   }
 
@@ -190,6 +218,9 @@ namespace lev
   }
 
 
+  vector::vector(const vector &orig)
+    : x(orig.x), y(orig.y), z(orig.z) { }
+
   vector* vector::create(int x, int y, int z)
   {
     vector* vec = NULL;
@@ -222,6 +253,142 @@ namespace lev
     object o = globals(L)["lev"]["classes"]["vector"]["create_c"](x, y, z);
     o.push(L);
     return 1;
+  }
+
+
+  point::~point()
+  {
+    if (vertex)
+    {
+      delete vertex;
+      vertex = NULL;
+    }
+    if (col)
+    {
+      delete col;
+      col = NULL;
+    }
+  }
+
+
+  bool point::clear_color()
+  {
+    if (col)
+    {
+      delete col;
+      col = NULL;
+    }
+    return true;
+  }
+
+  point* point::create(vector *vec, color *col)
+  {
+    point *pt = NULL;
+    try {
+      if (vec == NULL) { throw -1; }
+      pt = new point;
+      pt->vertex = new vector(*vec);
+      if (col) { pt->col = new color(*col); }
+      return pt;
+    }
+    catch (...) {
+      return NULL;
+    }
+  }
+
+  int point::create_l(lua_State *L)
+  {
+    using namespace luabind;
+    object ver, col;
+    unsigned char r = 0, g = 0, b = 0, a = 255;
+
+    object t = util::get_merged(L, 1, -1);
+
+    if (t["udata1"])
+    {
+      switch ( object_cast<int>(t["udata1"]["type_id"]) )
+      {
+        case LEV_TCOLOR:
+          col = t["udata1"];
+          break;
+        case LEV_TVECTOR:
+          ver = t["udata1"];
+          break;
+      }
+    }
+    if (t["udata2"])
+    {
+      switch ( object_cast<int>(t["udata2"]["type_id"]) )
+      {
+        case LEV_TCOLOR:
+          col = t["udata2"];
+          break;
+        case LEV_TVECTOR:
+          ver = t["udata2"];
+          break;
+      }
+    }
+
+    if (t["vertex"]) { ver = t["vertex"]; }
+    else if (t["ver"]) { ver = t["ver"]; }
+    else if (t["v"]) { ver = t["v"]; }
+
+    if (not ver) { ver = globals(L)["lev"]["classes"]["vector"]["create"](t); }
+
+    if (t["color"]) { col = t["color"]; }
+    else if (t["col"]) { col = t["col"]; }
+    else if (t["c"]) { col = t["c"]; }
+
+    if (not col)
+    {
+      if (t["red"] || t["r"] || t["green"] || t["g"] || t["blue"] || t["b"])
+      {
+        col = globals(L)["lev"]["classes"]["color"]["create"](t);
+      }
+    }
+
+    object o = globals(L)["lev"]["classes"]["point"]["create_c"](ver, col);
+    o.push(L);
+    return 1;
+  }
+
+  bool point::set_color(color *c)
+  {
+    clear_color();
+    if (c == NULL) { return true; }
+    try {
+      col = new color(*c);
+      return true;
+    }
+    catch (...) {
+      return false;
+    }
+  }
+
+  bool point::set_vertex(vector *v)
+  {
+    if (v == NULL) { return false; }
+    *vertex = *v;
+    return true;
+  }
+
+
+  text::text() : str() { }
+
+  text::~text() { }
+
+  text* text::create(const char *str)
+  {
+    text* t = NULL;
+    try {
+      t = new text();
+      t->str = str;
+      return t;
+    }
+    catch (...) {
+      delete t;
+      return NULL;
+    }
   }
 
 }

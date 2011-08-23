@@ -20,6 +20,7 @@
 #include "font.hpp"
 #include "frame.hpp"
 #include "fs.hpp"
+#include "info.hpp"
 #include "gl.hpp"
 #include "gui.hpp"
 #include "image.hpp"

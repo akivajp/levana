@@ -1,6 +1,6 @@
 CXX = g++
 WX_CXXFLAGS=`wx-config --cxxflags` -I/usr/include/ClanLib-0.8
-CXXFLAGS = $(WX_CXXFLAGS) -fPIC
+CXXFLAGS = $(WX_CXXFLAGS) -fPIC -Os
 SHARED= -shared
 SLIB = liblev.a
 OUT = a.out
@@ -8,8 +8,8 @@ PCH = prec.h.gch
 WX_LIBS = `wx-config --libs std,media,gl,stc` -lGLU
 RANLIB = ranlib
 
-CORE_SRC  = app.cpp base.cpp db.cpp draw.cpp entry.cpp event.cpp font.cpp frame.cpp fs.cpp input.cpp \
-	    gl.cpp gui.cpp icon.cpp image.cpp locale.cpp media.cpp menu.cpp net.cpp prim.cpp \
+CORE_SRC  = app.cpp base.cpp db.cpp draw.cpp entry.cpp event.cpp font.cpp frame.cpp fs.cpp info.cpp \
+	    input.cpp gl.cpp gui.cpp icon.cpp image.cpp locale.cpp media.cpp menu.cpp net.cpp prim.cpp \
 	    sizer.cpp taskbar.cpp util.cpp
 CORE_OBJS = $(CORE_SRC:%.cpp=%.o)
 CORE_DLIB = lev_core.so
@@ -85,6 +85,7 @@ gl.o: gl.cpp lev/gl.hpp
 gui.o: gui.cpp lev/gui.hpp
 icon.o: icon.cpp lev/icon.hpp
 image.o: image.cpp lev/image.hpp
+info.o: info.cpp lev/info.hpp
 input.o: input.cpp lev/input.hpp
 locale.o: locale.cpp lev/locale.hpp
 main.o: main.cpp lev/app.hpp

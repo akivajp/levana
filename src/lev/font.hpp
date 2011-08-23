@@ -33,6 +33,7 @@ namespace lev
       const char *get_face_name();
       const char *get_family();
       int get_point_size();
+      void *get_rawobj() { return _obj; }
       const char *get_style();
       virtual type_id get_type_id() const { return LEV_TFONT; }
       virtual const char *get_type_name() const { return "lev.font"; }

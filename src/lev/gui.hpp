@@ -12,6 +12,7 @@
 
 #include "base.hpp"
 #include "event.hpp"
+#include "image.hpp"
 #include <lua.h>
 
 extern "C" {
@@ -29,9 +30,9 @@ namespace lev
       control();
       virtual ~control();
     public:
-      virtual luabind::object get_onmenu(int id) { return luabind::object(); }
       int get_height();
-      int getid();
+      int get_id();
+      virtual luabind::object get_onmenu(int id) { return luabind::object(); }
       sizer *get_sizer();
       long get_style();
       int get_width();

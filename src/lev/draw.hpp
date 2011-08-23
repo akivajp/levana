@@ -13,6 +13,7 @@
 
 #include "gui.hpp"
 #include "image.hpp"
+#include "prim.hpp"
 
 #include <lua.h>
 
@@ -35,6 +36,7 @@ namespace lev
       bool draw_image(image *bmp, int x = 0, int y = 0, unsigned char alpha = 255);
       bool draw_image1(image *bmp) { return draw_image(bmp); }
       bool draw_image3(image *bmp, int x, int y) { return draw_image(bmp, x, y); }
+      bool draw_point(point *pt);
       static int draw_l(lua_State *L);
       static int draw_points(lua_State *L);
       bool enable_alpha_blending(bool enable);
@@ -43,6 +45,7 @@ namespace lev
       void line(int x1, int y1, int x2, int y2);
       bool map2d_auto();
       bool map2d(int left, int right, int top, int bottom);
+      bool print(const char *text);
       void set_current();
       void swap();
   };

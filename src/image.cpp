@@ -23,6 +23,7 @@ int luaopen_lev_image(lua_State *L)
 
   open(L);
   globals(L)["require"]("lev");
+  globals(L)["require"]("lev.font");
 
   module(L, "lev")
   [
@@ -42,18 +43,23 @@ int luaopen_lev_image(lua_State *L)
         .property("width", &image::get_w)
         .scope
         [
-          def("create", &image::create),
-          def("init", &image::init),
-          def("load", &image::load)
+          def("capture", &image::capture),
+          def("create",  &image::create),
+          def("init",    &image::init),
+          def("load",    &image::load),
+          def("stroke",  &image::stroke),
+          def("stroke",  &image::stroke1)
         ]
     ]
   ];
   object lev = globals(L)["lev"];
   object classes = lev["classes"];
   object image = lev["image"];
-  image["create"] = classes["image"]["create"];
-  image["init"]   = classes["image"]["init"];
-  image["load"]   = classes["image"]["load"];
+  image["capture"] = classes["image"]["capture"];
+  image["create"]  = classes["image"]["create"];
+  image["init"]    = classes["image"]["init"];
+  image["load"]    = classes["image"]["load"];
+  image["stroke"]  = classes["image"]["stroke"];
 
   globals(L)["package"]["loaded"]["lev.image"] = image;
   return 0;
@@ -77,9 +83,31 @@ namespace lev
 
   image::image() : base(), _obj(NULL) { }
 
+
   image::~image()
   {
     if (_obj) { delete cast_image(_obj); }
+  }
+
+
+  image* image::capture(control *src)
+  {
+    image* img = NULL;
+    try {
+      wxWindowDC wdc((wxWindow *)src->get_rawobj());
+      wxSize size = wdc.GetSize();
+      img = image::create(size.GetWidth(), size.GetHeight());
+
+      if (img == NULL) { throw -1; }
+      wxMemoryDC mdc(*cast_image(img->get_rawobj()));
+
+      mdc.Blit(0, 0, size.GetWidth(), size.GetHeight(), &wdc, 0, 0);
+      return img;
+    }
+    catch (...) {
+      delete img;
+      return NULL;
+    }
   }
 
 
@@ -204,5 +232,33 @@ namespace lev
     image::init();
     return cast_image(_obj)->ConvertToImage().SaveFile(f);
   }
+
+  image* image::stroke(const char *str, font *f)
+  {
+    image *img = NULL;
+    try {
+      wxMemoryDC mdc;
+      wxString s(str, wxConvUTF8);
+      if (f)
+      {
+        wxFont *font = (wxFont *)f->get_rawobj();
+        mdc.SetFont(*font);
+      }
+      else { mdc.SetFont(wxSystemSettings::GetFont(wxSYS_SYSTEM_FONT)); }
+      wxSize sz = mdc.GetTextExtent(s);
+      if (sz.GetWidth() == 0 || sz.GetHeight() == 0) { throw -1; }
+
+      img = image::create(sz.GetWidth(), sz.GetHeight());
+      mdc.SelectObject(*cast_image(img->get_rawobj()));
+      mdc.SetTextForeground(wxColour(255, 255, 255, 255));
+      mdc.DrawText(s, 0, 0);
+      return img;
+    }
+    catch (...) {
+      delete img;
+      return NULL;
+    }
+  }
+
 }
 

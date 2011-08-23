@@ -8,6 +8,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "prec.h"
+#include "lev/base.hpp"
 #include "lev/util.hpp"
 #include "register.hpp"
 
@@ -97,7 +98,6 @@ int luaopen_lev_util(lua_State *L)
   register_to(util, "merge", &util::merge);
   register_to(util, "remove_first", &util::remove_first);
   register_to(util, "reverse", &util::reverse);
-//  register_to(util, "using", &util::using_l);
   load_to(util, "using", using_test);
 
   globals(L)["package"]["loaded"]["lev.util"] = util;
@@ -198,23 +198,39 @@ namespace lev
               tmp.push(L);
               lua_call(L, 2, 0);
             }
-            else if (type(i.key()) == LUA_TSTRING)
-            {
-              target[i.key()] = *i;
-              for (int j = 1; ; ++j)
-              {
-                std::string key = (boost::format("%1%%2%") % i.key() % j).str();
-                if (!target[key.c_str()])
-                {
-                  target[key.c_str()] = *i;
-                  break;
-                }
-              }
-            }
-//            else { target[i.key()] = *i; }
+//            else if (type(i.key()) == LUA_TSTRING)
+//            {
+//              target[i.key()] = *i;
+//              for (int j = 1; ; ++j)
+//              {
+//                std::string key = (boost::format("%1%%2%") % i.key() % j).str();
+//                if (!target[key.c_str()])
+//                {
+//                  target[key.c_str()] = *i;
+//                  break;
+//                }
+//              }
+//            }
+            else { target[i.key()] = *i; }
           }
           break;
         case LUA_TUSERDATA:
+          base *base_obj;
+          base_obj = object_cast<base *>(arg);
+          if (base_obj)
+          {
+            const char *name = base_obj->get_type_name();
+            target[name] = arg;
+            for (int j = 1; ; ++j)
+            {
+              std::string key = (boost::format("%1%%2%") % name % j).str();
+              if (!target[key.c_str()])
+              {
+                target[key.c_str()] = arg;
+                break;
+              }
+            }
+          }
           target["udata"] = arg;
           for (int j = 1; ; ++j)
           {
@@ -323,80 +339,6 @@ namespace lev
     object meta = getmetatable(env);
     meta["__owner"][key] = value;
     return 0;
-  }
-
-  // like "using directive"
-  int util::using_l(lua_State *L)
-  {
-    using namespace luabind;
-    int n = lua_gettop(L);
-
-printf("N: %d\n", n);
-printf("USING0\n");
-    // getting environment of the caller and its metatable
-    object env = globals(L)["getfenv"](2);
-globals(L)["print"](env);
-printf("USING0.1\n");
-    object meta = getmetatable(env);
-printf("USING0.2\n");
-    if (!meta) { meta = newtable(L); }
-printf("USING0.3\n");
-    // getting the caller itself
-printf("USING0.4\n");
-    object f = globals(L)["setfenv"](2, env);
-
-printf("USING1\n");
-    if (meta["__caller"] != f)
-    {
-printf("USING1.1\n");
-      // setting new looking up mechanism
-      object newenv = newtable(L);
-      object newmeta = newtable(L);
-      newmeta["__caller"] = f;
-      register_to(newmeta, "__index", &lookup);
-      register_to(newmeta, "__newindex", &substitute);
-      newmeta["__owner"] == meta["__owner"];
-      if (!newmeta["__owner"]) { newmeta["__owner"] = env; }
-      newmeta["__parent"] == env;
-      setmetatable(newenv, newmeta);
-      globals(L)["setfenv"](2, newenv);
-
-      env = newenv;
-      meta = newmeta;
-    }
-
-printf("USING2\n");
-    // setup was already done, changing looking up preference
-    if (n == 0 || !object(from_stack(L, 1)))
-    {
-printf("TYPE: %d\n", type(object(from_stack(L, 1))));
-printf("USING2.1\n");
-      // 1st arg is nil, resetting looking up setting
-      meta["__lookup"] == newtable(L);
-printf("USING2.2\n");
-      if (n >= 2)
-      {
-printf("USING2.3\n");
-        object lookup = meta["__lookup"];
-printf("USING2.4\n");
-        for (int i = n; i >= 2; i--)
-        {
-printf("USING2.5\n");
-          lookup[n + 1 - i] = from_stack(L, n);
-        }
-      }
-      env.push(L);
-      return 1;
-    }
-printf("USING3\n");
-    for (int i = 1; i <= n; i++)
-    {
-      object val(from_stack(L, i));
-      globals(L)["lev"]["util"]["remove_first"](meta["__lookup"], val);
-      globals(L)["table"]["insert"](meta["__lookup"], 1, val);
-    }
-    env.push(L);
-    return 1;
   }
 
 }

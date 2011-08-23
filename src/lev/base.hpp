@@ -42,10 +42,13 @@ namespace lev
           LEV_THANDLER_END,
 
           LEV_TIMAGE,
+          LEV_TINFO,
+
           LEV_TINPUT,
             LEV_TINSTATE,
             LEV_TINRECORD,
           LEV_TINPUT_END,
+
           LEV_TMIXER,
 
           LEV_TLOCALE,
@@ -58,6 +61,7 @@ namespace lev
             LEV_TURL,
           LEV_TNET_BASE_END,
 
+          LEV_TPOINT,
           LEV_TSIZE,
 
           LEV_TSIZER,

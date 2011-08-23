@@ -12,6 +12,8 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "base.hpp"
+#include "font.hpp"
+#include "gui.hpp"
 #include "prim.hpp"
 #include <lua.h>
 
@@ -28,6 +30,7 @@ namespace lev
       image();
     public:
       ~image();
+      static image* capture(control *src);
       bool clear() { return clear_with(color::transparent()); }
       bool clear_with(color c);
       static image* create(int width, int height);
@@ -37,11 +40,13 @@ namespace lev
       int get_h() const;
       void* get_rawobj() { return _obj; }
       virtual type_id get_type_id() const { return LEV_TIMAGE; }
-      virtual const char *get_type_name() const { return "image"; }
+      virtual const char *get_type_name() const { return "lev.image"; }
       int get_w() const;
       static bool init();
       static image* load(const char *filename);
       bool save(const char *filename) const;
+      static image* stroke(const char *str, font *f);
+      static image* stroke1(const char *str) { return stroke(str, NULL); }
     private:
       void *_obj;
   };
