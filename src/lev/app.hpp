@@ -17,6 +17,10 @@
 #include "input.hpp"
 #include <luabind/luabind.hpp>
 
+extern "C" {
+  int luaopen_lev_app(lua_State *L);
+}
+
 namespace lev
 {
 

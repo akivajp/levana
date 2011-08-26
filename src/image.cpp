@@ -9,7 +9,11 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "prec.h"
+#include "lev/icon.hpp"
 #include "lev/image.hpp"
+#include "lev/util.hpp"
+#include "register.hpp"
+#include "resource/levana.xpm"
 
 #include <luabind/luabind.hpp>
 #include <wx/filename.h>
@@ -32,10 +36,12 @@ int luaopen_lev_image(lua_State *L)
     [
       class_<image, base>("image")
         .def("clear", &image::clear)
-        .def("clear", &image::clear_with)
+        .def("clear", &image::clear0)
         .def("draw_circle", &image::draw_circle)
         .def("draw_circle", &image::draw_circle_fill)
         .def("draw_text", &image::draw_text)
+        .def("get_color", &image::get_pixel, adopt(result))
+        .def("get_pixel", &image::get_pixel, adopt(result))
         .def("save", &image::save)
         .property("h", &image::get_h)
         .property("height", &image::get_h)
@@ -43,21 +49,25 @@ int luaopen_lev_image(lua_State *L)
         .property("width", &image::get_w)
         .scope
         [
-          def("capture", &image::capture),
-          def("create",  &image::create),
+          def("capture", &image::capture, adopt(result)),
+          def("create",  &image::create, adopt(result)),
           def("init",    &image::init),
-          def("load",    &image::load),
-          def("stroke",  &image::stroke),
-          def("stroke",  &image::stroke1)
+          def("levana_icon", &image::levana_icon),
+          def("load",    &image::load, adopt(result)),
+          def("stroke_c",  &image::stroke, adopt(result)),
+          def("stroke_c",  &image::stroke1, adopt(result))
         ]
     ]
   ];
   object lev = globals(L)["lev"];
   object classes = lev["classes"];
   object image = lev["image"];
+  register_to(classes["image"], "stroke", &image::stroke_l);
+
   image["capture"] = classes["image"]["capture"];
   image["create"]  = classes["image"]["create"];
   image["init"]    = classes["image"]["init"];
+  image["levana_icon"] = classes["image"]["levana_icon"];
   image["load"]    = classes["image"]["load"];
   image["stroke"]  = classes["image"]["stroke"];
 
@@ -111,7 +121,7 @@ namespace lev
   }
 
 
-  bool image::clear_with(color c)
+  bool image::clear(color c)
   {
     int num_pix = get_h() * get_w();
     wxBitmap *bmp = cast_image(_obj);
@@ -149,9 +159,9 @@ namespace lev
     }
     cast_image(img->_obj)->UseAlpha();
 #ifdef __WXGTK__
-    img->clear_with(color(0, 0, 0, 255));
+    img->clear(color(0, 0, 0, 255));
 #else
-    img->clear();
+    img->clear0();
 #endif
     return img;
   }
@@ -188,6 +198,26 @@ namespace lev
   }
 
 
+  color* image::get_pixel(int x, int y)
+  {
+    color *c = NULL;
+    try {
+      wxAlphaPixelData data(*cast_image(_obj));
+      data.UseAlpha();
+      wxAlphaPixelData::Iterator p;
+      p.MoveTo(data, x, y);
+      if (!p.IsOk()) { throw -1; }
+      c = color::create(p.Red(), p.Green(), p.Blue(), p.Alpha());
+      if (c == NULL) { throw -2; }
+      return c;
+    }
+    catch (...) {
+      delete c;
+      return NULL;
+    }
+  }
+
+
   int image::get_w() const
   {
     return cast_image(_obj)->GetWidth();
@@ -205,6 +235,22 @@ namespace lev
     return true;
   }
 
+  image* image::levana_icon()
+  {
+    static image *img = NULL;
+    wxBitmap *obj = NULL;
+
+    if (img) { return img; }
+    try {
+      img = new image;
+      img->_obj = obj = new wxBitmap(levana_xpm);
+      return img;
+    }
+    catch (...) {
+      delete img;
+      return NULL;
+    }
+  }
 
   image* image::load(const char *filename)
   {
@@ -214,16 +260,14 @@ namespace lev
       image::init();
       img = new image;
       wxString f = wxString(filename, wxConvUTF8);
-      wxImage local_img(f);
-      obj = new wxBitmap(local_img);
+      img->_obj = obj = new wxBitmap(f);
       if (not obj->IsOk()) { throw -1; }
+      return img;
     }
     catch (...) {
       delete img;
       return NULL;
     }
-    img->_obj = obj;
-    return img;
   }
 
   bool image::save(const char *filename) const
@@ -233,7 +277,7 @@ namespace lev
     return cast_image(_obj)->ConvertToImage().SaveFile(f);
   }
 
-  image* image::stroke(const char *str, font *f)
+  image* image::stroke(const char *str, font *f, color *fore, color *back)
   {
     image *img = NULL;
     try {
@@ -249,15 +293,108 @@ namespace lev
       if (sz.GetWidth() == 0 || sz.GetHeight() == 0) { throw -1; }
 
       img = image::create(sz.GetWidth(), sz.GetHeight());
+      if (img == NULL) { throw -2; }
       mdc.SelectObject(*cast_image(img->get_rawobj()));
       mdc.SetTextForeground(wxColour(255, 255, 255, 255));
       mdc.DrawText(s, 0, 0);
+
+      wxAlphaPixelData data(*cast_image(img->_obj));
+      data.UseAlpha();
+      wxAlphaPixelData::Iterator p(data), rawStart;
+      for (int y = 0 ; y < sz.GetHeight() ; y++)
+      {
+        rawStart = p;
+        for (int x = 0 ; x < sz.GetWidth() ; x++)
+        {
+          double ave = ((double)p.Red() + (double)p.Green() + (double)p.Blue()) / 3.0;
+          double alpha_norm = ave / 255.0;
+          if (fore)
+          {
+            if (back)
+            {
+              p.Red()   = back->get_r() * (1 - alpha_norm) + fore->get_r() * alpha_norm;
+              p.Green() = back->get_g() * (1 - alpha_norm) + fore->get_g() * alpha_norm;
+              p.Blue()  = back->get_b() * (1 - alpha_norm) + fore->get_b() * alpha_norm;
+              p.Alpha() = back->get_a() + fore->get_a() * alpha_norm * ((255 - back->get_a()) / 255.0);
+            }
+            else // if (!back)
+            {
+              p.Red()   = fore->get_r();
+              p.Green() = fore->get_g();
+              p.Blue()  = fore->get_b();
+              p.Alpha() = alpha_norm * fore->get_a();
+            }
+          }
+          else // if (!fore)
+          {
+            if (back)
+            {
+              p.Red()   = back->get_r() * (1 - alpha_norm);
+              p.Green() = back->get_g() * (1 - alpha_norm);
+              p.Blue()  = back->get_b() * (1 - alpha_norm);
+              p.Alpha() = back->get_a() * (1 - alpha_norm) + 255 * alpha_norm;
+            }
+            else // if (!back)
+            {
+              p.Red()   = 0;
+              p.Green() = 0;
+              p.Blue()  = 0;
+              p.Alpha() = ave;
+            }
+          }
+          ++p;
+        }
+        p = rawStart;
+        p.OffsetY(data, 1);
+      }
       return img;
     }
     catch (...) {
       delete img;
       return NULL;
     }
+  }
+
+  int image::stroke_l(lua_State *L)
+  {
+    using namespace luabind;
+    const char *str = NULL;
+    object font, fore, back;
+
+    object t = util::get_merged(L, 1, -1);
+
+    if (t["text"]) { str = object_cast<const char *>(t["text"]); }
+    else if (t["t"]) { str = object_cast<const char *>(t["t"]); }
+    else if (t["string"]) { str = object_cast<const char *>(t["string"]); }
+    else if (t["str"]) { str = object_cast<const char *>(t["str"]); }
+
+    if (not str)
+    {
+      luaL_error(L, "text (string) is not specified!\n");
+      return 0;
+    }
+
+    if (t["lev.font"]) { font = t["lev.font"]; }
+    else if (t["font"]) { font = t["font"]; }
+    else if (t["f"]) { font = t["f"]; }
+
+    if (t["lev.prim.color1"]) { fore = t["lev.prim.color1"]; }
+    else if (t["fg_color"]) { fore = t["fg_color"]; }
+    else if (t["fg"]) { fore = t["fg"]; }
+    else if (t["fore"]) { fore = t["fore"]; }
+    else if (t["f"]) { fore = t["f"]; }
+    else if (t["color"]) { fore = t["color"]; }
+    else if (t["c"]) { fore = t["c"]; }
+
+    if (t["lev.prim.color2"]) { back = t["lev.prim.color2"]; }
+    else if (t["bg_color"]) { back = t["bg_color"]; }
+    else if (t["bg"]) { back = t["bg"]; }
+    else if (t["back"]) { back = t["back"]; }
+    else if (t["b"]) { back = t["b"]; }
+
+    object o = globals(L)["lev"]["classes"]["image"]["stroke_c"](str, font, fore, back);
+    o.push(L);
+    return 1;
   }
 
 }

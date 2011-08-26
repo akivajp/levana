@@ -59,21 +59,21 @@ namespace lev
   class size : public base
   {
     public:
-      size(int w, int h, int d = 0) : _w(w), _h(h), _d(d), base() {}
+      size(int w, int h, int d = 0) : w(w), h(h), d(d), base() {}
       static size* create(int w, int h, int d = 0);
       static int create_l(lua_State *L);
-      inline int get_d() const { return _d; }
-      inline int get_h() const { return _h; }
-      inline int get_w() const { return _w; }
+      int get_d() const { return d; }
+      int get_h() const { return h; }
+      int get_w() const { return w; }
       virtual type_id get_type_id() const { return LEV_TSIZE; }
       virtual const char *get_type_name() const { return "lev.prim.size"; }
-      inline void set_d(int d) { _d = d; }
-      inline void set_h(int h) { _h = h; }
-      inline void set_w(int w) { _w = w; }
+      bool set_d(int new_d) { d = new_d; return true; }
+      bool set_h(int new_h) { h = new_h; return true; }
+      bool set_w(int new_w) { w = new_w; return true; }
     private:
-      int _w;
-      int _h;
-      int _d;
+      int w;
+      int h;
+      int d;
   };
 
 
@@ -84,14 +84,14 @@ namespace lev
       vector(int x = 0, int y = 0, int z = 0) : x(x), y(y), z(z) { }
       static vector* create(int x = 0, int y = 0, int z = 0);
       static int create_l(lua_State *L);
-      inline int get_x() const { return x; }
-      inline int get_y() const { return y; }
-      inline int get_z() const { return z; }
+      int get_x() const { return x; }
+      int get_y() const { return y; }
+      int get_z() const { return z; }
       virtual type_id get_type_id() const { return LEV_TVECTOR; }
       virtual const char *get_type_name() const { return "lev.prim.vector"; }
-      inline void set_x(int new_x) { x = new_x; }
-      inline void set_y(int new_y) { y = new_y; }
-      inline void set_z(int new_z) { z = new_z; }
+      bool set_x(int new_x) { x = new_x; }
+      bool set_y(int new_y) { y = new_y; }
+      bool set_z(int new_z) { z = new_z; }
       vector operator+(vector &rhs)
       { return vector(x + rhs.x, y + rhs.y, z + rhs.z); }
     protected:
@@ -119,6 +119,33 @@ namespace lev
     protected:
       vector *vertex;
       color *col;
+  };
+
+  class rect : public base
+  {
+    protected:
+      rect() : pos(NULL), sz(NULL) { }
+    public:
+      virtual ~rect();
+      static rect* create(int x, int y, int w, int h);
+      static int create_l(lua_State *L);
+      int get_h() { return sz->get_h(); }
+      vector* get_position() { return pos; }
+      size*   get_size() { return sz; }
+      int get_x() { return pos->get_x(); }
+      int get_y() { return pos->get_y(); }
+      int get_w() { return sz->get_w(); }
+      virtual type_id get_type_id() const { return LEV_TRECT; }
+      virtual const char *get_type_name() const { return "lev.prim.rect"; }
+      bool set_h(int h) { return sz->set_h(h); }
+      bool set_position(vector *vec);
+      bool set_size(size *new_size);
+      bool set_x(int x) { return pos->set_x(x); }
+      bool set_y(int y) { return pos->set_y(y); }
+      bool set_w(int w) { return sz->set_w(w); }
+    protected:
+      vector *pos;
+      size   *sz;
   };
 
   class text : public base

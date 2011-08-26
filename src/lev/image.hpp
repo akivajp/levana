@@ -31,22 +31,26 @@ namespace lev
     public:
       ~image();
       static image* capture(control *src);
-      bool clear() { return clear_with(color::transparent()); }
-      bool clear_with(color c);
+      bool clear(color c);
+      bool clear0() { return clear(color::transparent()); }
       static image* create(int width, int height);
       bool draw_circle(int x, int y, int radius, color border_color);
       bool draw_circle_fill(int x, int y, int radius, color border_color, color filling_color);
       void draw_text(const char *text, int x, int y, double angle = 0, color c = color::black());
       int get_h() const;
+      color* get_pixel(int x, int y);
       void* get_rawobj() { return _obj; }
       virtual type_id get_type_id() const { return LEV_TIMAGE; }
       virtual const char *get_type_name() const { return "lev.image"; }
       int get_w() const;
       static bool init();
+      static image* levana_icon();
       static image* load(const char *filename);
       bool save(const char *filename) const;
-      static image* stroke(const char *str, font *f);
-      static image* stroke1(const char *str) { return stroke(str, NULL); }
+      bool set_pixel(color* c);
+      static image* stroke(const char *str, font *f, color *fore, color *back);
+      static image* stroke1(const char *str) { return stroke(str, NULL, NULL, NULL); }
+      static int stroke_l(lua_State *L);
     private:
       void *_obj;
   };

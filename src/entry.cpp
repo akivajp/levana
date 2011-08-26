@@ -65,8 +65,21 @@ extern int luaopen_lev(lua_State *L)
   using namespace lev;
   using namespace luabind;
 
-  luabind::open(L);
+  open(L);
   lua_entry(L);
+
+  globals(L)["require"]("lev.base");
+  globals(L)["require"]("lev.locale");
+  globals(L)["package"]["loaded"]["lev"] = globals(L)["lev"];
+  return 0;
+}
+
+int luaopen_lev_base(lua_State *L)
+{
+  using namespace luabind;
+  using namespace lev;
+
+  open(L);
 
   // base classes
   module(L, "lev")
@@ -77,89 +90,11 @@ extern int luaopen_lev(lua_State *L)
       class_<base>("base")
         .def("__tostring", &base::tostring)
         .property("type_id", &base::get_type_id)
-        .property("type_name", &base::get_type_name),
-      // event class
-      class_<event, base>("event")
-        .def("request", &event::request)
-        .def("skip", &event::skip)
-        .property("char", &event::get_char)
-        .property("id", &event::get_id)
-        .property("key", &event::get_keystr)
-        .property("keystr", &event::get_keystr)
-        .property("keycode", &event::get_keycode),
-      // event handler class
-      class_<handler, base>("handler")
-        .def("get_on_menu", &handler::get_on_menu)
-        .def("set_on_menu", &handler::set_on_menu)
-        .property("on_any", &handler::get_on_any, &handler::set_on_any)
-        .property("on_char", &handler::get_on_char, &handler::set_on_char)
-        .property("on_close", &handler::get_on_close, &handler::set_on_close)
-        .property("on_idle", &handler::get_on_idle, &handler::set_on_idle)
-        .property("on_keydown", &handler::get_on_keydown, &handler::set_on_keydown)
-    ]
-  ];
-  object classes = globals(L)["lev"]["classes"];
-
-  // Application management module
-  module(L, "lev")
-  [
-    namespace_("classes")
-    [
-      class_<application, handler>("app")
-        .def("autoloop", &application::autoloop)
-        .def("autoloop", &application::autoloop_with)
-        .def("get_keydown", &application::get_keydown)
-        .def("sleep", &application::sleep)
-        .def("sleep", &application::sleep_def)
-        .def("track_key", &application::track_key)
-        .def("track_mouse", &application::track_mouse)
-        .def("wait",  &application::wait)
-        .def("yield", &application::yield)
-        .property("fps", &application::get_fps, &application::set_fps)
-        .property("input", &application::get_instate)
-        .property("inrec", &application::get_inrecord)
-        .property("inrecord", &application::get_inrecord)
-        .property("instate", &application::get_instate)
-        .property("interval", &application::get_interval, &application::set_interval)
-        .property("locale", &application::get_locale)
-        .property("name", &application::get_name, &application::set_name)
-        .property("title", &application::get_name, &application::set_name)
-        .property("top",  &application::get_top,  &application::set_top)
-        .property("top_window",  &application::get_top,  &application::set_top)
-    ],
-    namespace_("app")
-    [
-      def("get", &application::get_app)
+        .property("type_name", &base::get_type_name)
     ]
   ];
 
-  module(L, "lev")
-  [
-    class_<icon>("icon")
-      .def(constructor<>())
-      .def(constructor<const char *>())
-      .def("load_xpm", &icon::load_xpm)
-      .scope
-      [
-        def("levana_icon", &icon::levana_icon)
-      ]
-  ];
-
-
-  module(L, "lev")
-  [
-    def("get_app", &application::get_app)
-  ];
-
-  globals(L)["package"]["loaded"]["lev"] = globals(L)["lev"];
-  set_preloaders(L);
-  luaopen_lev_db(L);
-  luaopen_lev_fs(L);
-  luaopen_lev_gui(L);
-  luaopen_lev_input(L);
-  luaopen_lev_locale(L);
-  luaopen_lev_prim(L);
-  luaopen_lev_util(L);
+  globals(L)["package"]["loaded"]["lev.base"] = true;
   return 0;
 }
 
@@ -177,15 +112,18 @@ int luaopen_lev_std(lua_State *L)
   globals(L)["require"]("table");
 
   globals(L)["require"]("lev");
+  globals(L)["require"]("lev.db");
   globals(L)["require"]("lev.draw");
+  globals(L)["require"]("lev.gui");
   globals(L)["require"]("lev.font");
+  globals(L)["require"]("lev.fs");
   globals(L)["require"]("lev.gl");
   globals(L)["require"]("lev.image");
   globals(L)["require"]("lev.info");
   globals(L)["require"]("lev.net");
   globals(L)["require"]("lev.sound");
 
-  globals(L)["app"] = globals(L)["lev"]["app"]["get"]();
+  globals(L)["app"] = globals(L)["lev"]["app"]();
   globals(L)["mixer"] = globals(L)["lev"]["sound"]["mixer"]();
   globals(L)["collectgarbage"]();
   return 0;
@@ -199,6 +137,8 @@ namespace lev
   {
     using namespace luabind;
     register_to(globals(L)["package"]["preload"], "lev", luaopen_lev);
+    register_to(globals(L)["package"]["preload"], "lev.app", luaopen_lev_app);
+    register_to(globals(L)["package"]["preload"], "lev.base", luaopen_lev_base);
     register_to(globals(L)["package"]["preload"], "lev.db", luaopen_lev_db);
     register_to(globals(L)["package"]["preload"], "lev.draw", luaopen_lev_draw);
     register_to(globals(L)["package"]["preload"], "lev.font", luaopen_lev_font);

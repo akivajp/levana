@@ -82,17 +82,40 @@ int main(int argc, char **argv)
         object arg = globals(L)["arg"];
         arg[-1] = std::string(argv[0]);
         arg[0] =  std::string(argv[i]);
-        int j;
-        for (j = 1; j <= argc - i - 1; j++)
+        for (int j = 1; j <= argc - i - 1; j++)
         {
           arg[j] = std::string(argv[i + j]);
         }
-        if (luaL_dofile(L, argv[i]))
+        if (wxFileName::DirExists(wxString(argv[i], wxConvUTF8)))
         {
-          wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
-          return -1;
+          // argv[i] is directory
+          // run entry program in argv[i] directory
+          for (int j = 0; j < len; j++)
+          {
+            std::string filename = argv[i];
+            filename = filename + "/" + entry[j];
+            if (access(filename.c_str(), 0) < 0) { continue; }
+            if (luaL_dofile(L, filename.c_str()))
+            {
+              wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
+              return -1;
+            }
+            return 0;
+          }
+          wxString msg = _("Usage: create \"entry.txt\" file and put in \"") + wxString(argv[i], wxConvUTF8) + _("\" directory");
+          wxMessageBox(msg, _("About usage"));
+          done_something = true;
         }
-        done_something = true;
+        else
+        {
+          // argv[i] is file
+          if (luaL_dofile(L, argv[i]))
+          {
+            wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
+            return -1;
+          }
+          done_something = true;
+        }
         break;
     }
   }

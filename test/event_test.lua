@@ -1,22 +1,18 @@
 require 'lev.std'
 
 frm = lev.gui.frame()
-frm:show()
---frm.onkeydown = function(o)
---  print(o.key)
---end
-
-app.on_keydown = function(o)
-  print(o.key)
+text = lev.gui.textbox(frm, 320, 240, {style = 'multi'})
+text.on_keydown = function(e)
+  print(e.key)
+  e:skip()
 end
-
---app.onkeydown = onkeydown
---print (app:set_onkeydown(onkeydown))
+frm:fit()
+frm:show()
 
 frm.on_close = function(e)
   local res = lev.gui.msgbox {'Exiting...', style = "ok|cancel"}
   if res then e:skip() end
 end
 
-app:autoloop()
+app:run()
 

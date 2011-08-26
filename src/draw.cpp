@@ -26,7 +26,6 @@ int luaopen_lev_draw(lua_State *L)
   using namespace luabind;
 
   open(L);
-  globals(L)["require"]("lev");
   globals(L)["require"]("lev.gui");
 
   module(L, "lev")
@@ -264,6 +263,7 @@ namespace lev
   {
     set_current();
 
+    glPushMatrix();
     glBegin(GL_POINTS);
     {
       color *c = pt->get_color();
@@ -275,6 +275,7 @@ namespace lev
       glVertex3i(v->get_x(), v->get_y(), v->get_z());
     }
     glEnd();
+    glPopMatrix();
 
     return true;
   }

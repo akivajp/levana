@@ -17,7 +17,7 @@ int luaopen_lev_locale(lua_State *L)
   using namespace luabind;
 
   open(L);
-  globals(L)["require"]("lev");
+  globals(L)["require"]("lev.base");
 
   module(L)
   [

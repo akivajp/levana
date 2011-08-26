@@ -23,7 +23,7 @@ int luaopen_lev_gui(lua_State *L)
   using namespace lev;
   using namespace luabind;
 
-  globals(L)["require"]("lev");
+  globals(L)["require"]("lev.app");
 
   // GUI control, event handling
   module(L, "lev")

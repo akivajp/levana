@@ -63,7 +63,7 @@ namespace lev
       frm->_obj = obj;
       frm->connector = obj->GetConnector();
       frm->func_getter = obj->GetFuncGetter();
-      frm->seticon(icon::levana_icon());
+      frm->set_icon(image::levana_icon());
       frm->system_managed = true;
       return frm;
     }
@@ -150,9 +150,14 @@ namespace lev
   }
 
 
-  void frame::seticon(const icon &i)
+  bool frame::set_icon(image *i)
   {
-    ((wxFrame *)_obj)->SetIcon(*((wxIcon *)i._obj.get()));
+    if (i == NULL) { return false; }
+    wxBitmap *bmp = (wxBitmap *)i->get_rawobj();
+    wxIcon ico;
+    ico.CopyFromBitmap(*bmp);
+    cast_frm(_obj)->SetIcon(ico);
+    return true;
   }
 
   bool frame::set_menubar(luabind::object mb)

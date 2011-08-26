@@ -62,6 +62,7 @@ namespace lev
           LEV_TNET_BASE_END,
 
           LEV_TPOINT,
+          LEV_TRECT,
           LEV_TSIZE,
 
           LEV_TSIZER,

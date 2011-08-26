@@ -83,6 +83,26 @@ int luaopen_lev_prim(lua_State *L)
         [
           def("create_c", &point::create, adopt(result))
         ],
+      class_<rect, base>("rect")
+        .property("h", &rect::get_h, &rect::set_h)
+        .property("height", &rect::get_h, &rect::set_h)
+        .property("p", &rect::get_position, &rect::set_position)
+        .property("pos", &rect::get_position, &rect::set_position)
+        .property("position", &rect::get_position, &rect::set_position)
+        .property("s", &rect::get_size, &rect::set_size)
+        .property("size", &rect::get_size, &rect::set_size)
+        .property("sz", &rect::get_size, &rect::set_size)
+        .property("v", &rect::get_position, &rect::set_position)
+        .property("vec", &rect::get_position, &rect::set_position)
+        .property("vector", &rect::get_position, &rect::set_position)
+        .property("x", &rect::get_x, &rect::set_x)
+        .property("y", &rect::get_y, &rect::set_y)
+        .property("w", &rect::get_w, &rect::set_w)
+        .property("width", &rect::get_w, &rect::set_w)
+        .scope
+        [
+          def("create_c", &rect::create)
+        ],
       class_<text, base>("text")
         .scope
         [
@@ -96,6 +116,7 @@ int luaopen_lev_prim(lua_State *L)
 
   register_to(classes["color"],  "create", &color::create_l);
   register_to(classes["point"],  "create", &point::create_l);
+  register_to(classes["rect"],   "create", &rect::create_l);
   register_to(classes["size"],   "create", &size::create_l);
   register_to(classes["vector"], "create", &vector::create_l);
 
@@ -103,6 +124,7 @@ int luaopen_lev_prim(lua_State *L)
   prim["colour"]   = classes["color"]["create"];
   prim["point"]    = classes["point"]["create"];
   prim["position"] = classes["vector"]["create"];
+  prim["rect"]     = classes["rect"]["create"];
   prim["size"]     = classes["size"]["create"];
   prim["vector"]   = classes["vector"]["create"];
 
@@ -370,6 +392,119 @@ namespace lev
     if (v == NULL) { return false; }
     *vertex = *v;
     return true;
+  }
+
+
+  rect::~rect()
+  {
+    if (pos)
+    {
+      delete pos;
+      pos = NULL;
+    }
+    if (sz)
+    {
+      delete sz;
+      sz = NULL;
+    }
+  }
+
+  rect* rect::create(int x, int y, int w, int h)
+  {
+    rect *r = NULL;
+    try {
+      r = new rect;
+      r->pos = new vector(x, y);
+      r->sz  = new size(w, h);
+      return r;
+    }
+    catch (...) {
+      delete r;
+      return NULL;
+    }
+  }
+
+  int rect::create_l(lua_State *L)
+  {
+    using namespace luabind;
+    int x = 0, y = 0, w = 0, h = 0;
+
+    object t = util::get_merged(L, 1, -1);
+
+    if (t["x"]) { x = object_cast<int>(t["x"]); }
+    else if (t["num1"]) { x = object_cast<int>(t["num1"]); }
+
+    if (t["y"]) { y = object_cast<int>(t["y"]); }
+    else if (t["num2"]) { y = object_cast<int>(t["num2"]); }
+
+    if (t["width"]) { w = object_cast<int>(t["width"]); }
+    else if (t["w"]) { w = object_cast<int>(t["w"]); }
+    else if (t["num3"]) { w = object_cast<int>(t["num3"]); }
+
+    if (t["height"]) { h = object_cast<int>(t["height"]); }
+    else if (t["h"]) { h = object_cast<int>(t["h"]); }
+    else if (t["num4"]) { h = object_cast<int>(t["num4"]); }
+
+    if (t["lev.prim.vector1"])
+    {
+      object vec1 = t["lev.prim.vector1"];
+      if (t["lev.prim.vector2"])
+      {
+        object vec2 = t["lev.prim.vector2"];
+        int x1 = object_cast<int>(vec1["x"]);
+        int y1 = object_cast<int>(vec1["y"]);
+        int x2 = object_cast<int>(vec2["x"]);
+        int y2 = object_cast<int>(vec2["y"]);
+        int max_x = x1 > x2 ? x1 : x2;
+        int min_x = x1 < x2 ? x1 : x2;
+        int max_y = y1 > y2 ? y1 : y2;
+        int min_y = y1 < y2 ? y1 : y2;
+        x = min_x;
+        y = min_y;
+        w = max_x - min_x;
+        h = max_y - min_y;
+      }
+      else
+      {
+        x = object_cast<int>(vec1["x"]);
+        y = object_cast<int>(vec1["y"]);
+      }
+    }
+
+    if (t["lev.prim.size1"])
+    {
+      object sz = t["lev.prim.size1"];
+      w = object_cast<int>(sz["w"]);
+      h = object_cast<int>(sz["h"]);
+    }
+
+    object o = globals(L)["lev"]["classes"]["rect"]["create_c"](x, y, w, h);
+    o.push(L);
+    return 1;
+  }
+
+  bool rect::set_position(vector *vec)
+  {
+    if (vec == NULL) { return false; }
+    try {
+      pos = new vector(*vec);
+      return true;
+    }
+    catch (...) {
+      return false;
+    }
+  }
+
+  bool rect::set_size(size *new_size)
+  {
+    if (sz == NULL) { return false; }
+    try {
+      sz = new size(*new_size);
+      return true;
+    }
+    catch (...) {
+      return false;
+    }
   }
 
 

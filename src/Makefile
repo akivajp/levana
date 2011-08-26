@@ -9,7 +9,7 @@ WX_LIBS = `wx-config --libs std,media,gl,stc` -lGLU
 RANLIB = ranlib
 
 CORE_SRC  = app.cpp base.cpp db.cpp draw.cpp entry.cpp event.cpp font.cpp frame.cpp fs.cpp info.cpp \
-	    input.cpp gl.cpp gui.cpp icon.cpp image.cpp locale.cpp media.cpp menu.cpp net.cpp prim.cpp \
+	    input.cpp gl.cpp gui.cpp image.cpp locale.cpp media.cpp menu.cpp net.cpp prim.cpp \
 	    sizer.cpp taskbar.cpp util.cpp
 CORE_OBJS = $(CORE_SRC:%.cpp=%.o)
 CORE_DLIB = lev_core.so
@@ -79,18 +79,17 @@ draw.o: draw.cpp lev/draw.hpp lev/frame.hpp
 entry.o: entry.cpp $(SRC:%.cpp=lev/%.hpp) lev/event.hpp
 event.o: event.cpp lev/event.hpp
 font.o: font.cpp lev/font.hpp
-frame.o: frame.cpp lev/frame.hpp lev/icon.hpp lev/event.hpp
+frame.o: frame.cpp lev/frame.hpp lev/event.hpp
 fs.o: fs.cpp lev/fs.hpp
 gl.o: gl.cpp lev/gl.hpp
 gui.o: gui.cpp lev/gui.hpp
-icon.o: icon.cpp lev/icon.hpp
 image.o: image.cpp lev/image.hpp
 info.o: info.cpp lev/info.hpp
 input.o: input.cpp lev/input.hpp
 locale.o: locale.cpp lev/locale.hpp
 main.o: main.cpp lev/app.hpp
 media.o: media.cpp lev/media.hpp
-menu.o: menu.cpp lev/menu.hpp lev/icon.hpp
+menu.o: menu.cpp lev/menu.hpp
 net.o: net.cpp lev/net.hpp
 prim.o: prim.cpp lev/prim.hpp
 sizer.o: sizer.cpp lev/sizer.hpp

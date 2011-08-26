@@ -1,6 +1,6 @@
-require 'lev'
+require 'lev.gui'
 
-app = lev.app.get()
+app = lev.app()
 
 frm = lev.gui.frame()
 frm:show()
@@ -16,5 +16,5 @@ st.menu_generator = function()
   return menu
 end
 
-app:autoloop(frm)
+app:run(frm)
 

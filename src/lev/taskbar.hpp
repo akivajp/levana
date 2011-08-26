@@ -11,7 +11,6 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "event.hpp"
-#include "icon.hpp"
 #include "menu.hpp"
 
 #include <lua.h>
@@ -33,7 +32,7 @@ namespace lev
       virtual const char *get_type_name() const { return "lev.gui.systray"; }
       bool popup(menu *m);
       bool remove_icon();
-      bool set_icon(const icon& i, const char *tooltip = "");
+      bool set_icon(image *i, const char *tooltip = "");
       bool set_menu_generator(luabind::object lua_func);
   };
 

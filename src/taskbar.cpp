@@ -56,7 +56,7 @@ namespace lev
       tray->connector = obj->GetConnector();
       tray->func_getter = obj->GetFuncGetter();
       tray->system_managed = true;
-      tray->set_icon(icon::levana_icon(), "Levana Application");
+      tray->set_icon(image::levana_icon(), "Levana Application");
       return tray;
     }
     catch (...) {
@@ -92,10 +92,13 @@ namespace lev
     return true;
   }
 
-  bool systray::set_icon(const icon& i, const char *tooltip)
+  bool systray::set_icon(image *i, const char *tooltip)
   {
-    myTaskBarIcon *tray = cast_tray(_obj);
-    return tray->SetIcon(*((wxIcon*)i._obj.get()), wxString(tooltip, wxConvUTF8));
+    if (i == NULL) { return false; }
+    wxBitmap *bmp = (wxBitmap *)i->get_rawobj();
+    wxIcon ico;
+    ico.CopyFromBitmap(*bmp);
+    return cast_tray(_obj)->SetIcon(ico, wxString(tooltip, wxConvUTF8));
   }
 
   bool systray::set_menu_generator(luabind::object lua_func)

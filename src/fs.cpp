@@ -41,6 +41,7 @@ int luaopen_lev_fs(lua_State *L)
         .scope
         [
           def("create_c", &file_system::create, adopt(result)),
+          def("file_exists", &file_system::file_exists),
           def("get_cwd", &file_system::get_cwd),
           def("get_executable_path", &file_system::get_executable_path),
           def("get_resource_dir", &file_system::get_resource_dir),
@@ -65,6 +66,7 @@ int luaopen_lev_fs(lua_State *L)
   fs["get_resurce_dir"] = classes["file_system"]["get_resource_dir"];
   fs["get_temp_dir"] = classes["file_system"]["get_temp_dir"];
   fs["filepath"] = classes["filepath"]["create"];
+  fs["file_exists"] = classes["file_system"]["file_exists"];
   fs["path"] = classes["filepath"]["create"];
   fs["res_dir"] = classes["file_system"]["get_resource_dir"];
   fs["resorce_dir"] = classes["file_system"]["get_resource_dir"];
@@ -199,6 +201,11 @@ namespace lev
     object fs = globals(L)["lev"]["classes"]["file_system"]["create_c"]();
     fs.push(L);
     return 1;
+  }
+
+  bool file_system::file_exists(const char *filename)
+  {
+    return wxFileName::FileExists(wxString(filename, wxConvUTF8));
   }
 
   const char *file_system::get_cwd()

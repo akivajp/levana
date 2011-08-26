@@ -15,6 +15,75 @@
 #include <lua.h>
 #include <string>
 
+int luaopen_lev_app(lua_State *L)
+{
+  using namespace lev;
+  using namespace luabind;
+
+  open(L);
+  globals(L)["require"]("lev.input");
+
+  module(L, "lev")
+  [
+    namespace_("classes")
+    [
+      // event class
+      class_<event, base>("event")
+        .def("request", &event::request)
+        .def("skip", &event::skip)
+        .property("char", &event::get_char)
+        .property("id", &event::get_id)
+        .property("key", &event::get_keystr)
+        .property("keystr", &event::get_keystr)
+        .property("keycode", &event::get_keycode),
+      // event handler class
+      class_<handler, base>("handler")
+        .def("get_on_menu", &handler::get_on_menu)
+        .def("set_on_menu", &handler::set_on_menu)
+        .property("on_any", &handler::get_on_any, &handler::set_on_any)
+        .property("on_char", &handler::get_on_char, &handler::set_on_char)
+        .property("on_close", &handler::get_on_close, &handler::set_on_close)
+        .property("on_idle", &handler::get_on_idle, &handler::set_on_idle)
+        .property("on_keydown", &handler::get_on_keydown, &handler::set_on_keydown),
+      // application management class
+      class_<application, handler>("app")
+        .def("autoloop", &application::autoloop)
+        .def("autoloop", &application::autoloop_with)
+        .def("get_keydown", &application::get_keydown)
+        .def("run", &application::autoloop)
+        .def("run", &application::autoloop_with)
+        .def("sleep", &application::sleep)
+        .def("sleep", &application::sleep_def)
+        .def("track_key", &application::track_key)
+        .def("track_mouse", &application::track_mouse)
+        .def("wait",  &application::wait)
+        .def("yield", &application::yield)
+        .property("fps", &application::get_fps, &application::set_fps)
+        .property("input", &application::get_instate)
+        .property("inrec", &application::get_inrecord)
+        .property("inrecord", &application::get_inrecord)
+        .property("instate", &application::get_instate)
+        .property("interval", &application::get_interval, &application::set_interval)
+        .property("locale", &application::get_locale)
+        .property("name", &application::get_name, &application::set_name)
+        .property("title", &application::get_name, &application::set_name)
+        .property("top",  &application::get_top,  &application::set_top)
+        .property("top_window",  &application::get_top,  &application::set_top)
+        .scope
+        [
+          def("get", &application::get_app)
+        ]
+    ]
+  ];
+  object lev = globals(L)["lev"];
+  object classes = lev["classes"];
+
+  lev["app"] = classes["app"]["get"];
+
+  globals(L)["package"]["loaded"]["lev.app"] = true;
+  return 0;
+}
+
 namespace lev
 {
 
