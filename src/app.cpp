@@ -50,8 +50,7 @@ int luaopen_lev_app(lua_State *L)
         .def("autoloop", &application::autoloop)
         .def("autoloop", &application::autoloop_with)
         .def("get_keydown", &application::get_keydown)
-        .def("run", &application::autoloop)
-        .def("run", &application::autoloop_with)
+        .def("run", &application::run)
         .def("sleep", &application::sleep)
         .def("sleep", &application::sleep_def)
         .def("track_key", &application::track_key)
@@ -66,6 +65,7 @@ int luaopen_lev_app(lua_State *L)
         .property("interval", &application::get_interval, &application::set_interval)
         .property("locale", &application::get_locale)
         .property("name", &application::get_name, &application::set_name)
+        .property("tick", &application::get_tick, &application::set_tick)
         .property("title", &application::get_name, &application::set_name)
         .property("top",  &application::get_top,  &application::set_top)
         .property("top_window",  &application::get_top,  &application::set_top)
@@ -185,7 +185,7 @@ DECLARE_APP(lev::myApp);
 namespace lev
 {
 
-  application::application() : handler()
+  application::application() : handler(), tick()
   {
     wxGetApp().OnInit();
     set_name("Levana Application");
@@ -223,7 +223,7 @@ namespace lev
     static bool entried = false;
     if (entried) { return false; }
     if (!wxEntryStart(argc, argv)) { return false; }
-//    myApp::L = L;
+    wxGetApp().L = L;
     entried = true;
     return true;
   }
@@ -288,6 +288,11 @@ namespace lev
     return name.c_str();
   }
 
+  luabind::object application::get_tick()
+  {
+    return tick;
+  }
+
   frame *application::get_top()
   {
     return frame::get_top();
@@ -296,6 +301,26 @@ namespace lev
   void application::mainloop()
   {
     wxGetApp().MainLoop();
+  }
+
+  bool application::on_tick()
+  {
+    if (not tick) { return false; }
+    if (luabind::type(tick) != LUA_TFUNCTION) { return false; }
+
+    object result = tick();
+    if (result == false) { return false; }
+    if (!result) { return true; }
+    return true;
+  }
+
+  bool application::run()
+  {
+    for (;;)
+    {
+      wait();
+      if (on_tick() == false) { break; }
+    }
   }
 
   bool application::set_fps(double fps)
@@ -314,6 +339,12 @@ namespace lev
   void application::set_name(const char *name)
   {
     wxGetApp().SetAppName(wxString(name, wxConvUTF8));
+  }
+
+  bool application::set_tick(luabind::object func)
+  {
+    tick = func;
+    return true;
   }
 
   void application::set_top(frame *top)

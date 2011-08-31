@@ -1,6 +1,7 @@
-require 'lev'
+require 'string'
+require 'lev.gui'
 
-app = lev.app.get()
+app = lev.app()
 app:track_mouse()
 app.fps = 2
 while 1 do

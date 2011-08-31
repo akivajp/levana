@@ -40,6 +40,7 @@ namespace lev
       int get_h() const;
       color* get_pixel(int x, int y);
       void* get_rawobj() { return _obj; }
+      size* get_size();
       virtual type_id get_type_id() const { return LEV_TIMAGE; }
       virtual const char *get_type_name() const { return "lev.image"; }
       int get_w() const;

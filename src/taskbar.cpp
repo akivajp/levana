@@ -34,6 +34,7 @@ namespace lev
         {
           Connect(object_cast<int>(i.key()), wxEVT_COMMAND_MENU_SELECTED, *i);
         }
+        m->hold();
         return (wxMenu *)m->get_rawobj();
       }
 

@@ -9,7 +9,6 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "prec.h"
-#include "lev/icon.hpp"
 #include "lev/image.hpp"
 #include "lev/util.hpp"
 #include "register.hpp"
@@ -28,6 +27,7 @@ int luaopen_lev_image(lua_State *L)
   open(L);
   globals(L)["require"]("lev");
   globals(L)["require"]("lev.font");
+  globals(L)["require"]("lev.prim");
 
   module(L, "lev")
   [
@@ -45,6 +45,7 @@ int luaopen_lev_image(lua_State *L)
         .def("save", &image::save)
         .property("h", &image::get_h)
         .property("height", &image::get_h)
+        .property("size",  &image::get_size, adopt(result))
         .property("w", &image::get_w)
         .property("width", &image::get_w)
         .scope
@@ -217,6 +218,10 @@ namespace lev
     }
   }
 
+  size* image::get_size()
+  {
+    return size::create(get_w(), get_h());
+  }
 
   int image::get_w() const
   {

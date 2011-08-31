@@ -10,7 +10,7 @@ RANLIB = ranlib
 
 CORE_SRC  = app.cpp base.cpp db.cpp draw.cpp entry.cpp event.cpp font.cpp frame.cpp fs.cpp info.cpp \
 	    input.cpp gl.cpp gui.cpp image.cpp locale.cpp media.cpp menu.cpp net.cpp prim.cpp \
-	    sizer.cpp taskbar.cpp util.cpp
+	    sizer.cpp taskbar.cpp timer.cpp util.cpp
 CORE_OBJS = $(CORE_SRC:%.cpp=%.o)
 CORE_DLIB = lev_core.so
 CORE_LIBS = $(WX_LIBS) -llua -lluabind -lsqlite3
@@ -95,6 +95,7 @@ prim.o: prim.cpp lev/prim.hpp
 sizer.o: sizer.cpp lev/sizer.hpp
 sound.o: sound.cpp lev/sound.hpp
 taskbar.o: taskbar.cpp lev/taskbar.hpp
+timer.o: timer.cpp lev/timer.hpp
 util.o: util.cpp lev/util.hpp
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $<

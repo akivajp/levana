@@ -41,13 +41,17 @@ namespace lev
       instate* get_instate();
       locale* get_locale();
       const char* get_name();
+      luabind::object get_tick();
       frame *get_top();
       virtual type_id get_type_id() const { return LEV_TAPP; }
       virtual const char *get_type_name() const { return "lev.app"; }
       void mainloop();
+      bool on_tick();
+      bool run();
       bool set_fps(double fps);
       bool set_interval(double interval_msec);
       void set_name(const char *name);
+      bool set_tick(luabind::object func);
       void set_top(frame *top);
       bool sleep(int delay_in_msec);
       bool sleep_def() { sleep(0); }
@@ -58,7 +62,9 @@ namespace lev
 
       static lua_State* getL();
       static int msgbox(const char *msg, const char *caption);
-      static inline int msgbox_nocap(const char *msg) { return msgbox(msg, "Message"); }
+      static inline int msgbox1(const char *msg) { return msgbox(msg, "Message"); }
+    protected:
+      luabind::object tick;
   };
 
   class gui_lock

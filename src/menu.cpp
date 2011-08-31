@@ -109,7 +109,7 @@ namespace lev
 
   menu::menu() : handler() {}
 
-  menu::~menu() {}
+  menu::~menu() { }
 
   int menu::append(int id, const char *str, const char *help_str)
   {

@@ -1,6 +1,6 @@
-require 'lev'
+require 'lev.gui'
 
-app = lev.app.get()
+app = lev.app()
 
 frm = lev.gui.frame()
 mb = lev.gui.menubar()
