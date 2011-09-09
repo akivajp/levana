@@ -22,23 +22,25 @@ namespace lev
       enum type_id
       {
         LEV_TBASE = 1,
+          LEV_TARCHIVE,
           LEV_TCHANNEL,
           LEV_TCOLOR,
           LEV_TDB,
           LEV_TEVENT,
+          LEV_TFILE_PATH,
+          LEV_TFILE_SYSTEM,
           LEV_TFONT,
 
           LEV_THANDLER,
+            LEV_TAPP,
             LEV_TCONTROL,
-              LEV_TAPP,
               LEV_TFRAME,
               LEV_THTMLVIEW,
               LEV_TMENUBAR,
-              LEV_TSYSTRAY,
               LEV_TTEXTBOX,
-              LEV_TTEXTEDIT,
             LEV_TCONTROL_END,
             LEV_TMENU,
+            LEV_TSYSTRAY,
           LEV_THANDLER_END,
 
           LEV_TIMAGE,

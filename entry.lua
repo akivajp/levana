@@ -45,7 +45,7 @@ end
 
 frm.on_close = function(e)
   if changed then
-    local msg = string.format('Save changes to document (untitled) before closing?')
+    local msg = string.format(_('Save changes to document (untitled) before closing?'))
     local ans = lev.gui.msgbox {_(msg), style='yes:no:cancel'}
     if ans == true then
       local filename = lev.gui.file_selector {'Choose a file to save', flag='save'}

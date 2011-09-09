@@ -77,24 +77,39 @@ namespace lev
     return 1;
   }
 
+  bool systray::destroy()
+  {
+    if (_obj)
+    {
+      delete cast_tray(_obj);
+      _obj = NULL;
+      return true;
+    }
+    return false;
+  }
+
   luabind::object systray::get_menu_generator()
   {
+    if (!_obj) { return luabind::object(); }
     return cast_tray(_obj)->menugen;
   }
 
   bool systray::popup(menu *m)
   {
+    if (!_obj) { return false; }
     return cast_tray(_obj)->PopupMenu((wxMenu *)m->_obj);
   }
 
   bool systray::remove_icon()
   {
+    if (!_obj) { return false; }
     cast_tray(_obj)->RemoveIcon();
     return true;
   }
 
   bool systray::set_icon(image *i, const char *tooltip)
   {
+    if (!_obj) { return false; }
     if (i == NULL) { return false; }
     wxBitmap *bmp = (wxBitmap *)i->get_rawobj();
     wxIcon ico;
@@ -104,6 +119,7 @@ namespace lev
 
   bool systray::set_menu_generator(luabind::object lua_func)
   {
+    if (!_obj) { return false; }
     cast_tray(_obj)->menugen = lua_func;
     return true;
   }

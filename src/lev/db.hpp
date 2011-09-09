@@ -21,6 +21,17 @@ extern "C" {
 namespace lev
 {
 
+  class db_table : public base
+  {
+    protected:
+      db_table(const char *name) : table_name(name), owner(NULL) { }
+    public:
+      ~db_table() { }
+    protected:
+      std::string table_name;
+      class db *owner;
+  };
+
   class db : public base
   {
     public:
@@ -29,6 +40,7 @@ namespace lev
       bool exec(const char *sql, luabind::object func);
       virtual type_id get_type_id() const { return LEV_TDB; }
       virtual const char *get_type_name() const { return "lev.db"; }
+      bool key(const char *keystr);
       static db* open(const char *filename);
       static db* open_memory();
 

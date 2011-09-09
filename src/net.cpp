@@ -324,7 +324,11 @@ namespace lev
     lev::socket *sock = object_cast<lev::socket *>(o);
 
     bool result = sock->read_all(str);
-    if (not result) { return 0; }
+    if (not result)
+    {
+      lua_pushnil(L);
+      return 1;
+    }
     lua_pushstring(L, str.c_str());
     return 1;
   }

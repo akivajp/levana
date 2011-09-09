@@ -4,7 +4,11 @@ require 'lev.gui'
 app = lev.app()
 app:track_mouse()
 app.fps = 2
-while 1 do
+
+frm = lev.gui.frame()
+frm:show()
+
+while frm.is_valid do
 --  app:yield()
   if app:get_keydown('ESC') then
     break

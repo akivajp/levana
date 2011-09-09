@@ -31,6 +31,8 @@ namespace lev
       static timer* create();
       int get_interval();
       luabind::object get_notify();
+//      virtual type_id get_type_id() const { return LEV_TTIMER; }
+      virtual const char *get_type_name() const { return "lev.timer"; }
       bool is_one_shot();
       bool is_running();
       bool set_notify(luabind::object func);

@@ -10,8 +10,9 @@
 
 #include "prec.h"
 
-#include "lev/entry.hpp"
 #include "lev/app.hpp"
+#include "lev/entry.hpp"
+#include "lev/package.hpp"
 #include "register.hpp"
 
 #include <string>
@@ -90,6 +91,10 @@ int main(int argc, char **argv)
         {
           // argv[i] is directory
           // run entry program in argv[i] directory
+          std::string path = (const char *)wxGetCwd().mb_str();
+          path += "/";
+          path += argv[i];
+          package::set_path(L, path.c_str());
           for (int j = 0; j < len; j++)
           {
             std::string filename = argv[i];

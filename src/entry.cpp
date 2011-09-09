@@ -150,6 +150,7 @@ namespace lev
     register_to(globals(L)["package"]["preload"], "lev.input", luaopen_lev_input);
     register_to(globals(L)["package"]["preload"], "lev.locale", luaopen_lev_locale);
     register_to(globals(L)["package"]["preload"], "lev.net", luaopen_lev_net);
+    register_to(globals(L)["package"]["preload"], "lev.prim", luaopen_lev_prim);
     register_to(globals(L)["package"]["preload"], "lev.sound", luaopen_lev_sound);
     register_to(globals(L)["package"]["preload"], "lev.std", luaopen_lev_std);
     register_to(globals(L)["package"]["preload"], "lev.util", luaopen_lev_util);

@@ -8,12 +8,12 @@ PCH = prec.h.gch
 WX_LIBS = `wx-config --libs std,media,gl,stc` -lGLU
 RANLIB = ranlib
 
-CORE_SRC  = app.cpp base.cpp db.cpp draw.cpp entry.cpp event.cpp font.cpp frame.cpp fs.cpp info.cpp \
-	    input.cpp gl.cpp gui.cpp image.cpp locale.cpp media.cpp menu.cpp net.cpp prim.cpp \
-	    sizer.cpp taskbar.cpp timer.cpp util.cpp
+CORE_SRC  = app.cpp archive.cpp base.cpp db.cpp draw.cpp entry.cpp event.cpp font.cpp frame.cpp fs.cpp \
+	    info.cpp input.cpp gl.cpp gui.cpp image.cpp locale.cpp media.cpp menu.cpp net.cpp package.cpp \
+	    prim.cpp sizer.cpp taskbar.cpp timer.cpp util.cpp
 CORE_OBJS = $(CORE_SRC:%.cpp=%.o)
 CORE_DLIB = lev_core.so
-CORE_LIBS = $(WX_LIBS) -llua -lluabind -lsqlite3
+CORE_LIBS = $(WX_LIBS) -llua -lluabind -lsqlite3 -larchive
 
 SOUND_SRC  = sound.cpp
 SOUND_OBJS = $(SOUND_SRC:%.cpp=%.o)
@@ -73,6 +73,7 @@ $(SOUND_DLIB): $(SOUND_OBJS)
 	$(CXX) $(SHARED) -o $(SOUND_DLIB) $(SOUND_OBJS) $(SOUND_LIBS)
 
 app.o: app.cpp lev/app.hpp
+archive.o: archive.cpp lev/archive.hpp
 base.o: base.cpp lev/base.hpp
 db.o: db.cpp lev/db.hpp
 draw.o: draw.cpp lev/draw.hpp lev/frame.hpp
@@ -91,6 +92,7 @@ main.o: main.cpp lev/app.hpp
 media.o: media.cpp lev/media.hpp
 menu.o: menu.cpp lev/menu.hpp
 net.o: net.cpp lev/net.hpp
+package.o: package.cpp lev/package.hpp
 prim.o: prim.cpp lev/prim.hpp
 sizer.o: sizer.cpp lev/sizer.hpp
 sound.o: sound.cpp lev/sound.hpp

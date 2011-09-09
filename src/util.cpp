@@ -15,7 +15,7 @@
 #include <boost/format.hpp>
 #include <luabind/luabind.hpp>
 
-static const char *using_test =
+static const char *code_using =
 "-- looking up of varnames\n\
 local lookup = function(env, varname)\n\
   meta = getmetatable(env)\n\
@@ -88,24 +88,41 @@ int luaopen_lev_util(lua_State *L)
 
   open(L);
   globals(L)["require"]("table");
-  globals(L)["require"]("lev");
 
   module(L, "lev")
   [
     namespace_("util")
+    [
+      def("execute", &util::execute)
+    ]
   ];
-  object util = globals(L)["lev"]["util"];
+  object lev = globals(L)["lev"];
+  object util = lev["util"];
+
   register_to(util, "merge", &util::merge);
   register_to(util, "remove_first", &util::remove_first);
   register_to(util, "reverse", &util::reverse);
-  load_to(util, "using", using_test);
+  load_to(util, "using", code_using);
 
+  lev["execute"] = util["execute"];
   globals(L)["package"]["loaded"]["lev.util"] = util;
   return 0;
 }
 
 namespace lev
 {
+
+  bool util::execute(const char *target)
+  {
+    wxString exe = wxStandardPaths::Get().GetExecutablePath();
+    wxExecute(exe + wxT(" ") + wxString(target, wxConvUTF8));
+    return true;
+  }
+
+  bool util::execute_code(const char *code)
+  {
+    return true;
+  }
 
   luabind::object util::get_merged(lua_State *L, int begin, int end)
   {

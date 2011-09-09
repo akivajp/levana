@@ -90,7 +90,10 @@ namespace lev
     else if (t["p"]) { p = object_cast<control *>(t["p"]); }
     else if (t["udata"]) { p = object_cast<control *>(t["udata"]); }
 
-    if (t["title"]) { title = object_cast<const char *>(t["title"]); }
+    if (t["caption"]) { title = object_cast<const char *>(t["caption"]); }
+    else if (t["cap"]) { title = object_cast<const char *>(t["cap"]); }
+    else if (t["c"]) { title = object_cast<const char *>(t["c"]); }
+    else if (t["title"]) { title = object_cast<const char *>(t["title"]); }
     else if (t["t"]) { title = object_cast<const char *>(t["t"]); }
     else if (t["str1"]) { title = object_cast<const char *>(t["str1"]); }
 
@@ -146,6 +149,7 @@ namespace lev
     wxWindow *frm = wxTheApp->GetTopWindow();
     if (frm == NULL) { return NULL; }
     top._obj = frm;
+    top.hold();
     return &top;
   }
 

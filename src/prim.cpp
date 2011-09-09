@@ -21,7 +21,7 @@ int luaopen_lev_prim(lua_State *L)
   using namespace luabind;
 
   open(L);
-  globals(L)["require"]("lev");
+  globals(L)["require"]("lev.base");
 
   // primitives
   module(L, "lev")

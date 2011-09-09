@@ -305,7 +305,7 @@ namespace lev
 
   bool application::on_tick()
   {
-    if (not tick) { return false; }
+    if (!tick) { return true; }
     if (luabind::type(tick) != LUA_TFUNCTION) { return false; }
 
     object result = tick();
@@ -316,11 +316,12 @@ namespace lev
 
   bool application::run()
   {
-    for (;;)
+    while (tick || get_top())
     {
       wait();
       if (on_tick() == false) { break; }
     }
+    return true;
   }
 
   bool application::set_fps(double fps)

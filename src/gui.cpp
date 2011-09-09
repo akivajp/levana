@@ -127,6 +127,7 @@ int luaopen_lev_gui(lua_State *L)
           def("create_c", &menubar::create, adopt(result))
         ],
       class_<systray, handler>("systray")
+        .def("destroy", &systray::destroy)
         .def("popup", &systray::popup)
         .def("remove_icon", &systray::remove_icon)
         .def("set_icon", &systray::set_icon)
@@ -512,7 +513,7 @@ namespace lev
                            "table.maxn table.concat table.sort "
                            "table.insert table.remove"));
         // lev functions
-        SetKeyWords(3, wxT("lev.app.get lev.gui.frame lev.gui.vsizer"));
+        SetKeyWords(3, wxT("lev.app lev.gui.frame lev.gui.stc lev.gui.vsizer"));
       }
 
       bool SetStyles()

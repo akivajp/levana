@@ -20,7 +20,7 @@ int luaopen_lev_db(lua_State *L)
   using namespace luabind;
 
   open(L);
-  globals(L)["require"]("lev");
+  globals(L)["require"]("lev.base");
 
   module(L, "lev")
   [
@@ -28,6 +28,7 @@ int luaopen_lev_db(lua_State *L)
     [
       class_<db, base>("db")
         .def("exec", &db::exec)
+        .def("key", &db::key)
         .scope
         [
           def("open", &db::open),
@@ -93,6 +94,12 @@ namespace lev
     return true;
   }
 
+  bool db::key(const char *keystr)
+  {
+//    if (sqlite3_key(cast_db(_obj), keystr, strlen(keystr)) == SQLITE_OK) { return true; }
+    return false;
+  }
+
   db* db::open(const char *filename)
   {
     db *data = NULL;
@@ -101,6 +108,7 @@ namespace lev
       data = new db;
       if (sqlite3_open(filename, &obj) != SQLITE_OK) { throw -1; }
       data->_obj = obj;
+      return data;
     }
     catch (...) {
       delete data;
@@ -116,6 +124,7 @@ namespace lev
       data = new db;
       if (sqlite3_open(":memory:", &obj) != SQLITE_OK) { throw -1; }
       data->_obj = obj;
+      return data;
     }
     catch (...) {
       delete data;

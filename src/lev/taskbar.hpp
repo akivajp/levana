@@ -27,6 +27,7 @@ namespace lev
       virtual ~systray();
       static systray* create();
       static int create_l(lua_State *L);
+      bool destroy();
       luabind::object get_menu_generator();
       virtual type_id get_type_id() const { return LEV_TSYSTRAY; }
       virtual const char *get_type_name() const { return "lev.gui.systray"; }

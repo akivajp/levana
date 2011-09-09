@@ -1,8 +1,8 @@
 CXXFLAGS = `/usr/mingw32/usr/bin/wx-config --cxxflags` -I/usr/mingw32/usr/include/ClanLib-0.8
 #LIBS = -L/usr/mingw32/usr/lib `/usr/mingw32/usr/bin/wx-config --libs std gl` -lglu32 -llua -lluabind -static
-CORE_LIBS =-L/usr/mingw32/usr/lib \
-	-lluabind -llua -lws2_32 -lboost_regex -lboost_system \
-	`/usr/mingw32/usr/bin/wx-config --libs std gl media` -lgdiplus -lglu32 -lpsapi \
+CORE_LIBS =-L/usr/mingw32/usr/lib -lsqlite3 \
+	-lluabind -llua -lws2_32 \
+	`/usr/mingw32/usr/bin/wx-config --libs std,gl,media,stc` -lgdiplus -lglu32 -lpsapi \
 	-static
 SOUND_LIBS = -lclanSound -lclanVorbis -lclanCore -lclanSignals -ldxguid -ldsound -lvorbisfile -lvorbis -logg
 CXX=mingw32-g++
@@ -22,7 +22,6 @@ build:
 		SOUND_LIBS="$(SOUND_LIBS)" WINDRES=$(WINDRES) RANLIB=$(RANLIB) \
 		WIN_OUT=$(WIN_OUT) DLIB=$(DLIB)
 	install -d $(PACK_DIR)
-	install -d $(PACK_DIR)/lev
 	install -d $(PACK_DIR)/doc
 	install -d $(PACK_DIR)/test
 	install src/$(WIN_OUT) $(PACK_DIR)/$(WIN_OUT)
@@ -32,7 +31,7 @@ build:
 	install REFERENCE.ja  $(PACK_DIR)/doc/REFERENCE.ja.txt
 	install entry.lua  $(PACK_DIR)/entry.txt
 	install test/* $(PACK_DIR)/test
-	unix2dos $(PACK_DIR)/*.txt $(PACK_DIR)/lev/* $(PACK_DIR)/test/*
+	unix2dos $(PACK_DIR)/*.txt $(PACK_DIR)/test/*
 
 clean:
 	cd src && make clean
