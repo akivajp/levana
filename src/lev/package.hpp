@@ -25,9 +25,13 @@ namespace lev
   class package
   {
     public:
+      static const char *get_archive_dir(lua_State *L);
       static const char *get_path(lua_State *L);
-      static luabind::object require(const char *package);
-      static bool set_path(lua_State *L, const char *path);
+      static int require_l(lua_State *L);
+      static file_path* resolve(const std::string &base_path, const std::string &file);
+      static int resolve_l(lua_State *L);
+      static bool set_archive_dir(lua_State *L, const std::string &archive_dir);
+      static bool set_path(lua_State *L, const std::string &path);
   };
 
 }

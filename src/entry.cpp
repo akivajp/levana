@@ -112,6 +112,7 @@ int luaopen_lev_std(lua_State *L)
   globals(L)["require"]("table");
 
   globals(L)["require"]("lev");
+  globals(L)["require"]("lev.archive");
   globals(L)["require"]("lev.db");
   globals(L)["require"]("lev.draw");
   globals(L)["require"]("lev.gui");
@@ -121,7 +122,10 @@ int luaopen_lev_std(lua_State *L)
   globals(L)["require"]("lev.image");
   globals(L)["require"]("lev.info");
   globals(L)["require"]("lev.net");
+  globals(L)["require"]("lev.package");
   globals(L)["require"]("lev.sound");
+  globals(L)["require"]("lev.timer");
+  globals(L)["require"]("lev.util");
 
   globals(L)["app"] = globals(L)["lev"]["app"]();
   globals(L)["mixer"] = globals(L)["lev"]["sound"]["mixer"]();
@@ -138,6 +142,7 @@ namespace lev
     using namespace luabind;
     register_to(globals(L)["package"]["preload"], "lev", luaopen_lev);
     register_to(globals(L)["package"]["preload"], "lev.app", luaopen_lev_app);
+    register_to(globals(L)["package"]["preload"], "lev.archive", luaopen_lev_archive);
     register_to(globals(L)["package"]["preload"], "lev.base", luaopen_lev_base);
     register_to(globals(L)["package"]["preload"], "lev.db", luaopen_lev_db);
     register_to(globals(L)["package"]["preload"], "lev.draw", luaopen_lev_draw);
@@ -150,9 +155,11 @@ namespace lev
     register_to(globals(L)["package"]["preload"], "lev.input", luaopen_lev_input);
     register_to(globals(L)["package"]["preload"], "lev.locale", luaopen_lev_locale);
     register_to(globals(L)["package"]["preload"], "lev.net", luaopen_lev_net);
+    register_to(globals(L)["package"]["preload"], "lev.package", luaopen_lev_package);
     register_to(globals(L)["package"]["preload"], "lev.prim", luaopen_lev_prim);
     register_to(globals(L)["package"]["preload"], "lev.sound", luaopen_lev_sound);
     register_to(globals(L)["package"]["preload"], "lev.std", luaopen_lev_std);
+    register_to(globals(L)["package"]["preload"], "lev.timer", luaopen_lev_timer);
     register_to(globals(L)["package"]["preload"], "lev.util", luaopen_lev_util);
   }
 

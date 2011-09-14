@@ -13,6 +13,7 @@
 
 
 #include "app.hpp"
+#include "archive.hpp"
 #include "db.hpp"
 #include "draw.hpp"
 #include "entry.hpp"
@@ -27,10 +28,12 @@
 #include "input.hpp"
 #include "media.hpp"
 #include "net.hpp"
+#include "package.hpp"
 #include "prim.hpp"
 #include "sizer.hpp"
 #include "sound.hpp"
 #include "taskbar.hpp"
+#include "timer.hpp"
 #include "util.hpp"
 
 

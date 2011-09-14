@@ -1,4 +1,5 @@
 require 'string'
+require 'lev.fs'
 
 local lev = require 'lev'
 local _G = _G

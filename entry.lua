@@ -36,6 +36,8 @@ frm.menubar = mb
 
 -- Model & Controls
 
+timer = lev.timer()
+
 local function save_select()
   return lev.gui.file_selector {
     _'Choose a file to save',
@@ -62,10 +64,7 @@ frm.on_close = function(e)
 end
 
 frm.on_exec = function()
-  local pout = io.popen(lev.fs.exe_path()..' -', 'w')
-  pout:write(stc.text)
-  pout:flush()
-  pout:close()
+  lev.execute_code(stc.text)
 end
 
 frm.on_new = function()
@@ -93,22 +92,20 @@ stc.on_char = function(e)
   changed = true
 end
 
-stc.on_idle = function(e)
-  if changed then
-    frm.title = '*Levana Editor'
-  else
-    frm.title = 'Levana Editor'
+timer.notify = function()
+  if frm.is_valid then
+    if changed then
+      frm.title = '*Levana Editor'
+    else
+      frm.title = 'Levana Editor'
+    end
+    mb.edit.redo:enable(stc:can_redo())
+    mb.edit.undo:enable(stc:can_undo())
   end
-  mb.edit.redo:enable(stc:can_redo())
-  mb.edit.undo:enable(stc:can_undo())
 end
-
-stc.on_keydown = function(e)
-  e:skip()
-end
-
 
 frm:show()
+timer:start(100)
 stc.lang = 'lua'
 app:autoloop()
 

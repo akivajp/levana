@@ -8,7 +8,9 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "prec.h"
+#include "lev/app.hpp"
 #include "lev/base.hpp"
+#include "lev/fs.hpp"
 #include "lev/util.hpp"
 #include "register.hpp"
 
@@ -88,6 +90,8 @@ int luaopen_lev_util(lua_State *L)
 
   open(L);
   globals(L)["require"]("table");
+  globals(L)["require"]("lev.app");
+  globals(L)["require"]("lev.fs");
 
   module(L, "lev")
   [
@@ -99,12 +103,14 @@ int luaopen_lev_util(lua_State *L)
   object lev = globals(L)["lev"];
   object util = lev["util"];
 
+  register_to(util, "execute_code", &util::execute_code_l);
   register_to(util, "merge", &util::merge);
   register_to(util, "remove_first", &util::remove_first);
   register_to(util, "reverse", &util::reverse);
   load_to(util, "using", code_using);
 
   lev["execute"] = util["execute"];
+  lev["execute_code"] = util["execute_code"];
   globals(L)["package"]["loaded"]["lev.util"] = util;
   return 0;
 }
@@ -112,16 +118,41 @@ int luaopen_lev_util(lua_State *L)
 namespace lev
 {
 
-  bool util::execute(const char *target)
+  bool util::execute(const std::string &target)
   {
     wxString exe = wxStandardPaths::Get().GetExecutablePath();
-    wxExecute(exe + wxT(" ") + wxString(target, wxConvUTF8));
+    wxExecute(exe + wxT(" ") + wxString(target.c_str(), wxConvUTF8));
     return true;
   }
 
-  bool util::execute_code(const char *code)
+  int util::execute_code_l(lua_State *L)
   {
-    return true;
+    using namespace luabind;
+    const char *code = "";
+
+    object t = util::get_merged(L, 1, -1);
+    if (t["code"]) { code = object_cast<const char *>(t["code"]); }
+    else if (t["c"]) { code = object_cast<const char *>(t["c"]); }
+    else if (t["str1"]) { code = object_cast<const char *>(t["str1"]); }
+
+    try {
+      std::string prefix = application::get_app()->get_name() + "/" + "localcode";
+      object tmp = globals(L)["lev"]["classes"]["temp_name"]["create"](prefix, ".lua");
+      std::string name = object_cast<const char *>(tmp["name"]);
+      FILE *out = fopen(name.c_str(), "w");
+      if (out == NULL) { throw -1; }
+      int len = strlen(code);
+      if (fwrite(code, 1, len, out) != len) { throw -2; }
+      fclose(out);
+      util::execute("\"" + name + "\"");
+
+      lua_pushboolean(L, true);
+      return 1;
+    }
+    catch (...) {
+      lua_pushboolean(L, false);
+      return 1;
+    }
   }
 
   luabind::object util::get_merged(lua_State *L, int begin, int end)

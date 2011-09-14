@@ -513,7 +513,7 @@ namespace lev
                            "table.maxn table.concat table.sort "
                            "table.insert table.remove"));
         // lev functions
-        SetKeyWords(3, wxT("lev.app lev.gui.frame lev.gui.stc lev.gui.vsizer"));
+        SetKeyWords(3, wxT("lev.app lev.gui.frame lev.gui.msgbox lev.gui.stc lev.gui.vsizer"));
       }
 
       bool SetStyles()

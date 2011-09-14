@@ -21,8 +21,8 @@ namespace lev
   class util
   {
     public:
-      static bool execute(const char *target);
-      static bool execute_code(const char *code);
+      static bool execute(const std::string &target);
+      static int execute_code_l(lua_State *L);
       static luabind::object get_merged(lua_State *L, int start, int end);
       static int merge(lua_State *L);
       static int remove_first(lua_State *L);

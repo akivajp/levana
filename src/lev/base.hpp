@@ -73,6 +73,7 @@ namespace lev
             LEV_TVSIZER,
           LEV_TSIZER_END,
 
+          LEV_TTEMP_NAME,
           LEV_TVECTOR,
         LEV_TBASE_END,
       };

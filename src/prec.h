@@ -42,6 +42,8 @@ extern "C" {
 #include <wx/url.h>
 #include <wx/wxhtml.h>
 
+#include <archive.h>
+#include <archive_entry.h>
 #include <map>
 #include <sstream>
 #include <string>

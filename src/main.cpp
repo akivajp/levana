@@ -11,23 +11,53 @@
 #include "prec.h"
 
 #include "lev/app.hpp"
+#include "lev/archive.hpp"
 #include "lev/entry.hpp"
+#include "lev/fs.hpp"
 #include "lev/package.hpp"
 #include "register.hpp"
 
 #include <string>
 
-int main(int argc, char **argv)
+using namespace lev;
+using namespace luabind;
+
+static bool do_file(lua_State *L, const char *filename)
 {
-  using namespace luabind;
-  using namespace lev;
+  if (luaL_dofile(L, filename))
+  {
+    wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
+    return -1;
+  }
+  return true;
+}
 
-  const int len = 3;
-  const char *entry[] = {"entry.lc", "entry.lua", "entry.txt"};
-  bool done_something = false;
 
-  // initializing lua statement
-  lua_State *L = lua_open();
+static bool do_string(lua_State *L, const std::string &str)
+{
+  if (luaL_dostring(L, str.c_str()))
+  {
+    wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
+    return false;
+  }
+  return true;
+}
+
+
+static bool set_args(lua_State *L, int argc, char **argv, int axis)
+{
+  globals(L)["arg"] = newtable(L);
+  object arg = globals(L)["arg"];
+  for (int i = 0; i < argc; i++)
+  {
+    arg[i - axis] = std::string(argv[i]);
+  }
+  return true;
+}
+
+
+static bool set_libs(lua_State *L)
+{
   // open basic (and critical) libs
   lua_pushcfunction(L, &luaopen_base);
   lua_pushstring(L, LUA_COLIBNAME);
@@ -45,6 +75,22 @@ int main(int argc, char **argv)
   register_to(globals(L)["package"]["preload"], LUA_TABLIBNAME, &luaopen_table);
   lev::set_preloaders(L);
 
+  return true;
+}
+
+
+int main(int argc, char **argv)
+{
+  const int len = 3;
+  const char *entry[] = {"entry.lc", "entry.lua", "entry.txt"};
+  bool done_something = false;
+
+  // initializing lua statement
+  lua_State *L = lua_open();
+
+  // set libraries
+  set_libs(L);
+
   // lev entry
   application::entry(L, argc, argv);
 
@@ -57,89 +103,96 @@ int main(int argc, char **argv)
         {
           // -e stat
           i++;
-          if (luaL_dostring(L, argv[i]))
-          {
-            wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
-            return -1;
-          }
+          if (! do_string(L, argv[i])) { return -1; }
           done_something = true;
         }
         else if (argv[i][1] == '\0')
         {
           // - (stdin)
+          set_args(L, argc, argv, i);
+
           typedef std::istreambuf_iterator<char> iterator;
           std::string input(iterator(std::cin), iterator());
-          if (luaL_dostring(L, input.c_str()))
-          {
-            wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
-            return -1;
-          }
+          if (! do_string(L, input.c_str())) { return -1; }
           done_something = true;
+          i = argc; // escaping
         }
         break;
       default:
-        if (done_something) { break; }
-        globals(L)["arg"] = newtable(L);
-        object arg = globals(L)["arg"];
-        arg[-1] = std::string(argv[0]);
-        arg[0] =  std::string(argv[i]);
-        for (int j = 1; j <= argc - i - 1; j++)
-        {
-          arg[j] = std::string(argv[i + j]);
-        }
+        set_args(L, argc, argv, i);
         if (wxFileName::DirExists(wxString(argv[i], wxConvUTF8)))
         {
           // argv[i] is directory
           // run entry program in argv[i] directory
-          std::string path = (const char *)wxGetCwd().mb_str();
-          path += "/";
-          path += argv[i];
-          package::set_path(L, path.c_str());
+          package::set_path(L, file_system::to_full_path(argv[i]));
           for (int j = 0; j < len; j++)
           {
             std::string filename = argv[i];
             filename = filename + "/" + entry[j];
             if (access(filename.c_str(), 0) < 0) { continue; }
-            if (luaL_dofile(L, filename.c_str()))
-            {
-              wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
-              return -1;
-            }
-            return 0;
+            if (! do_file(L, filename.c_str())) { return -1; }
+            done_something = true;
+            break;
           }
-          wxString msg = _("Usage: create \"entry.txt\" file and put in \"") + wxString(argv[i], wxConvUTF8) + _("\" directory");
-          wxMessageBox(msg, _("About usage"));
-          done_something = true;
+          if (! done_something)
+          {
+            wxString msg = _("Usage: create \"entry.txt\" file and put in \"") + wxString(argv[i], wxConvUTF8) + _("\" directory");
+            wxMessageBox(msg, _("About usage"));
+            return -1;
+          }
         }
         else
         {
-          // argv[i] is file
-          if (luaL_dofile(L, argv[i]))
+          // argv[i] is archive or script file
+          if (lev::archive::is_archive(argv[i]))
           {
-            wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
-            return -1;
+            // argv[i] is archive
+            std::string entry_name;
+            for (int j = 0; j < len; j++)
+            {
+              if (lev::archive::find_direct(argv[i], entry[j], entry_name)
+                  || lev::archive::find_direct(argv[i], std::string("*/") + entry[j], entry_name))
+              {
+                std::string code;
+                int last_slash = entry_name.rfind('/');
+                if (last_slash >= 0)
+                {
+                  std::string prefix = entry_name.substr(0, last_slash);
+                  package::set_archive_dir(L, prefix);
+                }
+                package::set_path(L, file_system::to_full_path(argv[i]));
+                if (! lev::archive::read_direct(argv[i], entry_name, code)) { continue; }
+                if (! do_string(L, code)) { return -1; }
+                done_something = true;
+                break;
+              }
+              else { continue; }
+            }
           }
-          done_something = true;
+          else
+          {
+            if (! do_file(L, argv[i])) { return -1; }
+          }
         }
+        done_something = true;
+        i = argc; // escaping
         break;
     }
   }
 
-  if (done_something == false)
+  // nothing was done
+  // run entry program
+  for (int i = 0; i < len; i++)
   {
-    // nothing was done
-    // run entry program
-    for (int i = 0; i < len; i++)
-    {
-      if (access(entry[i], 0) < 0) { continue; }
-      if (luaL_dofile(L, entry[i]))
-      {
-        wxMessageBox(wxString(lua_tostring(L, -1), wxConvUTF8), _("Lua runtime error"));
-        return -1;
-      }
-      return 0;
-    }
+    if (done_something) { break; }
+    if (access(entry[i], 0) < 0) { continue; }
+    if (! do_file(L, entry[i])) { return -1; }
+    done_something = true;
+  }
+  if (! done_something)
+  {
     wxMessageBox(_("Usage: create \"entry.txt\" file and put in the same directory with the program"), _("About usage"));
+    return -1;
   }
 
   lua_close(L);

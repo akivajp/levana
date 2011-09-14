@@ -188,7 +188,7 @@ namespace lev
       int GetPort()
       {
         wxIPV4address addr;
-        if (not sock->GetPeer(addr)) { return NULL; }
+        if (not sock->GetPeer(addr)) { return -1; }
         return addr.Service();
       }
 
@@ -540,7 +540,7 @@ namespace lev
       int GetPort()
       {
         wxIPV4address addr;
-        if (not acc->GetLocal(addr)) { return NULL; }
+        if (not acc->GetLocal(addr)) { return -1; }
         return addr.Service();
       }
 

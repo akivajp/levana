@@ -23,16 +23,18 @@ extern "C" {
 namespace lev
 {
 
-  class temp_file : public base
+  class temp_name : public base
   {
     protected:
-      temp_file();
+      temp_name();
     public:
-      virtual ~temp_file();
-      static temp_file* create(const char *prefix, const char *suffix);
+      virtual ~temp_name();
+      static temp_name* create(const std::string &prefix = "temp", const std::string &suffix = "");
       static int create_l(lua_State *L);
-//      virtual type_id get_type_id() const { return LEV_TTEMP_FILE; }
-      virtual const char *get_type_name() const { return "lev.fs.temp_file"; }
+      const std::string& get_name() { return path; }
+      virtual type_id get_type_id() const { return LEV_TTEMP_NAME; }
+      virtual const char *get_type_name() const { return "lev.fs.temp_name"; }
+      static const std::string& tostring(const temp_name *o) { return o->path; }
     protected:
       std::string path;
   };
@@ -45,12 +47,15 @@ namespace lev
     public:
       virtual ~file_path();
       bool clear();
-      static file_path* create(const char *path);
+      static file_path* create(const std::string &path);
       static int create_l(lua_State *L);
+      static file_path* create_temp(const std::string &prefix = "temp",
+                                    const std::string &suffix = "");
+      static int create_temp_l(lua_State *L);
       bool dir_exists();
       bool file_exists();
-      const char *get_dir_path();
-      const char *get_full_path();
+      std::string get_dir_path();
+      std::string get_full_path();
       const char *get_ext();
       const char *get_name();
       long get_size();
@@ -65,6 +70,7 @@ namespace lev
       bool is_file_writable();
       bool mkdir(bool force);
       bool mkdir0() { return mkdir(false); }
+      bool touch();
 
     protected:
       void *_obj;
@@ -76,23 +82,32 @@ namespace lev
       file_system();
     public:
       virtual ~file_system();
-      static file_system* create();
-      static int create_l(lua_State *L);
-      static bool dir_exists(const char *dirpath);
-      static bool file_exists(const char *file_path);
-      static const char *get_cwd();
-      static const char *get_executable_path();
-      const char *get_path();
-      static const char *get_resource_dir();
+      static bool dir_exists(const std::string &dirpath);
+      static bool file_exists(const std::string &file_path);
+      bool find(const std::string &pattern, std::string &file_name);
+      static int find_l(lua_State *L);
+      bool find_next(std::string &file_name);
+      static int find_next_l(lua_State *L);
+      static std::string get_cwd();
+      static std::string get_executable_path();
+      static std::string get_ext(const std::string &path);
+      std::string get_path();
+      static std::string get_resource_dir();
       static long get_size(const char *path);
-      static const char *get_temp_dir();
+      static std::string get_temp_dir();
       virtual type_id get_type_id() const { return LEV_TFILE_SYSTEM; }
       virtual const char *get_type_name() const { return "lev.fs.file_system"; }
-      static bool mkdir(const char *path, bool force);
-      static bool mkdir1(const char *path) { return file_system::mkdir(path, false); }
-      bool set_path(const char *path);
-      static const char *to_file_path(const char *url);
-      static const char *to_url(const char *filename);
+      static bool mkdir(const std::string &path, bool force);
+      static bool mkdir1(const std::string &path) { return file_system::mkdir(path, false); }
+      static file_system* open(const std::string &path);
+      static int open_l(lua_State *L);
+      static bool remove(const char *path, bool force);
+      static bool remove1(const char *path) { return file_system::remove(path, false); }
+      bool set_path(const std::string &path);
+      static std::string to_file_path(const std::string &url);
+      static std::string to_full_path(const std::string &path);
+      static std::string to_url(const std::string &filename);
+      static bool touch(const char *path);
 
     protected:
       void *_obj;

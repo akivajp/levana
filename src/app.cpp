@@ -49,15 +49,8 @@ int luaopen_lev_app(lua_State *L)
       class_<application, handler>("app")
         .def("autoloop", &application::autoloop)
         .def("autoloop", &application::autoloop_with)
-        .def("get_keydown", &application::get_keydown)
-        .def("run", &application::run)
-        .def("sleep", &application::sleep)
-        .def("sleep", &application::sleep_def)
-        .def("track_key", &application::track_key)
-        .def("track_mouse", &application::track_mouse)
-        .def("wait",  &application::wait)
-        .def("yield", &application::yield)
         .property("fps", &application::get_fps, &application::set_fps)
+        .def("get_keydown", &application::get_keydown)
         .property("input", &application::get_instate)
         .property("inrec", &application::get_inrecord)
         .property("inrecord", &application::get_inrecord)
@@ -65,10 +58,19 @@ int luaopen_lev_app(lua_State *L)
         .property("interval", &application::get_interval, &application::set_interval)
         .property("locale", &application::get_locale)
         .property("name", &application::get_name, &application::set_name)
+        .property("pid", &application::get_process_id)
+        .property("process_id", &application::get_process_id)
+        .def("run", &application::run)
+        .def("sleep", &application::sleep)
+        .def("sleep", &application::sleep_def)
         .property("tick", &application::get_tick, &application::set_tick)
         .property("title", &application::get_name, &application::set_name)
         .property("top",  &application::get_top,  &application::set_top)
         .property("top_window",  &application::get_top,  &application::set_top)
+        .def("track_key", &application::track_key)
+        .def("track_mouse", &application::track_mouse)
+        .def("wait",  &application::wait)
+        .def("yield", &application::yield)
         .scope
         [
           def("get", &application::get_app)
@@ -188,7 +190,8 @@ namespace lev
   application::application() : handler(), tick()
   {
     wxGetApp().OnInit();
-    set_name("Levana Application");
+//    set_name("Levana Application");
+    set_name("levana");
     _obj = &(wxGetApp());
     connector = wxGetApp().GetConnector();
     func_getter = wxGetApp().GetFuncGetter();
@@ -281,11 +284,14 @@ namespace lev
     return &loc;
   }
 
-  const char *application::get_name()
+  std::string application::get_name()
   {
-    const std::string name =
-      (const char *)wxGetApp().GetAppName().mb_str(wxConvUTF8);
-    return name.c_str();
+    return (const char *)wxGetApp().GetAppName().mb_str();
+  }
+
+  unsigned long application::get_process_id()
+  {
+    return wxGetProcessId();
   }
 
   luabind::object application::get_tick()
@@ -337,9 +343,10 @@ namespace lev
     return true;
   }
 
-  void application::set_name(const char *name)
+  bool application::set_name(const std::string &name)
   {
-    wxGetApp().SetAppName(wxString(name, wxConvUTF8));
+    wxGetApp().SetAppName(wxString(name.c_str(), wxConvUTF8));
+    return true;
   }
 
   bool application::set_tick(luabind::object func)

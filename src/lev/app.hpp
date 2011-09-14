@@ -40,7 +40,8 @@ namespace lev
       inrecord* get_inrecord();
       instate* get_instate();
       locale* get_locale();
-      const char* get_name();
+      std::string get_name();
+      unsigned long get_process_id();
       luabind::object get_tick();
       frame *get_top();
       virtual type_id get_type_id() const { return LEV_TAPP; }
@@ -50,7 +51,7 @@ namespace lev
       bool run();
       bool set_fps(double fps);
       bool set_interval(double interval_msec);
-      void set_name(const char *name);
+      bool set_name(const std::string &name);
       bool set_tick(luabind::object func);
       void set_top(frame *top);
       bool sleep(int delay_in_msec);
