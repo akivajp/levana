@@ -23,19 +23,25 @@ extern "C" {
 
 namespace lev
 {
+
+  // class dependencies
+  class image;
+
   class canvas : public control
   {
     private:
       canvas() : control() {}
     public:
       ~canvas();
+      bool call_compiled(image *img);
       void clear();
       void clear_color(unsigned char r, unsigned char g, unsigned char b);
+      bool compile(image *img, bool force = false);
+      bool compile1(image *img) { return compile(img, false); }
       static canvas* create(control *parent, int width, int height);
       static int create_l(lua_State *L);
-      bool draw_image(image *bmp, int x = 0, int y = 0, unsigned char alpha = 255);
+      bool draw_image(image *bmp, int x = 0, int y = 0);
       bool draw_image1(image *bmp) { return draw_image(bmp); }
-      bool draw_image3(image *bmp, int x, int y) { return draw_image(bmp, x, y); }
       bool draw_point(point *pt);
       static int draw_l(lua_State *L);
       static int draw_points(lua_State *L);

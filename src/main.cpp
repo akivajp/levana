@@ -124,7 +124,7 @@ int main(int argc, char **argv)
         {
           // argv[i] is directory
           // run entry program in argv[i] directory
-          package::set_path(L, file_system::to_full_path(argv[i]));
+          package::add_path(L, file_system::to_full_path(argv[i]));
           for (int j = 0; j < len; j++)
           {
             std::string filename = argv[i];
@@ -147,20 +147,15 @@ int main(int argc, char **argv)
           if (lev::archive::is_archive(argv[i]))
           {
             // argv[i] is archive
+            boost::shared_ptr<file_path> path(file_path::create(argv[i]));
             std::string entry_name;
             for (int j = 0; j < len; j++)
             {
               if (lev::archive::find_direct(argv[i], entry[j], entry_name)
-                  || lev::archive::find_direct(argv[i], std::string("*/") + entry[j], entry_name))
+                  || lev::archive::find_direct(argv[i], path->get_name() + "/" + entry[j], entry_name))
               {
                 std::string code;
-                int last_slash = entry_name.rfind('/');
-                if (last_slash >= 0)
-                {
-                  std::string prefix = entry_name.substr(0, last_slash);
-                  package::set_archive_dir(L, prefix);
-                }
-                package::set_path(L, file_system::to_full_path(argv[i]));
+                package::add_path(L, file_system::to_full_path(argv[i]));
                 if (! lev::archive::read_direct(argv[i], entry_name, code)) { continue; }
                 if (! do_string(L, code)) { return -1; }
                 done_something = true;

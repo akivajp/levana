@@ -34,6 +34,9 @@ int luaopen_lev_package(lua_State *L)
   object lev = globals(L)["lev"];
   object package = lev["package"];
 
+  register_to(package, "add_path", &package::add_path_l);
+  register_to(package, "add_search", &package::add_search_l);
+  register_to(package, "clear_search", &package::clear_search_l);
   register_to(package, "require", &package::require_l);
   register_to(package, "resolve", &package::resolve_l);
 
@@ -46,6 +49,78 @@ int luaopen_lev_package(lua_State *L)
 namespace lev
 {
 
+  bool package::add_path(lua_State *L, const std::string &path)
+  {
+    open(L);
+    globals(L)["require"]("table");
+    module(L, "lev")
+    [
+      namespace_("package")
+    ];
+    if (! globals(L)["lev"]["package"]["path_list"])
+    {
+      globals(L)["lev"]["package"]["path_list"] = newtable(L);
+    }
+    globals(L)["table"]["insert"](globals(L)["lev"]["package"]["path_list"], 1, path);
+    return true;
+  }
+
+  int package::add_path_l(lua_State *L)
+  {
+    using namespace luabind;
+    const char *path = NULL;
+
+    object t = util::get_merged(L, 1, -1);
+    if (t["path"]) { path = object_cast<const char *>(t["path"]); }
+    else if (t["p"]) { path = object_cast<const char *>(t["p"]); }
+    else if (t["lua.string1"]) { path = object_cast<const char *>(t["lua.string1"]); }
+    if (path == NULL) { luaL_error(L, "path (string) is not given"); }
+
+    lua_pushboolean(L, package::add_path(L, path));
+    return 1;
+  }
+
+  bool package::add_search(lua_State *L, const std::string &search)
+  {
+    open(L);
+    globals(L)["require"]("table");
+    module(L, "lev")
+    [
+      namespace_("package")
+    ];
+    if (! globals(L)["lev"]["package"]["search_list"])
+    {
+      globals(L)["lev"]["package"]["search_list"] = newtable(L);
+    }
+    globals(L)["table"]["insert"](globals(L)["lev"]["package"]["search_list"], 1, search);
+    return true;
+  }
+
+  int package::add_search_l(lua_State *L)
+  {
+    using namespace luabind;
+    const char *search = NULL;
+
+    object t = util::get_merged(L, 1, -1);
+    if (t["search_path"]) { search = object_cast<const char *>(t["search_path"]); }
+    else if (t["search"]) { search = object_cast<const char *>(t["search"]); }
+    else if (t["path"]) { search = object_cast<const char *>(t["path"]); }
+    else if (t["lua.string1"]) { search = object_cast<const char *>(t["lua.string1"]); }
+    if (search == NULL) { luaL_error(L, "path (string) is not given"); }
+
+    lua_pushboolean(L, package::add_search(L, search));
+    return 1;
+  }
+
+  int package::clear_search_l(lua_State *L)
+  {
+    luabind::module(L, "lev") [ namespace_("package") ];
+    luabind::globals(L)["lev"]["package"]["search_path"] = luabind::nil;
+    lua_pushboolean(L, true);
+    return 1;
+  }
+
+
   const char *package::get_archive_dir(lua_State *L)
   {
     open(L);
@@ -57,18 +132,37 @@ namespace lev
     return object_cast<const char *>(globals(L)["lev"]["package"]["archive_dir"]);
   }
 
-  const char *package::get_path(lua_State *L)
+
+  luabind::object package::get_path_list(lua_State *L)
   {
     open(L);
     module(L, "lev")
     [
       namespace_("package")
     ];
-    if (! globals(L)["lev"]["package"]["path"])
+    if (! globals(L)["lev"]["package"]["path_list"])
     {
-      globals(L)["lev"]["package"]["path"] = file_system::get_cwd();
+      object path_list = newtable(L);
+      path_list[1] = "./";
+      globals(L)["lev"]["package"]["path_list"] = path_list;
     }
-    return object_cast<const char *>(globals(L)["lev"]["package"]["path"]);
+    return globals(L)["lev"]["package"]["path_list"];
+  }
+
+  luabind::object package::get_search_list(lua_State *L)
+  {
+    open(L);
+    module(L, "lev")
+    [
+      namespace_("package")
+    ];
+    if (! globals(L)["lev"]["package"]["search_list"])
+    {
+      object search_list = newtable(L);
+      search_list[1] = "";
+      globals(L)["lev"]["package"]["search_list"] = search_list;
+    }
+    return globals(L)["lev"]["package"]["search_list"];
   }
 
   int package::require_l(lua_State *L)
@@ -85,13 +179,10 @@ namespace lev
       return 1;
     }
 
-    const char *path = package::get_path(L);
-    const char *dir = package::get_archive_dir(L);
+    object path_list = package::get_path_list(L);
     boost::shared_ptr<file_path> fpath;
-    fpath.reset(package::resolve(path, module));
-    if (fpath.get() == NULL) { fpath.reset(resolve(path, std::string(module) + ".lua")); }
-    if (fpath.get() == NULL && dir) { fpath.reset(resolve(path, std::string(dir) + "/" + module)); }
-    if (fpath.get() == NULL && dir) { fpath.reset(resolve(path, std::string(dir) + "/" + module + ".lua")); }
+    fpath.reset(package::resolve(L, module));
+    if (fpath.get() == NULL) { fpath.reset(resolve(L, std::string(module) + ".lua")); }
     if (fpath.get() != NULL)
     {
       if (luaL_dofile(L, fpath->get_full_path().c_str()))
@@ -119,63 +210,95 @@ namespace lev
     }
   }
 
-  file_path *package::resolve(const std::string &base_path, const std::string &file)
+  file_path *package::resolve(lua_State *L, const std::string &file)
   {
-    std::string full_path = file_system::to_full_path(base_path);
-    if (file_system::dir_exists(full_path))
-    {
-      std::string path = std::string(full_path) + "/" + file;
-      if (file_system::file_exists(path.c_str()))
-      {
-        return file_path::create(path);
-      }
-    }
-    else if (lev::archive::is_archive(full_path))
-    {
-      if (archive::entry_exists_direct(full_path, file))
-      {
-        std::string app_name = application::get_app()->get_name();
-        std::string ext = file_system::get_ext(file);
-        if (! ext.empty()) { ext = "." + ext; }
+    using namespace luabind;
 
-        file_path *fpath = file_path::create_temp(app_name + "/", ext);
-        if (fpath == NULL) { return NULL; }
-        lev::archive::extract_direct_to(base_path, file, fpath->get_full_path());
-        return fpath;
+    try {
+      object path_list   = package::get_path_list(L);
+      object search_list = package::get_search_list(L);
+
+      for (iterator p(path_list), end; p != end; p++)
+      {
+        const char *path = object_cast<const char *>(*p);
+        if (path == NULL) { throw -1; }
+        std::string full = file_system::to_full_path(path);
+
+        if (file_system::dir_exists(full))
+        {
+          for (iterator s(search_list); s != end; s++)
+          {
+            const char *search = object_cast<const char *>(*s);
+            if (search == NULL) { throw -2; }
+
+            std::string real_path = std::string(full) + "/" + search + "/" + file;
+            if (file_system::file_exists(real_path.c_str()))
+            {
+              return file_path::create(real_path);
+            }
+          }
+        }
+        else if (lev::archive::is_archive(full))
+        {
+          for (iterator s(search_list); s != end; s++)
+          {
+            std::string entry = object_cast<const char *>(*s);
+            if (entry.empty()) { entry = file; }
+            else { entry = entry + "/" + file; }
+            if (archive::entry_exists_direct(full, entry))
+            {
+              std::string app_name = application::get_app()->get_name();
+              std::string ext = file_system::get_ext(file);
+              if (! ext.empty()) { ext = "." + ext; }
+
+              file_path *fpath = file_path::create_temp(app_name + "/", ext);
+              if (fpath == NULL) { return NULL; }
+              lev::archive::extract_direct_to(full, entry, fpath->get_full_path());
+              return fpath;
+            }
+          }
+
+          std::string arc_name = file_system::to_name(path);
+          for (iterator s(search_list); s != end; s++)
+          {
+            std::string entry = object_cast<const char *>(*s);
+            if (entry.empty()) { entry = arc_name + "/" + file; }
+            else { entry = arc_name + "/" + entry + "/" + file; }
+            if (archive::entry_exists_direct(full, entry))
+            {
+              std::string app_name = application::get_app()->get_name();
+              std::string ext = file_system::get_ext(file);
+              if (! ext.empty()) { ext = "." + ext; }
+
+              file_path *fpath = file_path::create_temp(app_name + "/", ext);
+              if (fpath == NULL) { return NULL; }
+              lev::archive::extract_direct_to(full, entry, fpath->get_full_path());
+              return fpath;
+            }
+          }
+        }
       }
     }
+    catch (...) {
+      return NULL;
+    }
+
     return NULL;
   }
 
   int package::resolve_l(lua_State *L)
   {
     using namespace luabind;
-    const char *path = NULL;
     const char *file = NULL;
 
     object t = util::get_merged(L, 1, -1);
 
-    if (t["base_path"]) { path = object_cast<const char *>(t["base_path"]); }
-    else if (t["path"]) { path = object_cast<const char *>(t["path"]); }
-    else if (t["str2"]) // given 2 strings
-    {
-      // take the 1st string
-      path = object_cast<const char *>(t["str1"]);
-    }
-    if (path == NULL) { path = package::get_path(L); }
-
     if (t["file"]) { file = object_cast<const char *>(t["file"]); }
     else if (t["f"]) { file = object_cast<const char *>(t["f"]); }
-    else if (t["str2"]) { file = object_cast<const char *>(t["str2"]); }
-    else if (t["str1"]) { file = object_cast<const char *>(t["str1"]); }
+    else if (t["lua.string1"]) { file = object_cast<const char *>(t["lua.string1"]); }
     if (file == NULL) { luaL_error(L, "file (string) was not given."); }
 
-    object fpath = globals(L)["lev"]["package"]["resolve_c"](path, file);
-    if (! fpath && package::get_archive_dir(L))
-    {
-      std::string new_file = std::string(package::get_archive_dir(L)) + "/" + file;
-      fpath = globals(L)["lev"]["package"]["resolve_c"](path, new_file);
-    }
+    object fpath = globals(L)["lev"]["package"]["resolve_c"](file);
     fpath.push(L);
     return 1;
   }
@@ -188,17 +311,6 @@ namespace lev
       namespace_("package")
     ];
     globals(L)["lev"]["package"]["archive_dir"] = archive_dir;
-    return true;
-  }
-
-  bool package::set_path(lua_State *L, const std::string &path)
-  {
-    open(L);
-    module(L, "lev")
-    [
-      namespace_("package")
-    ];
-    globals(L)["lev"]["package"]["path"] = path;
     return true;
   }
 

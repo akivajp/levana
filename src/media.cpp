@@ -64,15 +64,15 @@ namespace lev
 
     if (t["parent"]) { p = object_cast<control *>(t["parent"]); }
     else if (t["p"]) { p = object_cast<control *>(t["p"]); }
-    else if (t["udata"]) { p = object_cast<control *>(t["udata"]); }
+    else if (t["lua.userdata1"]) { p = object_cast<control *>(t["lua.userdata1"]); }
 
     if (t["width"]) { w = object_cast<int>(t["width"]); }
     else if (t["w"]) { w = object_cast<int>(t["w"]); }
-    else if (t["num1"]) { w = object_cast<int>(t["num1"]); }
+    else if (t["lua.number1"]) { w = object_cast<int>(t["lua.number1"]); }
 
     if (t["height"]) { h = object_cast<int>(t["height"]); }
     else if (t["h"]) { h = object_cast<int>(t["h"]); }
-    else if (t["num2"]) { h = object_cast<int>(t["num2"]); }
+    else if (t["lua.number2"]) { h = object_cast<int>(t["lua.number2"]); }
 
     object func = globals(L)["lev"]["classes"]["player"]["create_c"];
     object new_player = func(p, w, h);

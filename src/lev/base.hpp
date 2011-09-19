@@ -41,6 +41,7 @@ namespace lev
             LEV_TCONTROL_END,
             LEV_TMENU,
             LEV_TSYSTRAY,
+            LEV_TTIMER,
           LEV_THANDLER_END,
 
           LEV_TIMAGE,

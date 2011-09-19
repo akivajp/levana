@@ -78,37 +78,37 @@ namespace lev
     else if (t["sizer"]) { o = t["sizer"]; }
     else if (t["sz"]) { o = t["sz"]; }
     else if (t["s"]) { o = t["s"]; }
-    else if (t["udata"]) { o = t["udata"]; }
+    else if (t["lua.userdata1"]) { o = t["lua.userdata1"]; }
 
     if (o)
     {
       if (t["proportion"]) { p = object_cast<int>(t["proportion"]); }
       else if (t["prop"]) { p = object_cast<int>(t["prop"]); }
       else if (t["p"]) { p = object_cast<int>(t["p"]); }
-      else if (t["num1"]) { p = object_cast<int>(t["num1"]); }
+      else if (t["lua.number1"]) { p = object_cast<int>(t["lua.number1"]); }
 
       if (t["border"]) { b = object_cast<int>(t["border"]); }
       else if (t["b"]) { b = object_cast<int>(t["b"]); }
-      else if (t["num2"]) { b = object_cast<int>(t["num2"]); }
+      else if (t["lua.number2"]) { b = object_cast<int>(t["lua.number2"]); }
     }
     else
     {
       if (t["width"]) { w = object_cast<int>(t["width"]); }
       else if (t["w"]) { w = object_cast<int>(t["w"]); }
-      else if (t["num1"]) { w = object_cast<int>(t["num1"]); }
+      else if (t["lua.number1"]) { w = object_cast<int>(t["lua.number1"]); }
 
       if (t["height"]) { h = object_cast<int>(t["height"]); }
       else if (t["h"]) { h = object_cast<int>(t["h"]); }
-      else if (t["num2"]) { h = object_cast<int>(t["num2"]); }
+      else if (t["lua.number2"]) { h = object_cast<int>(t["lua.number2"]); }
 
       if (t["proportion"]) { p = object_cast<int>(t["proportion"]); }
       else if (t["prop"]) { p = object_cast<int>(t["prop"]); }
       else if (t["p"]) { p = object_cast<int>(t["p"]); }
-      else if (t["num3"]) { p = object_cast<int>(t["num3"]); }
+      else if (t["lua.number3"]) { p = object_cast<int>(t["lua.number3"]); }
 
       if (t["border"]) { b = object_cast<int>(t["border"]); }
       else if (t["b"]) { b = object_cast<int>(t["b"]); }
-      else if (t["num4"]) { b = object_cast<int>(t["num4"]); }
+      else if (t["lua.number4"]) { b = object_cast<int>(t["lua.number4"]); }
     }
 
     if (o)

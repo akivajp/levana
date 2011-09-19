@@ -34,7 +34,6 @@ namespace lev
       const std::string& get_name() { return path; }
       virtual type_id get_type_id() const { return LEV_TTEMP_NAME; }
       virtual const char *get_type_name() const { return "lev.fs.temp_name"; }
-      static const std::string& tostring(const temp_name *o) { return o->path; }
     protected:
       std::string path;
   };
@@ -56,8 +55,8 @@ namespace lev
       bool file_exists();
       std::string get_dir_path();
       std::string get_full_path();
-      const char *get_ext();
-      const char *get_name();
+      std::string get_ext();
+      std::string get_name();
       long get_size();
       std::string get_url();
       virtual type_id get_type_id() const { return LEV_TFILE_PATH; }
@@ -106,6 +105,7 @@ namespace lev
       bool set_path(const std::string &path);
       static std::string to_file_path(const std::string &url);
       static std::string to_full_path(const std::string &path);
+      static std::string to_name(const std::string &path_to_file);
       static std::string to_url(const std::string &filename);
       static bool touch(const char *path);
 

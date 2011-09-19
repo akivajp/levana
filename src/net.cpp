@@ -430,17 +430,17 @@ namespace lev
     if (t["host"]) { host = object_cast<const char *>(t["host"]); }
     else if (t["address"]) { host = object_cast<const char *>(t["address"]); }
     else if (t["addr"]) { host = object_cast<const char *>(t["addr"]); }
-    else if (t["str1"]) { host = object_cast<const char *>(t["str1"]); }
+    else if (t["lua.string1"]) { host = object_cast<const char *>(t["lua.string1"]); }
 
     if (t["service"]) { os << t["service"]; }
     else if (t["serv"]) { os << t["serv"]; }
     else if (t["port"]) { os << t["port"]; }
-    else if (t["str2"]) { os << t["str2"]; }
-    else if (t["num1"]) { os << t["num1"]; }
+    else if (t["lua.string2"]) { os << t["lua.string2"]; }
+    else if (t["lua.number1"]) { os << t["lua.number1"]; }
 
     if (t["wait"]) { wait = object_cast<bool>(t["wait"]); }
     else if (t["w"]) { wait = object_cast<bool>(t["w"]); }
-    else if (t["bool1"]) { wait = object_cast<bool>(t["bool1"]); }
+    else if (t["lua.boolean1"]) { wait = object_cast<bool>(t["lua.boolean1"]); }
 
     if (host == NULL) { return 0; }
     if (os.str() == "") { return 0; }

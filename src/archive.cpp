@@ -345,7 +345,7 @@ error:
     object t = util::get_merged(L, 2, -1);
 
     if (t["pattern"]) { pattern = object_cast<const char *>(t["pattern"]); }
-    else if (t["str1"]) { pattern = object_cast<const char *>(t["str1"]); }
+    else if (t["lua.string1"]) { pattern = object_cast<const char *>(t["lua.string1"]); }
 
     std::string name;
     bool res = arc->find(pattern, name);
@@ -381,11 +381,11 @@ error:
     else if (t["archive"]) { archive = object_cast<const char *>(t["archive"]); }
     else if (t["arc"]) { archive = object_cast<const char *>(t["arc"]); }
     else if (t["a"]) { archive = object_cast<const char *>(t["a"]); }
-    else if (t["str1"]) { archive = object_cast<const char *>(t["str1"]); }
+    else if (t["lua.string1"]) { archive = object_cast<const char *>(t["lua.string1"]); }
     if (archive == NULL) { luaL_error(L, "archive (string) is not specified."); }
 
     if (t["pattern"]) { pattern = object_cast<const char *>(t["pattern"]); }
-    else if (t["str2"]) { pattern= object_cast<const char *>(t["str2"]); }
+    else if (t["lua.string2"]) { pattern= object_cast<const char *>(t["lua.string2"]); }
 
     std::string entry;
     if (archive::find_direct(archive, pattern, entry))
@@ -582,13 +582,13 @@ error:
     if (t["entry_name"]) { entry = object_cast<const char *>(t["entry_name"]); }
     else if (t["entry"]) { entry = object_cast<const char *>(t["entry"]); }
     else if (t["e"]) { entry = object_cast<const char *>(t["e"]); }
-    else if (t["str1"]) { entry = object_cast<const char *>(t["str1"]); }
+    else if (t["lua.string1"]) { entry = object_cast<const char *>(t["lua.string1"]); }
     if (entry == NULL) { luaL_error(L, "entry (string) is not specified."); }
 
     if (t["block_size"]) { bs = object_cast<int>(t["block_size"]); }
     else if (t["block"]) { bs = object_cast<int>(t["block"]); }
     else if (t["bs"]) { bs = object_cast<int>(t["bs"]); }
-    else if (t["num1"]) { bs = object_cast<int>(t["num1"]); }
+    else if (t["lua.number1"]) { bs = object_cast<int>(t["lua.number1"]); }
 
     std::string data;
     if (arc->read(entry, data, bs))
@@ -631,19 +631,19 @@ error:
     else if (t["archive"]) { archive = object_cast<const char *>(t["archive"]); }
     else if (t["arc"]) { archive = object_cast<const char *>(t["arc"]); }
     else if (t["a"]) { archive = object_cast<const char *>(t["a"]); }
-    else if (t["str1"]) { archive = object_cast<const char *>(t["str1"]); }
+    else if (t["lua.string1"]) { archive = object_cast<const char *>(t["lua.string1"]); }
     if (archive == NULL) { luaL_error(L, "archive (string) is not specified."); }
 
     if (t["entry_name"]) { entry = object_cast<const char *>(t["entry_name"]); }
     else if (t["entry"]) { entry = object_cast<const char *>(t["entry"]); }
     else if (t["e"]) { entry = object_cast<const char *>(t["e"]); }
-    else if (t["str2"]) { entry = object_cast<const char *>(t["str2"]); }
+    else if (t["lua.string2"]) { entry = object_cast<const char *>(t["lua.string2"]); }
     if (entry == NULL) { luaL_error(L, "entry (string) is not specified."); }
 
     if (t["block_size"]) { bs = object_cast<int>(t["block_size"]); }
     else if (t["block"]) { bs = object_cast<int>(t["block"]); }
     else if (t["bs"]) { bs = object_cast<int>(t["bs"]); }
-    else if (t["num1"]) { bs = object_cast<int>(t["num1"]); }
+    else if (t["lua.number1"]) { bs = object_cast<int>(t["lua.number1"]); }
 
     std::string data;
     if (archive::read_direct(archive, entry, data, bs))

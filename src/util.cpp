@@ -133,7 +133,7 @@ namespace lev
     object t = util::get_merged(L, 1, -1);
     if (t["code"]) { code = object_cast<const char *>(t["code"]); }
     else if (t["c"]) { code = object_cast<const char *>(t["c"]); }
-    else if (t["str1"]) { code = object_cast<const char *>(t["str1"]); }
+    else if (t["lua.string1"]) { code = object_cast<const char *>(t["lua.string1"]); }
 
     try {
       std::string prefix = application::get_app()->get_name() + "/" + "localcode";
@@ -188,10 +188,10 @@ namespace lev
       switch (type(arg))
       {
         case LUA_TBOOLEAN:
-          target["bool"] = arg;
+          target["lua.boolean"] = arg;
           for (int j = 1; ; ++j)
           {
-            std::string key = boost::io::str(boost::format("bool%1%") % j);
+            std::string key = boost::io::str(boost::format("lua.boolean%1%") % j);
             if (!target[key.c_str()])
             {
               target[key.c_str()] = arg;
@@ -200,10 +200,10 @@ namespace lev
           }
           break;
         case LUA_TFUNCTION:
-          target["func"] = arg;
+          target["lua.function"] = arg;
           for (int j = 1; ; ++j)
           {
-            std::string key = boost::io::str(boost::format("func%1%") % j);
+            std::string key = boost::io::str(boost::format("lua.function%1%") % j);
             if (!target[key.c_str()])
             {
               target[key.c_str()] = arg;
@@ -212,10 +212,10 @@ namespace lev
           }
           break;
         case LUA_TNUMBER:
-          target["num"] = arg;
+          target["lua.number"] = arg;
           for (int j = 1; ; ++j)
           {
-            std::string key = boost::io::str(boost::format("num%1%") % j);
+            std::string key = boost::io::str(boost::format("lua.number%1%") % j);
             if (!target[key.c_str()])
             {
               target[key.c_str()] = arg;
@@ -224,10 +224,10 @@ namespace lev
           }
           break;
         case LUA_TSTRING:
-          target["str"] = arg;
+          target["lua.string"] = arg;
           for (int j = 1; ; ++j)
           {
-            std::string key = boost::io::str(boost::format("str%1%") % j);
+            std::string key = boost::io::str(boost::format("lua.string%1%") % j);
             if (!target[key.c_str()])
             {
               target[key.c_str()] = arg;
@@ -279,10 +279,10 @@ namespace lev
               }
             }
           }
-          target["udata"] = arg;
+          target["lua.userdata1"] = arg;
           for (int j = 1; ; ++j)
           {
-            std::string key = boost::io::str(boost::format("udata%1%") % j);
+            std::string key = boost::io::str(boost::format("lua.userdata1%1%") % j);
             if (!target[key.c_str()])
             {
               target[key.c_str()] = arg;
@@ -298,6 +298,18 @@ namespace lev
 
     target.push(L);
     return 1;
+  }
+
+  bool util::print_table(luabind::object t)
+  {
+    using namespace luabind;
+
+    lua_State *L = t.interpreter();
+    for (iterator i(t), end; i != end; i++)
+    {
+      globals(L)["print"](i.key(), *i);
+    }
+    return true;
   }
 
   // find "value" from "t" and remove first one

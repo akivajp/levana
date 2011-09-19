@@ -36,9 +36,9 @@ int luaopen_lev_draw(lua_State *L)
       class_<canvas, control>("canvas")
         .def("clear", &canvas::clear)
         .def("clear", &canvas::clear_color)
+        .def("compile", &canvas::compile)
+        .def("compile", &canvas::compile1)
         .def("draw_image", &canvas::draw_image)
-        .def("draw_image", &canvas::draw_image1)
-        .def("draw_image", &canvas::draw_image3)
         .def("draw_point", &canvas::draw_point)
         .def("enable_alpha_blending", &canvas::enable_alpha_blending0)
         .def("enable_alpha_blending", &canvas::enable_alpha_blending)
@@ -107,6 +107,10 @@ namespace lev
 
   canvas::~canvas() { }
 
+  bool canvas::call_compiled(image *img)
+  {
+    return img->call_compiled(this);
+  }
 
   void canvas::clear()
   {
@@ -121,6 +125,11 @@ namespace lev
 //    glClearColor(r / 255.0, g / 255.0, b / 255.0, 1.0);
     glClearColor(r / 255.0, g / 255.0, b / 255.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT);
+  }
+
+  bool canvas::compile(image *img, bool force)
+  {
+    return img->compile(this, force);
   }
 
   canvas* canvas::create(control *parent, int width, int height)
@@ -164,15 +173,15 @@ namespace lev
 
     if (t["parent"]) { p = t["parent"]; }
     else if (t["p"]) { p = t["p"]; }
-    else if (t["udata"]) { p = t["udata"]; }
+    else if (t["lua.userdata1"]) { p = t["lua.userdata1"]; }
 
     if (t["width"]) { w = object_cast<int>(t["width"]); }
     else if (t["w"]) { w = object_cast<int>(t["w"]); }
-    else if (t["num1"]) { w = object_cast<int>(t["num1"]); }
+    else if (t["lua.number1"]) { w = object_cast<int>(t["lua.number1"]); }
 
     if (t["height"]) { h = object_cast<int>(t["height"]); }
     else if (t["h"]) { h = object_cast<int>(t["h"]); }
-    else if (t["num2"]) { h = object_cast<int>(t["num2"]); }
+    else if (t["lua.number2"]) { h = object_cast<int>(t["lua.number2"]); }
 
     object func = globals(L)["lev"]["classes"]["canvas"]["create_c"];
     object result = func(p, w, h);
@@ -180,11 +189,17 @@ namespace lev
     return 1;
   }
 
-  bool canvas::draw_image(image *bmp, int x, int y, unsigned char alpha)
+  bool canvas::draw_image(image *bmp, int x, int y)
   {
-    unsigned char *data = NULL;
+    if (bmp->is_compiled())
+    {
+      set_current();
+      glRasterPos2i(x, y + bmp->get_h());
+      return bmp->call_compiled(this);
+    }
 
     try {
+      boost::shared_array<unsigned char> data;
       const int w = bmp->get_w();
       const int h = bmp->get_h();
       wxBitmap *b = (wxBitmap*)bmp->get_rawobj();
@@ -192,7 +207,7 @@ namespace lev
       pixels.UseAlpha();
       wxAlphaPixelData::Iterator p(pixels), rawStart;
 
-      data = new unsigned char [4 * w * h];
+      data.reset(new unsigned char [4 * w * h]);
       for (int i = 0 ; i < h ; i++)
       {
         rawStart = p;
@@ -202,7 +217,7 @@ namespace lev
           data[4*k]     = p.Red();
           data[4*k + 1] = p.Green();
           data[4*k + 2] = p.Blue();
-          data[4*k + 3] = (alpha / 255.0) * p.Alpha();
+          data[4*k + 3] = p.Alpha();
           p++;
         }
         p = rawStart;
@@ -211,12 +226,10 @@ namespace lev
 
       set_current();
       glRasterPos2i(x, y + h);
-      glDrawPixels(bmp->get_w(), bmp->get_h(), GL_RGBA, GL_UNSIGNED_BYTE, data);
-      delete[] data;
+      glDrawPixels(bmp->get_w(), bmp->get_h(), GL_RGBA, GL_UNSIGNED_BYTE, data.get());
       return true;
     }
     catch (...) {
-      delete data;
       return false;
     }
   }
@@ -234,19 +247,14 @@ namespace lev
     {
       image *img = object_cast<image *>(t["lev.image"]);
       int x = 0, y = 0;
-      unsigned char alpha = 255;
 
       if (t["x"]) { x = object_cast<int>(t["x"]); }
-      else if (t["num1"]) { x = object_cast<int>(t["num1"]); }
+      else if (t["lua.number1"]) { x = object_cast<int>(t["lua.number1"]); }
 
       if (t["y"]) { y = object_cast<int>(t["y"]); }
-      else if (t["num2"]) { y = object_cast<int>(t["num2"]); }
+      else if (t["lua.number2"]) { y = object_cast<int>(t["lua.number2"]); }
 
-      if (t["alpha"]) { alpha = object_cast<int>(t["alpha"]); }
-      else if (t["a"]) { alpha = object_cast<int>(t["a"]); }
-      else if (t["num3"]) { alpha = object_cast<int>(t["num3"]); }
-
-      cv->draw_image(img, x, y, alpha);
+      cv->draw_image(img, x, y);
       lua_pushboolean(L, true);
       return 1;
     }
@@ -349,19 +357,13 @@ namespace lev
 
   bool canvas::print(const char *text)
   {
-    image *img = NULL;
     try {
-      img = image::create(600, 400);
-//      img->clear_with(color(0, 255, 0));
-      img->draw_text(text, 0, 0, 0, color::white());
-      draw_image(img, 200, 80, 200);
+      boost::shared_ptr<image> img(image::string(text, NULL, NULL, NULL));
+      draw_image(img.get(), 200, 80);
     }
     catch (...) {
-      delete img;
       return false;
     }
-    delete img;
-    return true;
   }
 
   void canvas::set_current()

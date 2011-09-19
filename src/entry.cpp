@@ -98,6 +98,22 @@ int luaopen_lev_base(lua_State *L)
   return 0;
 }
 
+int luaopen_lev_lua(lua_State *L)
+{
+  using namespace luabind;
+
+  open(L);
+  globals(L)["require"]("debug");
+  globals(L)["require"]("io");
+  globals(L)["require"]("math");
+  globals(L)["require"]("os");
+  globals(L)["require"]("string");
+  globals(L)["require"]("table");
+
+  globals(L)["package"]["loaded"]["lev.lua"] = true;
+  return 0;
+}
+
 int luaopen_lev_std(lua_State *L)
 {
   using namespace luabind;
@@ -124,11 +140,13 @@ int luaopen_lev_std(lua_State *L)
   globals(L)["require"]("lev.net");
   globals(L)["require"]("lev.package");
   globals(L)["require"]("lev.sound");
+  globals(L)["require"]("lev.string");
   globals(L)["require"]("lev.timer");
   globals(L)["require"]("lev.util");
 
   globals(L)["app"] = globals(L)["lev"]["app"]();
   globals(L)["mixer"] = globals(L)["lev"]["sound"]["mixer"]();
+  globals(L)["package"]["loaded"]["lev.std"] = globals(L)["lev"];
   globals(L)["collectgarbage"]();
   return 0;
 }
@@ -154,11 +172,13 @@ namespace lev
     register_to(globals(L)["package"]["preload"], "lev.info", luaopen_lev_info);
     register_to(globals(L)["package"]["preload"], "lev.input", luaopen_lev_input);
     register_to(globals(L)["package"]["preload"], "lev.locale", luaopen_lev_locale);
+    register_to(globals(L)["package"]["preload"], "lev.lua", luaopen_lev_lua);
     register_to(globals(L)["package"]["preload"], "lev.net", luaopen_lev_net);
     register_to(globals(L)["package"]["preload"], "lev.package", luaopen_lev_package);
     register_to(globals(L)["package"]["preload"], "lev.prim", luaopen_lev_prim);
     register_to(globals(L)["package"]["preload"], "lev.sound", luaopen_lev_sound);
     register_to(globals(L)["package"]["preload"], "lev.std", luaopen_lev_std);
+    register_to(globals(L)["package"]["preload"], "lev.string", luaopen_lev_string);
     register_to(globals(L)["package"]["preload"], "lev.timer", luaopen_lev_timer);
     register_to(globals(L)["package"]["preload"], "lev.util", luaopen_lev_util);
   }

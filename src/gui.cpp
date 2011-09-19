@@ -346,38 +346,38 @@ namespace lev
     else if (t["msg"])  { msg = object_cast<const char *>(t["msg"]); }
     else if (t["mes"])  { msg = object_cast<const char *>(t["mes"]); }
     else if (t["m"])    { msg = object_cast<const char *>(t["m"]); }
-    else if (t["str1"]) { msg = object_cast<const char *>(t["str1"]); }
+    else if (t["lua.string1"]) { msg = object_cast<const char *>(t["lua.string1"]); }
 
     if (t["default_path"])  { def_path = object_cast<const char *>(t["default_path"]); }
     else if (t["def_path"]) { def_path = object_cast<const char *>(t["def_path"]); }
     else if (t["path"])     { def_path = object_cast<const char *>(t["path"]); }
-    else if (t["str2"])     { def_path = object_cast<const char *>(t["str2"]); }
+    else if (t["lua.string2"])     { def_path = object_cast<const char *>(t["lua.string2"]); }
 
     if (t["default_file"])  { def_file = object_cast<const char *>(t["default_file"]); }
     else if (t["def_file"])  { def_file = object_cast<const char *>(t["def_file"]); }
     else if (t["file"])  { def_file = object_cast<const char *>(t["file"]); }
-    else if (t["str3"])  { def_file = object_cast<const char *>(t["str3"]); }
+    else if (t["lua.string3"])  { def_file = object_cast<const char *>(t["lua.string3"]); }
 
     if (t["default_extension"]) { def_ext = object_cast<const char *>(t["default_extension"]); }
     else if (t["default_ext"])  { def_ext = object_cast<const char *>(t["default_ext"]); }
     else if (t["def_ext"])      { def_ext = object_cast<const char *>(t["def_ext"]); }
     else if (t["extension"])    { def_ext = object_cast<const char *>(t["extension"]); }
     else if (t["ext"])          { def_ext = object_cast<const char *>(t["ext"]); }
-    else if (t["str4"])         { def_ext = object_cast<const char *>(t["str4"]); }
+    else if (t["lua.string4"])         { def_ext = object_cast<const char *>(t["lua.string4"]); }
 
     if (t["wildcard"]) { wildcard = object_cast<const char *>(t["wildcard"]); }
     else if (t["wild"]) { wildcard = object_cast<const char *>(t["wild"]); }
     else if (t["wc"]) { wildcard = object_cast<const char *>(t["wc"]); }
-    else if (t["str5"]) { wildcard = object_cast<const char *>(t["str5"]); }
+    else if (t["lua.string5"]) { wildcard = object_cast<const char *>(t["lua.string5"]); }
 
     if (t["flags"]) { flags = object_cast<const char *>(t["flags"]); }
     else if (t["flag"]) { flags = object_cast<const char *>(t["flag"]); }
     else if (t["f"]) { flags = object_cast<const char *>(t["f"]); }
-    else if (t["str6"]) { flags = object_cast<const char *>(t["str6"]); }
+    else if (t["lua.string6"]) { flags = object_cast<const char *>(t["lua.string6"]); }
 
     if (t["parent"]) { parent = object_cast<control *>(t["parent"]); }
     else if (t["p"]) { parent = object_cast<control *>(t["p"]); }
-    else if (t["udata1"]) { parent = object_cast<control *>(t["udata1"]); }
+    else if (t["lua.userdata1"]) { parent = object_cast<control *>(t["lua.userdata1"]); }
     if (parent) { p = (wxWindow *)parent->get_rawobj(); }
 
     if (strcmp(flags, "r") == 0) { f = f | wxFD_OPEN; }
@@ -420,16 +420,16 @@ namespace lev
     else if (t["msg"]) { m = object_cast<const char *>(t["msg"]); }
     else if (t["mes"]) { m = object_cast<const char *>(t["mes"]); }
     else if (t["m"]) { m = object_cast<const char *>(t["m"]); }
-    else if (t["str1"]) { m = object_cast<const char *>(t["str1"]); }
+    else if (t["lua.string1"]) { m = object_cast<const char *>(t["lua.string1"]); }
 
     if (t["caption"]) { c = object_cast<const char *>(t["caption"]); }
     else if (t["cap"]) { c = object_cast<const char *>(t["cap"]); }
     else if (t["c"]) { c = object_cast<const char *>(t["c"]); }
-    else if (t["str2"]) { c = object_cast<const char *>(t["str2"]); }
+    else if (t["lua.string2"]) { c = object_cast<const char *>(t["lua.string2"]); }
 
     if (t["style"]) { s = object_cast<const char *>(t["style"]); }
     else if (t["s"]) { s = object_cast<const char *>(t["s"]); }
-    else if (t["str3"]) { s = object_cast<const char *>(t["str3"]); }
+    else if (t["lua.string3"]) { s = object_cast<const char *>(t["lua.string3"]); }
 
     msg = wxString(m, wxConvUTF8);
     cap = wxString(c, wxConvUTF8);
@@ -638,15 +638,15 @@ namespace lev
 
     if (t["parent"]) { p = object_cast<control *>(t["parent"]); }
     else if (t["p"]) { p = object_cast<control *>(t["p"]); }
-    else if (t["udata"]) { p = object_cast<control *>(t["udata"]); }
+    else if (t["lua.userdata1"]) { p = object_cast<control *>(t["lua.userdata1"]); }
 
     if (t["width"]) { w = object_cast<int>(t["width"]); }
     else if (t["w"]) { w = object_cast<int>(t["w"]); }
-    else if (t["num1"]) { w = object_cast<int>(t["num1"]); }
+    else if (t["lua.number1"]) { w = object_cast<int>(t["lua.number1"]); }
 
     if (t["height"]) { h = object_cast<int>(t["height"]); }
     else if (t["h"]) { h = object_cast<int>(t["h"]); }
-    else if (t["num2"]) { h = object_cast<int>(t["num2"]); }
+    else if (t["lua.number2"]) { h = object_cast<int>(t["lua.number2"]); }
 
     object func = globals(L)["lev"]["classes"]["code_edit"]["create_c"];
     object stc = func(p, w, h);
@@ -797,15 +797,15 @@ namespace lev
 
     if (t["parent"]) { p = t["parent"]; }
     else if (t["p"]) { p = t["p"]; }
-    else if (t["udata"]) { p = t["udata"]; }
+    else if (t["lua.userdata1"]) { p = t["lua.userdata1"]; }
 
     if (t["width"]) { w = object_cast<int>(t["width"]); }
     else if (t["w"]) { w = object_cast<int>(t["w"]); }
-    else if (t["num1"]) { w = object_cast<int>(t["num1"]); }
+    else if (t["lua.number1"]) { w = object_cast<int>(t["lua.number1"]); }
 
     if (t["height"]) { h = object_cast<int>(t["height"]); }
     else if (t["h"]) { h = object_cast<int>(t["h"]); }
-    else if (t["num2"]) { h = object_cast<int>(t["num2"]); }
+    else if (t["lua.number2"]) { h = object_cast<int>(t["lua.number2"]); }
 
     object func = globals(L)["lev"]["classes"]["htmlview"]["create_c"];
     object html = func(p, w, h);
@@ -915,20 +915,20 @@ namespace lev
 
     if (t["parent"]) { p = t["parent"]; }
     else if (t["p"]) { p = t["p"]; }
-    else if (t["udata"]) { p = t["udata"]; }
+    else if (t["lua.userdata1"]) { p = t["lua.userdata1"]; }
 
     if (t["width"]) { w = object_cast<int>(t["width"]); }
     else if (t["w"]) { w = object_cast<int>(t["w"]); }
-    else if (t["num1"]) { w = object_cast<int>(t["num1"]); }
+    else if (t["lua.number1"]) { w = object_cast<int>(t["lua.number1"]); }
 
     if (t["height"]) { h = object_cast<int>(t["height"]); }
     else if (t["h"]) { h = object_cast<int>(t["h"]); }
-    else if (t["num2"]) { h = object_cast<int>(t["num2"]); }
+    else if (t["lua.number2"]) { h = object_cast<int>(t["lua.number2"]); }
 
     if (t["value"]) { v = object_cast<const char *>(t["value"]); }
     else if (t["val"]) { v = object_cast<const char *>(t["val"]); }
     else if (t["v"]) { v = object_cast<const char *>(t["v"]); }
-    else if (t["str1"]) { v = object_cast<const char *>(t["str1"]); }
+    else if (t["lua.string1"]) { v = object_cast<const char *>(t["lua.string1"]); }
 
     if (t["style"]) { s = object_cast<const char *>(t["style"]); }
     else if (t["s"]) { s = object_cast<const char *>(t["s"]); }

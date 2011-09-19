@@ -111,7 +111,7 @@ namespace lev
 
     if (t["description"]) { desc = object_cast<const char *>(t["description"]); }
     else if (t["desc"]) { desc = object_cast<const char *>(t["desc"]); }
-    else if (t["str1"]) { desc = object_cast<const char *>(t["str1"]); }
+    else if (t["lua.string1"]) { desc = object_cast<const char *>(t["lua.string1"]); }
 
     if (desc)
     {

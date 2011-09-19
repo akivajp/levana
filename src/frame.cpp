@@ -88,26 +88,26 @@ namespace lev
 
     if (t["parent"]) { p = object_cast<control *>(t["parent"]); }
     else if (t["p"]) { p = object_cast<control *>(t["p"]); }
-    else if (t["udata"]) { p = object_cast<control *>(t["udata"]); }
+    else if (t["lua.userdata1"]) { p = object_cast<control *>(t["lua.userdata1"]); }
 
     if (t["caption"]) { title = object_cast<const char *>(t["caption"]); }
     else if (t["cap"]) { title = object_cast<const char *>(t["cap"]); }
     else if (t["c"]) { title = object_cast<const char *>(t["c"]); }
     else if (t["title"]) { title = object_cast<const char *>(t["title"]); }
     else if (t["t"]) { title = object_cast<const char *>(t["t"]); }
-    else if (t["str1"]) { title = object_cast<const char *>(t["str1"]); }
+    else if (t["lua.string1"]) { title = object_cast<const char *>(t["lua.string1"]); }
 
     if (t["width"]) { w = object_cast<int>(t["width"]); }
     else if (t["w"]) { w = object_cast<int>(t["w"]); }
-    else if (t["num1"]) { w = object_cast<int>(t["num1"]); }
+    else if (t["lua.number1"]) { w = object_cast<int>(t["lua.number1"]); }
 
     if (t["height"]) { h = object_cast<int>(t["height"]); }
     else if (t["h"]) { h = object_cast<int>(t["h"]); }
-    else if (t["num2"]) { h = object_cast<int>(t["num2"]); }
+    else if (t["lua.number2"]) { h = object_cast<int>(t["lua.number2"]); }
 
     if (t["style"]) { s = object_cast<const char *>(t["style"]); }
     else if (t["s"]) { s = object_cast<const char *>(t["s"]); }
-    else if (t["str2"]) { s = object_cast<const char *>(t["str2"]); }
+    else if (t["lua.string2"]) { s = object_cast<const char *>(t["lua.string2"]); }
 
     if (strstr(s, "fixed")) { style = style & ~wxRESIZE_BORDER; }
 

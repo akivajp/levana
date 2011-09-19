@@ -61,16 +61,16 @@ namespace lev
 
     if (t["text"]) { text = object_cast<const char *>(t["text"]); }
     else if (t["label"]) { text = object_cast<const char *>(t["label"]); }
-    else if (t["str1"]) { text = object_cast<const char *>(t["str1"]); }
+    else if (t["lua.string1"]) { text = object_cast<const char *>(t["lua.string1"]); }
 
     if (t["help"]) { help = object_cast<const char *>(t["help"]); }
-    else if (t["str2"]) { help = object_cast<const char *>(t["str2"]); }
+    else if (t["lua.string2"]) { help = object_cast<const char *>(t["lua.string2"]); }
 
     if (t["style"]) { style = object_cast<const char *>(t["style"]); }
     else if (t["kind"]) { style = object_cast<const char *>(t["kind"]); }
     else if (t["type"]) { style = object_cast<const char *>(t["type"]); }
     else if (t["s"]) { style = object_cast<const char *>(t["s"]); }
-    else if (t["str3"]) { style = object_cast<const char *>(t["str3"]); }
+    else if (t["lua.string3"]) { style = object_cast<const char *>(t["lua.string3"]); }
 
     if (text == NULL) { kind == wxITEM_SEPARATOR; }
     else if (strstr(style, "sep")) { kind = wxITEM_SEPARATOR; }
@@ -136,28 +136,29 @@ namespace lev
     if (t["text"]) { str = object_cast<const char *>(t["text"]); }
     else if (t["label"]) { str = object_cast<const char *>(t["label"]); }
     else if (t["string"]) { str = object_cast<const char *>(t["string"]); }
-    else if (t["str1"]) { str = object_cast<const char *>(t["str1"]); }
+    else if (t["lua.string1"]) { str = object_cast<const char *>(t["lua.string1"]); }
 
     if (t["help_string"]) { help = object_cast<const char *>(t["help_string"]); }
     else if (t["help_str"]) { help = object_cast<const char *>(t["help_str"]); }
     else if (t["help"]) { help = object_cast<const char *>(t["help"]); }
-    else if (t["str2"]) { help = object_cast<const char *>(t["str2"]); }
+    else if (t["lua.string2"]) { help = object_cast<const char *>(t["lua.string2"]); }
 
     if (t["id_name"]) { id_name = object_cast<const char *>(t["id_name"]); }
     else if (t["idname"]) { id_name = object_cast<const char *>(t["idname"]); }
     else if (t["id"]) { id_name = object_cast<const char *>(t["id"]); }
     else if (t["name"]) { id_name = object_cast<const char *>(t["name"]); }
-    else if (t["str3"]) { id_name = object_cast<const char *>(t["str3"]); }
+    else if (t["lua.string3"]) { id_name = object_cast<const char *>(t["lua.string3"]); }
 
     if (t["enabling"]) { enable = t["enabling"]; }
     else if (t["enable"]) { enable = t["enable"]; }
     else if (t["ena"]) { enable = t["ena"]; }
     else if (t["e"]) { enable = t["e"]; }
-    else if (t["bool1"]) { enable = t["bool1"]; }
+    else if (t["lua.boolean1"]) { enable = t["lua.boolean1"]; }
 
     if (t["function"]) { f = t["function"]; }
     else if (t["func"]) { f = t["func"]; }
     else if (t["f"]) { f = t["f"]; }
+    else if (t["lua.function1"]) { f = t["lua.function1"]; }
 
     menu *m = object_cast<menu *>(obj);
     object func = globals(L)["lev"]["classes"]["menuitem"]["create_c"];
@@ -255,7 +256,7 @@ namespace lev
 
     if (t["title"]) { title = object_cast<const char *>(t["title"]); }
     else if (t["t"]) { title = object_cast<const char *>(t["t"]); }
-    else if (t["str1"]) { title = object_cast<const char *>(t["str1"]); }
+    else if (t["lua.string1"]) { title = object_cast<const char *>(t["lua.string1"]); }
 
     object func = globals(L)["lev"]["classes"]["menu"]["create_c"];
     object menu = func(title);
@@ -309,17 +310,17 @@ namespace lev
 
     if (t["menu"]) { menu_obj = t["menu"]; }
     else if (t["m"]) { menu_obj = t["m"]; }
-    else if (t["udata"]) { menu_obj = t["udata"]; }
+    else if (t["lua.userdata1"]) { menu_obj = t["lua.userdata1"]; }
     if (not menu_obj) { luaL_error(L, "menu (lev.gui.menu) is not specified"); }
 
     if (t["title"]) { title = object_cast<const char *>(t["title"]); }
     else if (t["t"]) { title = object_cast<const char *>(t["t"]); }
-    else if (t["str1"]) { title = object_cast<const char *>(t["str1"]); }
+    else if (t["lua.string1"]) { title = object_cast<const char *>(t["lua.string1"]); }
     if (title == NULL) { luaL_error(L, "title (string) is not specified"); }
 
     if (t["id"]) { name = object_cast<const char *>(t["id"]); }
     else if (t["name"]) { name = object_cast<const char *>(t["name"]); }
-    else if (t["str2"]) { name = object_cast<const char *>(t["str2"]); }
+    else if (t["lua.string2"]) { name = object_cast<const char *>(t["lua.string2"]); }
 
     if (not menu_obj)
     {

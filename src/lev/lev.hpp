@@ -32,6 +32,7 @@
 #include "prim.hpp"
 #include "sizer.hpp"
 #include "sound.hpp"
+#include "string.hpp"
 #include "taskbar.hpp"
 #include "timer.hpp"
 #include "util.hpp"

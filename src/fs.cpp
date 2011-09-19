@@ -28,7 +28,7 @@ int luaopen_lev_fs(lua_State *L)
     namespace_("classes")
     [
       class_<temp_name, base>("temp_name")
-        .def("__tostring", &temp_name::tostring)
+        .def("__tostring", &temp_name::get_name)
         .property("name", &temp_name::get_name)
         .property("path", &temp_name::get_name)
         .scope
@@ -81,6 +81,7 @@ int luaopen_lev_fs(lua_State *L)
           def("remove", &file_system::remove1),
           def("to_file_path", &file_system::to_file_path),
           def("to_full_path", &file_system::to_full_path),
+          def("to_name", &file_system::to_name),
           def("to_url", &file_system::to_url),
           def("touch", &file_system::touch)
         ]
@@ -188,12 +189,12 @@ namespace lev
     if (t["prefix"]) { prefix = object_cast<const char *>(t["prefix"]); }
     else if (t["pre"]) { prefix = object_cast<const char *>(t["pre"]); }
     else if (t["p"]) { prefix = object_cast<const char *>(t["p"]); }
-    else if (t["str1"]) { prefix = object_cast<const char *>(t["str1"]); }
+    else if (t["lua.string1"]) { prefix = object_cast<const char *>(t["lua.string1"]); }
 
     if (t["suffix"]) { suffix = object_cast<const char *>(t["suffix"]); }
     else if (t["suf"]) { suffix = object_cast<const char *>(t["suf"]); }
     else if (t["s"]) { suffix = object_cast<const char *>(t["s"]); }
-    else if (t["str2"]) { suffix = object_cast<const char *>(t["str2"]); }
+    else if (t["lua.string2"]) { suffix = object_cast<const char *>(t["lua.string2"]); }
 
     object o = globals(L)["lev"]["classes"]["temp_name"]["create_c"](prefix, suffix);
     o.push(L);
@@ -276,7 +277,7 @@ namespace lev
     else if (t["path"]) { path = object_cast<const char *>(t["path"]); }
     else if (t["f"]) { path = object_cast<const char *>(t["f"]); }
     else if (t["p"]) { path = object_cast<const char *>(t["p"]); }
-    else if (t["str1"]) { path = object_cast<const char *>(t["str1"]); }
+    else if (t["lua.string1"]) { path = object_cast<const char *>(t["lua.string1"]); }
 
     object fpath = globals(L)["lev"]["classes"]["file_path"]["create_c"](path);
     fpath.push(L);
@@ -320,12 +321,12 @@ namespace lev
     if (t["prefix"]) { prefix = object_cast<const char *>(t["prefix"]); }
     else if (t["pre"]) { prefix = object_cast<const char *>(t["pre"]); }
     else if (t["p"]) { prefix = object_cast<const char *>(t["p"]); }
-    else if (t["str1"]) { prefix = object_cast<const char *>(t["str1"]); }
+    else if (t["lua.string1"]) { prefix = object_cast<const char *>(t["lua.string1"]); }
 
     if (t["suffix"]) { suffix = object_cast<const char *>(t["suffix"]); }
     else if (t["suf"]) { suffix = object_cast<const char *>(t["suf"]); }
     else if (t["s"]) { suffix = object_cast<const char *>(t["s"]); }
-    else if (t["str2"]) { suffix = object_cast<const char *>(t["str2"]); }
+    else if (t["lua.string2"]) { suffix = object_cast<const char *>(t["lua.string2"]); }
 
     object fpath = globals(L)["lev"]["classes"]["file_path"]["create_temp_c"](prefix, suffix);
     fpath.push(L);
@@ -352,16 +353,14 @@ namespace lev
     return (const char *)cast_path(_obj)->GetFullPath().mb_str();
   }
 
-  const char *file_path::get_ext()
+  std::string file_path::get_ext()
   {
-    std::string ext = (const char *)cast_path(_obj)->GetExt().mb_str();
-    return ext.c_str();
+    return (const char *)cast_path(_obj)->GetExt().mb_str();
   }
 
-  const char *file_path::get_name()
+  std::string file_path::get_name()
   {
-    std::string name = (const char *)cast_path(_obj)->GetName().mb_str();
-    return name.c_str();
+    return (const char *)cast_path(_obj)->GetName().mb_str();
   }
 
   long file_path::get_size()
@@ -474,7 +473,7 @@ namespace lev
     object t = util::get_merged(L, 2, -1);
 
     if (t["pattern"]) { pattern = object_cast<const char *>(t["pattern"]); }
-    else if (t["str1"]) { pattern = object_cast<const char *>(t["str1"]); }
+    else if (t["lua.string1"]) { pattern = object_cast<const char *>(t["lua.string1"]); }
 
     std::string file_name;
     if (fs->find(pattern, file_name)) { lua_pushstring(L, file_name.c_str()); }
@@ -571,7 +570,7 @@ namespace lev
 
     object t = util::get_merged(L, 1, -1);
     if (t["path"]) { path = object_cast<const char *>(t["path"]); }
-    else if (t["str1"]) { path = object_cast<const char *>(t["str1"]); }
+    else if (t["lua.string1"]) { path = object_cast<const char *>(t["lua.string1"]); }
 
     object fs = globals(L)["lev"]["classes"]["file_system"]["open_c"](path);
     fs.push(L);
@@ -605,6 +604,13 @@ namespace lev
     wxString p(path.c_str(), wxConvUTF8);
     wxString u = wxFileSystem::FileNameToURL(p);
     return (const char *)wxFileSystem::URLToFileName(u).GetFullPath().mb_str();
+  }
+
+  std::string file_system::to_name(const std::string &path_to_file)
+  {
+    wxString p(path_to_file.c_str(), wxConvUTF8);
+    wxString u = wxFileSystem::FileNameToURL(p);
+    return (const char *)wxFileSystem::URLToFileName(u).GetName().mb_str();
   }
 
   std::string file_system::to_url(const std::string &filename)

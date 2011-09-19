@@ -170,19 +170,19 @@ namespace lev
 
     if (t["red"]) { r = object_cast<unsigned char>(t["red"]); }
     else if (t["r"]) { r = object_cast<unsigned char>(t["r"]); }
-    else if (t["num1"]) { r = object_cast<unsigned char>(t["num1"]); }
+    else if (t["lua.number1"]) { r = object_cast<unsigned char>(t["lua.number1"]); }
 
     if (t["green"]) { g = object_cast<unsigned char>(t["green"]); }
     else if (t["g"]) { g = object_cast<unsigned char>(t["g"]); }
-    else if (t["num2"]) { g = object_cast<unsigned char>(t["num2"]); }
+    else if (t["lua.number2"]) { g = object_cast<unsigned char>(t["lua.number2"]); }
 
     if (t["blue"]) { b = object_cast<unsigned char>(t["blue"]); }
     else if (t["b"]) { b = object_cast<unsigned char>(t["b"]); }
-    else if (t["num3"]) { b = object_cast<unsigned char>(t["num3"]); }
+    else if (t["lua.number3"]) { b = object_cast<unsigned char>(t["lua.number3"]); }
 
     if (t["alpha"]) { a = object_cast<unsigned char>(t["alpha"]); }
     else if (t["a"]) { a = object_cast<unsigned char>(t["a"]); }
-    else if (t["num4"]) { a = object_cast<unsigned char>(t["num4"]); }
+    else if (t["lua.number4"]) { a = object_cast<unsigned char>(t["lua.number4"]); }
 
     object o = globals(L)["lev"]["classes"]["color"]["create_c"](r, g, b, a);
     o.push(L);
@@ -224,15 +224,15 @@ namespace lev
 
     if (t["width"]) { w = object_cast<int>(t["width"]); }
     else if (t["w"]) { w = object_cast<int>(t["w"]); }
-    else if (t["num1"]) { w = object_cast<int>(t["num1"]); }
+    else if (t["lua.number1"]) { w = object_cast<int>(t["lua.number1"]); }
 
     if (t["height"]) { h = object_cast<int>(t["height"]); }
     else if (t["h"]) { h = object_cast<int>(t["h"]); }
-    else if (t["num2"]) { h = object_cast<int>(t["num2"]); }
+    else if (t["lua.number2"]) { h = object_cast<int>(t["lua.number2"]); }
 
     if (t["depth"]) { d = object_cast<int>(t["depth"]); }
     else if (t["d"]) { d = object_cast<int>(t["d"]); }
-    else if (t["num3"]) { d = object_cast<int>(t["num3"]); }
+    else if (t["lua.number3"]) { d = object_cast<int>(t["lua.number3"]); }
 
     object o = globals(L)["lev"]["classes"]["size"]["create_c"](w, h, d);
     o.push(L);
@@ -264,13 +264,13 @@ namespace lev
     object t = util::get_merged(L, 1, -1);
 
     if (t["x"]) { x = object_cast<int>(t["x"]); }
-    else if (t["num1"]) { x = object_cast<int>(t["num1"]); }
+    else if (t["lua.number1"]) { x = object_cast<int>(t["lua.number1"]); }
 
     if (t["y"]) { y = object_cast<int>(t["y"]); }
-    else if (t["num2"]) { y = object_cast<int>(t["num2"]); }
+    else if (t["lua.number2"]) { y = object_cast<int>(t["lua.number2"]); }
 
     if (t["z"]) { z = object_cast<int>(t["z"]); }
-    else if (t["num3"]) { z = object_cast<int>(t["num3"]); }
+    else if (t["lua.number3"]) { z = object_cast<int>(t["lua.number3"]); }
 
     object o = globals(L)["lev"]["classes"]["vector"]["create_c"](x, y, z);
     o.push(L);
@@ -326,27 +326,27 @@ namespace lev
 
     object t = util::get_merged(L, 1, -1);
 
-    if (t["udata1"])
+    if (t["lua.userdata1"])
     {
-      switch ( object_cast<int>(t["udata1"]["type_id"]) )
+      switch ( object_cast<int>(t["lua.userdata1"]["type_id"]) )
       {
         case LEV_TCOLOR:
-          col = t["udata1"];
+          col = t["lua.userdata1"];
           break;
         case LEV_TVECTOR:
-          ver = t["udata1"];
+          ver = t["lua.userdata1"];
           break;
       }
     }
-    if (t["udata2"])
+    if (t["lua.userdata2"])
     {
-      switch ( object_cast<int>(t["udata2"]["type_id"]) )
+      switch ( object_cast<int>(t["lua.userdata2"]["type_id"]) )
       {
         case LEV_TCOLOR:
-          col = t["udata2"];
+          col = t["lua.userdata2"];
           break;
         case LEV_TVECTOR:
-          ver = t["udata2"];
+          ver = t["lua.userdata2"];
           break;
       }
     }
@@ -432,18 +432,18 @@ namespace lev
     object t = util::get_merged(L, 1, -1);
 
     if (t["x"]) { x = object_cast<int>(t["x"]); }
-    else if (t["num1"]) { x = object_cast<int>(t["num1"]); }
+    else if (t["lua.number1"]) { x = object_cast<int>(t["lua.number1"]); }
 
     if (t["y"]) { y = object_cast<int>(t["y"]); }
-    else if (t["num2"]) { y = object_cast<int>(t["num2"]); }
+    else if (t["lua.number2"]) { y = object_cast<int>(t["lua.number2"]); }
 
     if (t["width"]) { w = object_cast<int>(t["width"]); }
     else if (t["w"]) { w = object_cast<int>(t["w"]); }
-    else if (t["num3"]) { w = object_cast<int>(t["num3"]); }
+    else if (t["lua.number3"]) { w = object_cast<int>(t["lua.number3"]); }
 
     if (t["height"]) { h = object_cast<int>(t["height"]); }
     else if (t["h"]) { h = object_cast<int>(t["h"]); }
-    else if (t["num4"]) { h = object_cast<int>(t["num4"]); }
+    else if (t["lua.number4"]) { h = object_cast<int>(t["lua.number4"]); }
 
     if (t["lev.prim.vector1"])
     {

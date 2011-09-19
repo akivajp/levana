@@ -1,3 +1,10 @@
-test
-日本語テスト
+test [br]
+日本語テスト[wait delay=2000]
+
+[clear]
+我々は宇宙人である。
+[[
+  print(3)
+  print('test')
+]]
 
