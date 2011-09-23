@@ -30,6 +30,7 @@ int luaopen_lev_font(lua_State *L)
     namespace_("classes")
     [
       class_<font, base>("font")
+        .def("clone", &font::clone, adopt(result))
         .property("face", &font::get_face_name, &font::set_face_name)
         .property("face_name", &font::get_face_name, &font::set_face_name)
         .property("name", &font::get_face_name, &font::set_face_name)
@@ -39,8 +40,8 @@ int luaopen_lev_font(lua_State *L)
         .property("sz", &font::get_point_size, &font::set_point_size)
         .scope
         [
-          def("create", &font::create),
-          def("load", &font::load),
+          def("clone", &font::clone, adopt(result)),
+          def("load_c", &font::load, adopt(result)),
           def("select", &font::select_font)
         ]
     ]
@@ -49,8 +50,9 @@ int luaopen_lev_font(lua_State *L)
   object classes = lev["classes"];
   object font = lev["font"];
 
-//  lev["font"] = classes["font"]["create"];
-  font["create"] = classes["font"]["create"];
+  register_to(classes["font"], "load", &font::load_l);
+
+  font["clone"]  = classes["font"]["clone"];
   font["load"]   = classes["font"]["load"];
   font["select"] = classes["font"]["select"];
 
@@ -71,13 +73,13 @@ namespace lev
     _obj = NULL;
   }
 
-  font* font::create()
+
+  font* font::clone()
   {
     font *f = NULL;
-    wxFont *obj = NULL;
     try {
       f = new font;
-      f->_obj = obj = new wxFont();
+      f->_obj = new wxFont(*cast_font(_obj));
       return f;
     }
     catch (...) {
@@ -85,14 +87,21 @@ namespace lev
       return NULL;
     }
   }
+
 
   font* font::load(const char *desc)
   {
     font *f = NULL;
-    wxFont *obj = NULL;
     try {
       f = new font;
-      f->_obj = obj = new wxFont(wxString(desc, wxConvUTF8));
+      if (load)
+      {
+        f->_obj = new wxFont(wxString(desc, wxConvUTF8));
+      }
+      else
+      {
+        f->_obj = new wxFont(*wxNORMAL_FONT);
+      }
       return f;
     }
     catch (...) {
@@ -101,7 +110,8 @@ namespace lev
     }
   }
 
-  int font::create_l(lua_State *L)
+
+  int font::load_l(lua_State *L)
   {
     using namespace luabind;
     const char *desc = NULL;
@@ -113,14 +123,7 @@ namespace lev
     else if (t["desc"]) { desc = object_cast<const char *>(t["desc"]); }
     else if (t["lua.string1"]) { desc = object_cast<const char *>(t["lua.string1"]); }
 
-    if (desc)
-    {
-      f = globals(L)["lev"]["classes"]["font"]["create_c"](desc);
-    }
-    else
-    {
-      f = globals(L)["lev"]["classes"]["font"]["create_c"]();
-    }
+    f = globals(L)["lev"]["classes"]["font"]["load_c"](desc);
     f.push(L);
     return 1;
   }

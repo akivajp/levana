@@ -32,13 +32,16 @@ namespace lev
       static int create_l(lua_State *L);
       void fit();
       luabind::object get_menubar();
+      virtual luabind::object get_on_key_down();
+      virtual luabind::object get_on_key_up();
       const char *get_status();
       const char *get_title();
       virtual type_id get_type_id() const { return LEV_TFRAME; }
       virtual const char *get_type_name() const { return "frame"; }
       bool set_icon(image *i);
       bool set_menubar(luabind::object mb);
-//      static int set_menubar_l(lua_State *L);
+      virtual bool set_on_key_down(luabind::object func);
+      virtual bool set_on_key_up(luabind::object func);
       void set_status(const char *str_status);
       void set_title(const char *title);
       static void set_top(frame *top);

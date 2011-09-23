@@ -11,7 +11,10 @@
 #include "prec.h"
 #include "lev/image.hpp"
 
+#include "lev/app.hpp"
 #include "lev/draw.hpp"
+#include "lev/font.hpp"
+#include "lev/gui.hpp"
 #include "lev/util.hpp"
 #include "register.hpp"
 #include "resource/levana.xpm"
@@ -62,6 +65,8 @@ int luaopen_lev_image(lua_State *L)
         .property("width", &image::get_w)
         .scope
         [
+          def("calc_string", &image::calc_string),
+          def("calc_string", &image::calc_string1),
           def("capture", &image::capture, adopt(result)),
           def("create",  &image::create, adopt(result)),
           def("draw_text_c", &image::draw_text),
@@ -70,6 +75,23 @@ int luaopen_lev_image(lua_State *L)
           def("load",    &image::load, adopt(result)),
           def("string_c",  &image::string, adopt(result)),
           def("sub_image_c", &image::sub_image, adopt(result))
+        ],
+      class_<layout, image>("layout")
+        .def("clear", &layout::clear)
+        .def("clear", &layout::clear0)
+        .def("complete", &layout::complete)
+        .def("draw_next", &layout::draw_next)
+        .def("reserve_image", &layout::reserve_image)
+        .def("reserve_new_line", &layout::reserve_new_line)
+        .def("reserve_word", &layout::reserve_word)
+        .def("reserve_word", &layout::reserve_word1)
+        .property("color", &layout::get_color, &layout::set_color)
+        .property("font",  &layout::get_font, &layout::set_font)
+        .property("fore",  &layout::get_color, &layout::set_color)
+        .property("is_done", &layout::is_done)
+        .scope
+        [
+          def("create", &layout::create, adopt(result))
         ]
     ]
   ];
@@ -83,12 +105,14 @@ int luaopen_lev_image(lua_State *L)
   register_to(classes["image"], "sub", &image::sub_image_l);
   register_to(classes["image"], "sub_image", &image::sub_image_l);
 
-  image["capture"] = classes["image"]["capture"];
-  image["create"]  = classes["image"]["create"];
-  image["init"]    = classes["image"]["init"];
+  image["calc_string"] = classes["image"]["calc_string"];
+  image["capture"]     = classes["image"]["capture"];
+  image["create"]      = classes["image"]["create"];
+  image["init"]        = classes["image"]["init"];
   image["levana_icon"] = classes["image"]["levana_icon"];
-  image["load"]    = classes["image"]["load"];
-  image["string"]  = classes["image"]["string"];
+  image["load"]        = classes["image"]["load"];
+  image["string"]      = classes["image"]["string"];
+  image["layout"]        = classes["layout"]["create"];
 
   globals(L)["package"]["loaded"]["lev.image"] = image;
   return 0;
@@ -121,6 +145,7 @@ namespace lev
           glDeleteLists(index, 1);
           compiled = false;
         }
+        return true;
       }
 
       bool compiled;
@@ -218,11 +243,90 @@ namespace lev
     }
   }
 
+
+  size image::calc_string(const std::string &str, font *f)
+  {
+    wxMemoryDC mdc;
+    if (f)
+    {
+      wxFont *font = (wxFont *)f->get_rawobj();
+      mdc.SetFont(*font);
+    }
+    else { mdc.SetFont(*wxNORMAL_FONT); }
+    wxSize sz = mdc.GetTextExtent(wxString(str.c_str(), wxConvUTF8));
+    return size(sz.GetWidth(), sz.GetHeight());
+  }
+
+
   bool image::call_compiled(canvas *cv)
   {
     cv->set_current();
     return cast_status(_status)->Call();
   }
+
+
+  image* image::capture(control *src)
+  {
+    image* img = NULL;
+    try {
+      wxWindowDC wdc((wxWindow *)src->get_rawobj());
+      wxSize size = wdc.GetSize();
+      img = image::create(size.GetWidth(), size.GetHeight());
+
+      if (img == NULL) { throw -1; }
+      wxMemoryDC mdc(*cast_image(img->get_rawobj()));
+
+      mdc.Blit(0, 0, size.GetWidth(), size.GetHeight(), &wdc, 0, 0);
+      return img;
+    }
+    catch (...) {
+      delete img;
+      return NULL;
+    }
+  }
+
+
+  bool image::clear(const color &c)
+  {
+    int num_pix = get_h() * get_w();
+    wxBitmap *bmp = cast_image(_obj);
+    wxAlphaPixelData data(*bmp);
+    data.UseAlpha();
+    wxAlphaPixelData::Iterator p(data), rawStart;
+    for (int y = 0 ; y < get_h() ; y++)
+    {
+      rawStart = p;
+      for (int x = 0 ; x < get_w() ; x++)
+      {
+        p.Red()   = c.get_r();
+        p.Green() = c.get_g();
+        p.Blue()  = c.get_b();
+        p.Alpha() = c.get_a();
+        ++p;
+      }
+      p = rawStart;
+      p.OffsetY(data, 1);
+    }
+    cast_status(_status)->Clear();
+    return true;
+  }
+
+
+  image* image::clone()
+  {
+    image* img = NULL;
+    try {
+      img = new image;
+      img->_obj = new wxBitmap(*cast_image(_obj));
+      img->_status = new myImageStatus;
+      return img;
+    }
+    catch (...) {
+      delete img;
+      return NULL;
+    }
+  }
+
 
   bool image::compile(canvas *cv, bool force)
   {
@@ -274,52 +378,6 @@ namespace lev
   }
 
 
-  image* image::capture(control *src)
-  {
-    image* img = NULL;
-    try {
-      wxWindowDC wdc((wxWindow *)src->get_rawobj());
-      wxSize size = wdc.GetSize();
-      img = image::create(size.GetWidth(), size.GetHeight());
-
-      if (img == NULL) { throw -1; }
-      wxMemoryDC mdc(*cast_image(img->get_rawobj()));
-
-      mdc.Blit(0, 0, size.GetWidth(), size.GetHeight(), &wdc, 0, 0);
-      return img;
-    }
-    catch (...) {
-      delete img;
-      return NULL;
-    }
-  }
-
-
-  bool image::clear(color c)
-  {
-    int num_pix = get_h() * get_w();
-    wxBitmap *bmp = cast_image(_obj);
-    wxAlphaPixelData data(*bmp);
-    data.UseAlpha();
-    wxAlphaPixelData::Iterator p(data), rawStart;
-    for (int y = 0 ; y < get_h() ; y++)
-    {
-      rawStart = p;
-      for (int x = 0 ; x < get_w() ; x++)
-      {
-        p.Red()   = c.get_r();
-        p.Green() = c.get_g();
-        p.Blue()  = c.get_b();
-        p.Alpha() = c.get_a();
-        ++p;
-      }
-      p = rawStart;
-      p.OffsetY(data, 1);
-    }
-    cast_status(_status)->Clear();
-    return true;
-  }
-
 
   image* image::create(int width, int height)
   {
@@ -360,7 +418,7 @@ namespace lev
         p.Blue()  = (p.Blue()  * base_alpha + c->get_b() * alpha_norm) * fix;
       }
       cast_status(_status)->Clear();
-      return c;
+      return true;
     }
     catch (...) {
       return false;
@@ -570,14 +628,14 @@ namespace lev
         wxFont *font = (wxFont *)f->get_rawobj();
         mdc.SetFont(*font);
       }
-      else { mdc.SetFont(wxSystemSettings::GetFont(wxSYS_SYSTEM_FONT)); }
+      else { mdc.SetFont(*wxNORMAL_FONT); }
       wxSize sz = mdc.GetTextExtent(s);
       if (sz.GetWidth() == 0 || sz.GetHeight() == 0) { throw -1; }
 
       img = image::create(sz.GetWidth(), sz.GetHeight());
       if (img == NULL) { throw -2; }
-      mdc.SetBrush(wxColour(0, 0, 0, 255));
       mdc.SelectObject(*cast_image(img->get_rawobj()));
+      mdc.SetBrush(wxColour(0, 0, 0, 255));
       mdc.SetTextForeground(wxColour(255, 255, 255, 255));
       mdc.DrawText(s, 0, 0);
 
@@ -766,6 +824,306 @@ namespace lev
     object o = globals(L)["lev"]["classes"]["image"]["sub_image_c"](img, x, y, w, h);
     o.push(L);
     return 1;
+  }
+
+  bool image::swap(image *img)
+  {
+    if (! img) { return false; }
+    void *tmp  = this->_obj;
+    this->_obj = img->_obj;
+    img->_obj  = tmp;
+    return true;
+  }
+
+
+  class myLayout
+  {
+    public:
+      myLayout(int width_stop = -1)
+        : h(-1), w(width_stop), current_x(0), index(0), font_obj(),
+          index_to_col(), index_to_row(), log(), rows()
+      {
+        font_obj = globals(application::get_app()->getL())["lev"]["font"]["load"]();
+        font_obj["size"] = 32;
+        color_obj = globals(application::get_app()->getL())["lev"]["prim"]["color"](0, 0, 0);
+
+        rows.push_back(std::vector<boost::shared_ptr<image> >());
+      }
+
+      int CalcMaxWidth()
+      {
+        int width = 0;
+        for (int i = 0; i < rows.size(); i++)
+        {
+          int current = CalcRowWidth(rows[i]);
+          if (current > width) { width = current; }
+        }
+        return width;
+      }
+
+      int CalcRowHeight(const std::vector<boost::shared_ptr<image> > &row)
+      {
+        int height = 0;
+        for (int i = 0; i < row.size(); i++)
+        {
+          if (row[i]->get_h() > height) { height = row[i]->get_h(); }
+        }
+        return height;
+      }
+
+      int CalcRowWidth(const std::vector<boost::shared_ptr<image> > &row)
+      {
+        int width = 0;
+        for (int i = 0; i < row.size(); i++)
+        {
+          width += row[i]->get_w();
+        }
+        return width;
+      }
+
+      int CalcTotalHeight()
+      {
+        int height = 0;
+        for (int i = 0; i < rows.size(); i++)
+        {
+          height += CalcRowHeight(rows[i]);
+        }
+        return height;
+      }
+
+      bool Clear()
+      {
+        current_x = 0;
+        index = 0;
+        index_to_col.clear();
+        index_to_row.clear();
+        log.clear();
+        rows.clear();
+
+        font_obj = globals(application::get_app()->getL())["lev"]["font"]["load"]();
+        font_obj["size"] = 32;
+        color_obj = globals(application::get_app()->getL())["lev"]["prim"]["color"](0, 0, 0);
+
+        rows.push_back(std::vector<boost::shared_ptr<image> >());
+        return true;
+      }
+
+      bool Complete(image *img)
+      {
+        for (; index < log.size(); index++)
+        {
+          DrawIndex(img, index);
+        }
+        return true;
+      }
+
+      bool DrawIndex(image *img, int index)
+      {
+        int col_index = index_to_col[index];
+        int row_index = index_to_row[index];
+
+        int y = 0;
+        for (int i = 0; i <= row_index; i++)
+        {
+          y += CalcRowHeight(rows[i]);
+        }
+        y -= rows[row_index][col_index]->get_h();
+
+        int x = 0;
+        const std::vector<boost::shared_ptr<image> > &row = rows[row_index];
+        for (int i = 0; i < col_index; i++)
+        {
+          x += row[i]->get_w();
+        }
+
+        return img->blit(rows[row_index][col_index].get(), x, y);
+      }
+
+      bool ReserveImage(const std::string &name, boost::shared_ptr<image> img)
+      {
+        try {
+          if (w >= 0 && current_x + img->get_w() > w)
+          {
+            rows.push_back(std::vector<boost::shared_ptr<image> >());
+            current_x = 0;
+          }
+          current_x += img->get_w();
+          index_to_col.push_back(rows[rows.size() - 1].size());
+          index_to_row.push_back(rows.size() - 1);
+          log.push_back(name);
+          rows[rows.size() - 1].push_back(img);
+          return true;
+        }
+        catch (...) {
+          return false;
+        }
+      }
+
+      bool ReserveNewLine()
+      {
+        rows.push_back(std::vector<boost::shared_ptr<image> >());
+        current_x = 0;
+      }
+
+      bool ReserveWord(const std::string &word, const std::string &ruby)
+      {
+        if (word.empty()) { return false; }
+        try {
+          font *f = object_cast<font *>(font_obj);
+          boost::shared_ptr<image> img;
+          if (ruby.empty()) {
+            img.reset(image::string(word, f));
+            return ReserveImage(word, img);
+          }
+          else
+          {
+            boost::shared_ptr<font> f_ruby(f->clone());
+            f_ruby->set_point_size(f->get_point_size() / 2);
+            boost::shared_ptr<image> img_ruby(image::string(ruby, f_ruby.get()));
+            boost::shared_ptr<image> img_word(image::string(word, f));
+            int h = img_ruby->get_h() + img_word->get_h();
+            int w = img_ruby->get_w();
+            if (img_word->get_w() > w) { w = img_word->get_w(); }
+
+            img.reset(image::create(w, h));
+            img->blit(img_ruby.get(), (w - img_ruby->get_w()) / 2, 0);
+            img->blit(img_word.get(), (w - img_word->get_w()) / 2, img_ruby->get_h());
+            return ReserveImage((boost::format("{ruby,%s,%s}") % word % ruby).str(), img);
+          }
+        }
+        catch (...) {
+          return false;
+        }
+      }
+
+      int h, w;
+      int current_x;
+      int index;
+      luabind::object color_obj;
+      luabind::object font_obj;
+      std::vector<int> index_to_row;
+      std::vector<int> index_to_col;
+      std::vector<std::string> log;
+      std::vector<std::vector<boost::shared_ptr<image> > > rows;
+  };
+  static myLayout* cast_lay(void *obj) { return (myLayout *)obj; }
+
+  layout::layout()
+    : image(), _buf(NULL)
+  {
+  }
+
+  layout::~layout()
+  {
+    if (_buf) { delete cast_lay(_buf); }
+  }
+
+  bool layout::clear(const color &c)
+  {
+    cast_lay(_buf)->Clear();
+    return image::clear(c);
+  }
+
+  bool layout::complete()
+  {
+    this->fit();
+    return cast_lay(_buf)->Complete(this);
+  }
+
+  bool layout::draw_next()
+  {
+    myLayout *lay = cast_lay(_buf);
+    if (is_done()) { return false; }
+    this->fit();
+    return lay->DrawIndex(this, lay->index++);
+  }
+
+  layout* layout::create(int width_stop)
+  {
+    layout* img = NULL;
+    try {
+      img = new layout;
+      img->_obj = new wxBitmap(1, 1, 32);
+      img->_status = new myImageStatus;
+      img->_buf = new myLayout(width_stop);
+      return img;
+    }
+    catch (...) {
+      delete img;
+      return NULL;
+    }
+  }
+
+  bool layout::fit()
+  {
+    int w = cast_lay(_buf)->CalcMaxWidth();
+    if (get_w() > w) { w = get_w(); }
+    int h = cast_lay(_buf)->CalcTotalHeight();
+    if (get_h() > h) { h = get_h(); }
+    if (h == get_h() && w == get_w()) { return false; }
+
+    image *img2 = NULL;
+    try {
+      img2 = image::create(w, h);
+      if (img2 == NULL) { throw -1; }
+      img2->blit(this, 0, 0);
+      this->swap(img2);
+
+      delete img2;
+      return true;
+    }
+    catch (...) {
+      delete img2;
+      return false;
+    }
+  }
+
+  luabind::object layout::get_color()
+  {
+    return cast_lay(_buf)->color_obj;
+  }
+
+
+  luabind::object layout::get_font()
+  {
+    return cast_lay(_buf)->font_obj;
+  }
+
+  bool layout::is_done()
+  {
+    myLayout *lay = cast_lay(_buf);
+    return lay->index >= lay->log.size();
+  }
+
+  bool layout::reserve_image(const std::string &name, image *img)
+  {
+    return cast_lay(_buf)->ReserveImage(name, boost::shared_ptr<image>(img->clone()));
+  }
+
+  bool layout::reserve_new_line()
+  {
+    return cast_lay(_buf)->ReserveNewLine();
+  }
+
+  bool layout::reserve_word(const std::string &word, const std::string &ruby)
+  {
+    return cast_lay(_buf)->ReserveWord(word, ruby);
+  }
+
+
+  bool layout::set_color(luabind::object c)
+  {
+    if (! base::is_type_of(c, LEV_TCOLOR)) { return false; }
+    cast_lay(_buf)->color_obj = c;
+    return true;
+  }
+
+
+  bool layout::set_font(luabind::object f)
+  {
+    if (! base::is_type_of(f, LEV_TFONT)) { return false; }
+    cast_lay(_buf)->font_obj = f;
+    return true;
   }
 
 }

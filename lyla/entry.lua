@@ -69,29 +69,45 @@ main:show()
 canvas:map2d(0, conf.w, 0, conf.h)
 canvas:enable_alpha_blending()
 
+--canvas.on_left_down = function(e)
+--  print('left:')
+--end
+
+--canvas.on_right_down = function(e)
+--  print('right:')
+--end
+
+--canvas.on_key_down = function(e)
+--  print('down:', e.key)
+--end
+
 white = prim.color(255, 255, 255)
 
+font = lev.font.select()
 sw = lev.stop_watch()
 while main.is_valid do
 sw:start()
-print('time1:', sw.time)
+--print('time1:', sw.time)
   canvas:clear(0, 0, 0)
-print('time2:', sw.time)
+--print('time2:', sw.time)
 
   layers.msgfg:clear()
-print('time3:', sw.time)
-  layers.msgfg:draw_text(lyla.msg, lev.font.load('24'), lev.prim.color(0, 0, 0), 52, 52) 
-  layers.msgfg:draw_text(lyla.msg, lev.font.load('24'), lev.prim.color(255, 255, 255), 50, 50)
+--print('time3:', sw.time)
+--  layers.msgfg:draw_text(lyla.msg, lev.font.load('24'), lev.prim.color(0, 0, 0), 52, 52) 
+  layers.msgfg:draw_text(lyla.msg, font, lev.prim.color(0, 0, 0), 52, 52) 
+--  layers.msgfg:draw_text(lyla.msg, lev.font.load('24'), lev.prim.color(255, 255, 255), 50, 50)
+  layers.msgfg:draw_text(lyla.msg, font, lev.prim.color(255, 255, 255), 50, 50)
 
   for i, j in ipairs(layers) do
-print('time_: ', sw.time)
+    app:yield()
+--print('time_: ', sw.time)
     canvas:compile(j, false)
     canvas:draw(j)
   end
 
   canvas:swap()
   app:wait()
-print('time:', sw.time)
-print()
+--print('time:', sw.time)
+--print()
 end
 

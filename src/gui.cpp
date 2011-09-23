@@ -74,6 +74,8 @@ int luaopen_lev_gui(lua_State *L)
         .property("mb", &frame::get_menubar, &frame::set_menubar)
         .property("mbar", &frame::get_menubar, &frame::set_menubar)
         .property("menubar", &frame::get_menubar, &frame::set_menubar)
+        .property("on_key_down", &frame::get_on_key_down, &frame::set_on_key_down)
+        .property("on_key_up", &frame::get_on_key_up, &frame::set_on_key_up)
         .property("status", &frame::get_status, &frame::set_status)
         .property("title", &frame::get_title, &frame::set_title)
         .scope

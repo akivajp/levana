@@ -46,6 +46,7 @@ int luaopen_lev_draw(lua_State *L)
         .def("line",  &canvas::line)
         .def("map2d", &canvas::map2d)
         .def("map2d", &canvas::map2d_auto)
+        .property("on_right_down", &canvas::get_on_right_down, &canvas::set_on_right_down)
         .def("print", &canvas::print)
         .def("set_current", &canvas::set_current)
         .def("swap", &canvas::swap)
@@ -84,6 +85,54 @@ namespace lev
         if (context) { delete context; }
       }
 
+      void Connect(int id, wxEventType eventType, luabind::object lua_func)
+      {
+        fmap[eventType][id] = lua_func;
+        wxGLCanvas::Connect(id, eventType, (wxObjectEventFunction)&myCanvas::ProcEvent);
+      }
+
+      boost::function<void (int, int, luabind::object)> GetConnector()
+      {
+        return boost::bind(&myCanvas::Connect, this, _1, _2, _3);
+      }
+
+      luabind::object GetFunc(int id, wxEventType eventType)
+      {
+        return fmap[eventType][id];
+      }
+
+      boost::function<luabind::object (int, int)> GetFuncGetter()
+      {
+        return boost::bind(&myCanvas::GetFunc, this, _1, _2);
+      }
+
+      void OnRightDown(wxMouseEvent &e)
+      {
+        if (func_right_down) { func_right_down(event(&e)); }
+        else { e.Skip(); }
+      }
+
+      void ProcEvent(wxEvent &evt)
+      {
+        event e(&evt);
+
+        luabind::object o = fmap[evt.GetEventType()][-1];
+        if (o && luabind::type(o) == LUA_TFUNCTION)
+        {
+          o(e);
+          return;
+        }
+
+        o = fmap[evt.GetEventType()][evt.GetId()];
+        if (o && luabind::type(o) == LUA_TFUNCTION)
+        {
+          o(e);
+          return;
+        }
+
+        evt.Skip();
+      }
+
       bool SetCurrent()
       {
         if (context == NULL)
@@ -101,11 +150,23 @@ namespace lev
         return true;
       }
 
+      std::map<int, std::map<int, luabind::object> > fmap;
       wxGLContext *context;
-  };
-  static wxGLCanvas* cast_draw(void *obj) { return (wxGLCanvas *)obj; }
+      luabind::object func_right_down;
 
-  canvas::~canvas() { }
+      DECLARE_EVENT_TABLE();
+  };
+  BEGIN_EVENT_TABLE(myCanvas, wxGLCanvas)
+    EVT_RIGHT_DOWN(myCanvas::OnRightDown)
+  END_EVENT_TABLE();
+
+  static myCanvas* cast_draw(void *obj) { return (myCanvas *)obj; }
+
+  canvas::canvas() : control() { }
+
+  canvas::~canvas()
+  {
+  }
 
   bool canvas::call_compiled(image *img)
   {
@@ -129,6 +190,7 @@ namespace lev
 
   bool canvas::compile(image *img, bool force)
   {
+    if (! this->is_valid()) { return false; }
     return img->compile(this, force);
   }
 
@@ -137,21 +199,26 @@ namespace lev
     int attribs[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, 0 };
     canvas *cv = NULL;
     wxWindow *p = NULL;
+    myCanvas *obj = NULL;
     try
     {
       cv = new canvas();
       if (parent) { p = (wxWindow *)parent->get_rawobj(); }
-      cv->_obj = new myCanvas(p, attribs, width, height);
+      cv->_obj = obj = new myCanvas(p, attribs, width, height);
+      cv->_id = obj->GetId();
+      cv->connector = obj->GetConnector();
+      cv->func_getter = obj->GetFuncGetter();
+
+      cv->system_managed = true;
+      cv->set_current();
+      glViewport(0, 0, width, height);
+      return cv;
     }
     catch (...)
     {
       delete cv;
       return NULL;
     }
-    cv->system_managed = true;
-    cv->set_current();
-    glViewport(0, 0, width, height);
-    return cv;
   }
 
   int canvas::create_l(lua_State *L)
@@ -191,6 +258,7 @@ namespace lev
 
   bool canvas::draw_image(image *bmp, int x, int y)
   {
+    if (! this->is_valid()) { return false; }
     if (bmp->is_compiled())
     {
       set_current();
@@ -328,6 +396,11 @@ namespace lev
     glFlush();
   }
 
+  luabind::object canvas::get_on_right_down()
+  {
+    return cast_draw(_obj)->func_right_down;
+  }
+
   void canvas::line(int x1, int y1, int x2, int y2)
   {
     glBegin(GL_LINES);
@@ -366,14 +439,24 @@ namespace lev
     }
   }
 
-  void canvas::set_current()
+  bool canvas::set_current()
   {
-    ((myCanvas *)_obj)->SetCurrent();
+    cast_draw(_obj)->SetCurrent();
+    return true;
   }
 
-  void canvas::swap()
+  bool canvas::set_on_right_down(luabind::object func)
   {
-    ((wxGLCanvas *)_obj)->SwapBuffers();
+    cast_draw(_obj)->func_right_down = func;
+    return true;
   }
+
+  bool canvas::swap()
+  {
+    if (! this->is_valid()) { return false; }
+    cast_draw(_obj)->SwapBuffers();
+    return true;
+  }
+
 }
 

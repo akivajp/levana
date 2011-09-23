@@ -48,11 +48,14 @@ namespace lev
   object handler::get_on_char() { return get_func(wxEVT_CHAR); }
   object handler::get_on_close() { return get_func(wxEVT_CLOSE_WINDOW); }
   object handler::get_on_idle() { return get_func(wxEVT_IDLE); }
-  object handler::get_on_keydown() { return get_func(wxEVT_KEY_DOWN); }
+  object handler::get_on_key_down() { return get_func(wxEVT_KEY_DOWN); }
+  object handler::get_on_key_up() { return get_func(wxEVT_KEY_UP); }
+  object handler::get_on_left_down() { return get_func(wxEVT_LEFT_DOWN); }
   object handler::get_on_menu(int id)
   {
     return get_func(id, wxEVT_COMMAND_MENU_SELECTED);
   }
+  object handler::get_on_right_down() { return get_func(wxEVT_RIGHT_DOWN); }
 
   bool handler::hold()
   {
@@ -65,11 +68,14 @@ namespace lev
   bool handler::set_on_char(object lua_func) { return connect(wxEVT_CHAR, lua_func); }
   bool handler::set_on_close(object lua_func) { return connect(wxEVT_CLOSE_WINDOW, lua_func); }
   bool handler::set_on_idle(object lua_func) { return connect(wxEVT_IDLE, lua_func); }
-  bool handler::set_on_keydown(object lua_func) { return connect(wxEVT_KEY_DOWN, lua_func); }
+  bool handler::set_on_key_down(object lua_func) { return connect(wxEVT_KEY_DOWN, lua_func); }
+  bool handler::set_on_key_up(object lua_func) { return connect(wxEVT_KEY_UP, lua_func); }
+  bool handler::set_on_left_down(object lua_func) { return connect(wxEVT_LEFT_DOWN, lua_func); }
   bool handler::set_on_menu(int id, object lua_func)
   {
     return connect(id, wxEVT_COMMAND_MENU_SELECTED, lua_func);
   }
+  bool handler::set_on_right_down(object lua_func) { return connect(wxEVT_RIGHT_DOWN, lua_func); }
 
 
   // event methods
@@ -100,6 +106,16 @@ namespace lev
   long event::get_keycode() const
   {
     return ((wxKeyEvent *)_obj)->GetKeyCode();
+  }
+
+  int event::get_x() const
+  {
+    return ((wxMouseEvent *)_obj)->GetX();
+  }
+
+  int event::get_y() const
+  {
+    return ((wxMouseEvent *)_obj)->GetY();
   }
 
   bool event::request()

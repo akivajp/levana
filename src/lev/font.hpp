@@ -25,11 +25,11 @@ namespace lev
   {
     protected:
       font();
-      virtual ~font();
     public:
-      static font* create();
+      virtual ~font();
+      font* clone();
       static font* load(const char *desc);
-      static int create_l(lua_State *L);
+      static int load_l(lua_State *L);
       const char *get_face_name();
       const char *get_family();
       int get_point_size();

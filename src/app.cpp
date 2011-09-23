@@ -29,13 +29,15 @@ int luaopen_lev_app(lua_State *L)
     [
       // event class
       class_<event, base>("event")
-        .def("request", &event::request)
-        .def("skip", &event::skip)
         .property("char", &event::get_char)
         .property("id", &event::get_id)
         .property("key", &event::get_keystr)
         .property("keystr", &event::get_keystr)
-        .property("keycode", &event::get_keycode),
+        .property("keycode", &event::get_keycode)
+        .def("request", &event::request)
+        .def("skip", &event::skip)
+        .property("x", &event::get_x)
+        .property("y", &event::get_y),
       // event handler class
       class_<handler, base>("handler")
         .def("get_on_menu", &handler::get_on_menu)
@@ -44,13 +46,15 @@ int luaopen_lev_app(lua_State *L)
         .property("on_char", &handler::get_on_char, &handler::set_on_char)
         .property("on_close", &handler::get_on_close, &handler::set_on_close)
         .property("on_idle", &handler::get_on_idle, &handler::set_on_idle)
-        .property("on_keydown", &handler::get_on_keydown, &handler::set_on_keydown),
+        .property("on_key_down", &handler::get_on_key_down, &handler::set_on_key_down)
+        .property("on_key_up", &handler::get_on_key_up, &handler::set_on_key_up)
+        .property("on_left_down", &handler::get_on_left_down, &handler::set_on_left_down),
       // application management class
       class_<application, handler>("app")
         .def("autoloop", &application::autoloop)
         .def("autoloop", &application::autoloop_with)
+        .def("check_key_down", &application::check_key_down)
         .property("fps", &application::get_fps, &application::set_fps)
-        .def("get_keydown", &application::get_keydown)
         .property("input", &application::get_instate)
         .property("inrec", &application::get_inrecord)
         .property("inrecord", &application::get_inrecord)
@@ -221,6 +225,13 @@ namespace lev
     }
   }
 
+
+  bool application::check_key_down(const char *key)
+  {
+    return wxGetKeyState(wxKeyCode(input::to_keycode(key)));
+  }
+
+
   bool application::entry(lua_State *L, int argc, char **argv)
   {
     static bool entried = false;
@@ -245,11 +256,6 @@ namespace lev
   double application::get_interval()
   {
     return 1000 / cast_app(_obj)->fps;
-  }
-
-  bool application::get_keydown(const char *key)
-  {
-    return wxGetKeyState(wxKeyCode(input::to_keycode(key)));
   }
 
   inrecord* application::get_inrecord()

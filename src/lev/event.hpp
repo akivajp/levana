@@ -27,24 +27,30 @@ namespace lev
     public:
       bool connect(int type, object lua_func) { return connect(-1, type, lua_func); }
       bool connect(int id, int type, object lua_func);
-      object get_func(int type) { return get_func(-1, type); }
-      object get_func(int id, int type);
-      object get_on_any();
-      object get_on_char();
-      object get_on_close();
-      object get_on_idle();
-      object get_on_keydown();
-      object get_on_menu(int id);
+      virtual object get_func(int type) { return get_func(-1, type); }
+      virtual object get_func(int id, int type);
+      virtual object get_on_any();
+      virtual object get_on_char();
+      virtual object get_on_close();
+      virtual object get_on_idle();
+      virtual object get_on_key_down();
+      virtual object get_on_key_up();
+      virtual object get_on_left_down();
+      virtual object get_on_right_down();
+      virtual object get_on_menu(int id);
       void *get_rawobj() { return _obj; }
       virtual type_id get_type_id() const { return LEV_THANDLER; }
       virtual const char *get_type_name() const { return "lev.handler"; }
       bool hold();
-      bool set_on_any(object lua_func);
-      bool set_on_char(object lua_func);
-      bool set_on_close(object lua_func);
-      bool set_on_idle(object lua_func);
-      bool set_on_keydown(object lua_func);
-      bool set_on_menu(int id, object lua_func);
+      virtual bool set_on_any(object lua_func);
+      virtual bool set_on_char(object lua_func);
+      virtual bool set_on_close(object lua_func);
+      virtual bool set_on_idle(object lua_func);
+      virtual bool set_on_key_down(object lua_func);
+      virtual bool set_on_key_up(object lua_func);
+      virtual bool set_on_left_down(object lua_func);
+      virtual bool set_on_right_down(object lua_func);
+      virtual bool set_on_menu(int id, object lua_func);
 
     protected:
       boost::function<void (int, int, luabind::object)> connector;
@@ -64,6 +70,8 @@ namespace lev
       long get_keycode() const;
       virtual type_id get_type_id() const { return LEV_TEVENT; }
       virtual const char *get_type_name() const { return "lev.event"; }
+      int get_x() const;
+      int get_y() const;
       bool request();
       void skip();
     protected:

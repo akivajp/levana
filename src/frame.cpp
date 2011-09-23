@@ -28,11 +28,32 @@ namespace lev
   class myFrame : public myHandler<wxFrame>
   {
     public:
-      myFrame() : mb() { }
+      myFrame() : mbar() { }
       virtual ~myFrame() { }
 
-      luabind::object mb;
+      void OnKeyDown(wxKeyEvent& e)
+      {
+        if (func_key_down) { func_key_down(event(&e)); }
+        else { e.Skip(); }
+      }
+
+      void OnKeyUp(wxKeyEvent& e)
+      {
+        if (func_key_up) { func_key_up(event(&e)); }
+        else { e.Skip(); }
+      }
+
+      luabind::object mbar;
+      luabind::object func_key_down;
+      luabind::object func_key_up;
+
+      DECLARE_EVENT_TABLE();
   };
+  BEGIN_EVENT_TABLE(myFrame, wxFrame)
+    EVT_KEY_DOWN(myFrame::OnKeyDown)
+    EVT_KEY_UP(myFrame::OnKeyUp)
+  END_EVENT_TABLE();
+
   static myFrame* cast_frm(void *obj) { return (myFrame *)obj; }
 
   bool frame::close(bool force)
@@ -128,7 +149,17 @@ namespace lev
 
   luabind::object frame::get_menubar()
   {
-    return cast_frm(_obj)->mb;
+    return cast_frm(_obj)->mbar;
+  }
+
+  luabind::object frame::get_on_key_down()
+  {
+    return cast_frm(_obj)->func_key_down;
+  }
+
+  luabind::object frame::get_on_key_up()
+  {
+    return cast_frm(_obj)->func_key_up;
   }
 
   const char * frame::get_status()
@@ -178,7 +209,7 @@ namespace lev
 
     cast_frm(_obj)->SetMenuBar((wxMenuBar *)mbar->get_rawobj());
     mbar->hold();
-    cast_frm(_obj)->mb = mb;
+    cast_frm(_obj)->mbar = mb;
 
     luabind::iterator i(mb["menus"]), end;
     for (; i != end; i++)
@@ -210,6 +241,18 @@ namespace lev
         }
       }
     }
+    return true;
+  }
+
+  bool frame::set_on_key_down(luabind::object func)
+  {
+    cast_frm(_obj)->func_key_down = func;
+    return true;
+  }
+
+  bool frame::set_on_key_up(luabind::object func)
+  {
+    cast_frm(_obj)->func_key_up = func;
     return true;
   }
 

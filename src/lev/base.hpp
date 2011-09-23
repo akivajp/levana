@@ -12,6 +12,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include <string>
+#include <boost/format.hpp>
 
 namespace lev
 {
@@ -21,6 +22,7 @@ namespace lev
     public:
       enum type_id
       {
+        LEV_TNONE = -1,
         LEV_TBASE = 1,
           LEV_TARCHIVE,
           LEV_TCHANNEL,
@@ -45,6 +47,9 @@ namespace lev
           LEV_THANDLER_END,
 
           LEV_TIMAGE,
+            LEV_TLAYOUT,
+          LEV_TIMAGE_END,
+
           LEV_TINFO,
 
           LEV_TINPUT,
@@ -84,7 +89,27 @@ namespace lev
     public:
       virtual type_id get_type_id() const { return LEV_TBASE; }
       virtual const char *get_type_name() const { return "lev.base"; }
-      static std::string tostring(base *b);
+
+      static std::string tostring(const base *b)
+      {
+        return (boost::format("%1%: %2%") % b->get_type_name() % b).str();
+      }
+
+      static bool is_type_of(const luabind::object &obj, type_id id,
+                             type_id id_stop = LEV_TNONE)
+      {
+        if (id_stop == LEV_TNONE) { id_stop = id; }
+        if (! obj) { return false; }
+        if (luabind::type(obj) != LUA_TUSERDATA) { return false; }
+
+        luabind::object obj_id = obj["type_id"];
+        if (! obj_id) { return false; }
+        if (luabind::type(obj_id) != LUA_TNUMBER) { return false; }
+
+        int id_of_obj = luabind::object_cast<int>(obj_id);
+        if (id <= id_of_obj && id_of_obj <= id_stop) { return true; }
+        return false;
+      }
   };
 
 }

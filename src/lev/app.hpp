@@ -34,9 +34,9 @@ namespace lev
       void autoloop_with(frame *frm);
       static bool entry(lua_State *L, int argc, char **argv);
       static application *get_app();
+      bool check_key_down(const char *key);
       double get_fps();
       double get_interval();
-      bool get_keydown(const char *key);
       inrecord* get_inrecord();
       instate* get_instate();
       locale* get_locale();

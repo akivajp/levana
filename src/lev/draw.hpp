@@ -12,7 +12,6 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "gui.hpp"
-#include "image.hpp"
 #include "prim.hpp"
 
 #include <lua.h>
@@ -24,13 +23,12 @@ extern "C" {
 namespace lev
 {
 
-  // class dependencies
   class image;
 
   class canvas : public control
   {
-    private:
-      canvas() : control() {}
+    protected:
+      canvas();
     public:
       ~canvas();
       bool call_compiled(image *img);
@@ -48,12 +46,14 @@ namespace lev
       bool enable_alpha_blending(bool enable);
       bool enable_alpha_blending0() { return enable_alpha_blending(true); }
       void flush();
+      virtual luabind::object get_on_right_down();
       void line(int x1, int y1, int x2, int y2);
       bool map2d_auto();
       bool map2d(int left, int right, int top, int bottom);
       bool print(const char *text);
-      void set_current();
-      void swap();
+      bool set_current();
+      virtual bool set_on_right_down(luabind::object func);
+      bool swap();
   };
 }
 
