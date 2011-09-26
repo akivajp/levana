@@ -16,7 +16,6 @@ extern "C"
 {
   extern int luaopen_lev(lua_State *L);
   extern int luaopen_lev_base(lua_State *L);
-  extern int luaopen_lev_lua(lua_State *L);
   extern int luaopen_lev_std(lua_State *L);
 }
 

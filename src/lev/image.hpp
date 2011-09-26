@@ -36,6 +36,7 @@ namespace lev
       bool blit(image *img, int x = 0, int y = 0);
       static image* capture(control *src);
       bool call_compiled(canvas *cv);
+      bool call_texture(canvas *cv);
       static size calc_string(const std::string &str, font *f);
       static size calc_string1(const std::string &str) { return calc_string(str, NULL); }
       virtual bool clear(const color &c);
@@ -58,8 +59,10 @@ namespace lev
       virtual int get_w() const;
       static bool init();
       bool is_compiled();
+      bool is_texturized();
       static image* levana_icon();
       static image* load(const char *filename);
+      bool reload(const std::string &filename);
       bool save(const char *filename) const;
       bool set_pixel(color* c, int x, int y);
       static image* string(const std::string &str, font *f = NULL, color *fore = NULL, color *back = NULL);
@@ -70,6 +73,7 @@ namespace lev
       image* sub_image(int x, int y, int w, int h);
       static int sub_image_l(lua_State *L);
       bool swap(image *img);
+      bool texturize(canvas *cv, bool force = false);
     protected:
       void *_obj;
       void *_status;
@@ -85,8 +89,8 @@ namespace lev
       virtual bool clear(const color &c);
       virtual bool clear0() { return clear(color::transparent()); }
       bool complete();
-      bool draw_next();
       static layout* create(int width_stop = -1);
+      bool draw_next();
       bool fit();
       luabind::object get_color();
       luabind::object get_font();

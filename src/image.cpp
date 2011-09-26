@@ -20,6 +20,7 @@
 #include "resource/levana.xpm"
 
 #include <boost/shared_array.hpp>
+#include <luabind/adopt_policy.hpp>
 #include <luabind/luabind.hpp>
 #include <wx/filename.h>
 #include <wx/glcanvas.h>
@@ -54,6 +55,8 @@ int luaopen_lev_image(lua_State *L)
         .def("get_pixel", &image::get_pixel, adopt(result))
         .property("h", &image::get_h)
         .property("height", &image::get_h)
+        .def("load", &image::reload)
+        .def("reload", &image::reload)
         .def("save", &image::save)
         .def("set_color", &image::set_pixel)
         .def("set_pixel", &image::set_pixel)
@@ -112,7 +115,7 @@ int luaopen_lev_image(lua_State *L)
   image["levana_icon"] = classes["image"]["levana_icon"];
   image["load"]        = classes["image"]["load"];
   image["string"]      = classes["image"]["string"];
-  image["layout"]        = classes["layout"]["create"];
+  image["layout"]      = classes["layout"]["create"];
 
   globals(L)["package"]["loaded"]["lev.image"] = image;
   return 0;
@@ -124,7 +127,7 @@ namespace lev
   class myImageStatus
   {
     public:
-      myImageStatus() : compiled(false), index(-1) { }
+      myImageStatus() : compiled(false), texturized(false), index(-1) { }
 
       ~myImageStatus()
       {
@@ -133,9 +136,17 @@ namespace lev
 
       bool Call()
       {
-        if (!compiled) { return false; }
-        glCallList(index);
-        return true;
+        if (compiled)
+        {
+          glCallList(index);
+          return true;
+        }
+        if (texturized)
+        {
+          glBindTexture(GL_TEXTURE_2D, index);
+          return true;
+        }
+        return false;
       }
 
       bool Clear()
@@ -145,11 +156,17 @@ namespace lev
           glDeleteLists(index, 1);
           compiled = false;
         }
+        if (texturized)
+        {
+          glDeleteTextures(1, &index);
+          texturized = false;
+        }
         return true;
       }
 
       bool compiled;
-      int index;
+      bool texturized;
+      GLuint index;
   };
 
   inline static wxBitmap* cast_image(void *obj) { return (wxBitmap *)obj; }
@@ -264,6 +281,11 @@ namespace lev
     return cast_status(_status)->Call();
   }
 
+  bool image::call_texture(canvas *cv)
+  {
+    cv->set_current();
+    return cast_status(_status)->Call();
+  }
 
   image* image::capture(control *src)
   {
@@ -334,41 +356,35 @@ namespace lev
 
     if (cv == NULL) { return false; }
     if (!force && st->compiled) { return false; }
-    if (st->compiled) { st->Clear(); }
+    st->Clear();
 
     st->index = glGenLists(1);
     if (st->index <= 0) { return false; }
+    st->compiled = true;
 
     try {
-      glNewList(st->index, GL_COMPILE);
       boost::shared_array<unsigned char> data;
+      wxImage img = cast_image(_obj)->ConvertToImage();
       const int w = get_w();
       const int h = get_h();
-      wxAlphaPixelData pixels(*cast_image(_obj));
-      pixels.UseAlpha();
-      wxAlphaPixelData::Iterator p(pixels), rawStart;
 
       data.reset(new unsigned char [4 * w * h]);
       for (int i = 0 ; i < h ; i++)
       {
-        rawStart = p;
         for (int j = 0 ; j < w ; j++)
         {
           int k = (h - i - 1) * w + j;
-          data[4*k]     = p.Red();
-          data[4*k + 1] = p.Green();
-          data[4*k + 2] = p.Blue();
-          data[4*k + 3] = p.Alpha();
-          p++;
+          data[4*k]     = img.GetRed(j, i);
+          data[4*k + 1] = img.GetGreen(j, i);
+          data[4*k + 2] = img.GetBlue(j, i);
+          data[4*k + 3] = img.HasAlpha() ? img.GetAlpha(j, i) : 255;
         }
-        p = rawStart;
-        p.OffsetY(pixels, 1);
       }
 
       cv->set_current();
+      glNewList(st->index, GL_COMPILE);
       glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, data.get());
       glEndList();
-      st->compiled = true;
       return true;
     }
     catch (...) {
@@ -407,6 +423,14 @@ namespace lev
       p.MoveTo(data, x, y);
       if (!p.IsOk()) { throw -1; }
       if (c->get_a() == 0) { return true; }
+      if (p.Alpha() == 0)
+      {
+        p.Red()   = c->get_r();
+        p.Green() = c->get_g();
+        p.Blue()  = c->get_b();
+        p.Alpha() = c->get_a();
+        return true;
+      }
       double alpha_norm = c->get_a() / 255.0;
       double base_alpha = (1 - alpha_norm) * p.Alpha() / 255.0;
       p.Alpha() = 255 * (alpha_norm + base_alpha);
@@ -489,7 +513,9 @@ namespace lev
 
   bool image::fill_rect(int x, int y, int w, int h, color *filling)
   {
+#ifdef __WXGTK__
     wxBitmap tmp(get_w(), get_h(), 32);
+
     try {
       wxMemoryDC mdc(tmp);
       mdc.SetPen(wxColour(255, 255, 255, 255));
@@ -497,11 +523,27 @@ namespace lev
       mdc.SetBackground(wxColour(0, 0, 0, 255));
       mdc.Clear();
       mdc.DrawRectangle(x, y, w, h);
+      return image_draw_mask(this, &tmp, filling);
     }
     catch (...) {
       return false;
     }
-    return image_draw_mask(this, &tmp, filling);
+#else
+    try {
+      wxMemoryDC mdc(*cast_image(_obj));
+      wxGCDC gdc(mdc);
+      if (filling)
+      {
+        gdc.SetPen(wxColour(to_wxcolor(*filling)));
+        gdc.SetBrush(wxColour(to_wxcolor(*filling)));
+      }
+      gdc.DrawRectangle(x, y, w, h);
+      return true;
+    }
+    catch (...) {
+      return false;
+    }
+#endif
   }
 
 
@@ -552,6 +594,11 @@ namespace lev
     return cast_status(_status)->compiled;
   }
 
+  bool image::is_texturized()
+  {
+    return cast_status(_status)->texturized;
+  }
+
   image* image::levana_icon()
   {
     static image *img = NULL;
@@ -578,7 +625,7 @@ namespace lev
       image::init();
       img = new image;
       wxString f = wxString(filename, wxConvUTF8);
-      img->_obj = obj = new wxBitmap(f);
+      img->_obj = obj = new wxBitmap(wxImage(f));
       img->_status = new myImageStatus;
       if (not obj->IsOk()) { throw -1; }
       return img;
@@ -586,6 +633,23 @@ namespace lev
     catch (...) {
       delete img;
       return NULL;
+    }
+  }
+
+  bool image::reload(const std::string &filename)
+  {
+    void *obj = NULL;
+    try {
+      obj = new wxBitmap(wxImage(wxString(filename.c_str(), wxConvUTF8)));
+      void *tmp = obj;
+      obj = _obj;
+      _obj = tmp;
+      cast_status(_status)->Clear();
+      return true;
+    }
+    catch (...) {
+      delete cast_image(obj);
+      return false;
     }
   }
 
@@ -616,13 +680,41 @@ namespace lev
     }
   }
 
+
   image* image::string(const std::string &str, font *f, color *fore, color *back)
   {
     image *img = NULL;
     if (str.empty()) { return NULL; }
+
+#ifdef __WXMSW__
+    try {
+      wxString s(str.c_str(), wxConvUTF8);
+      if (s.empty()) { s = wxString(str.c_str(), wxConvLibc); }
+      wxMemoryDC mdc;
+      wxGCDC gdc(mdc);
+      if (f)
+      {
+        wxFont *ft = (wxFont *)f->get_rawobj();
+        gdc.SetFont(*ft);
+      }
+      else { gdc.SetFont(*wxNORMAL_FONT); }
+      wxSize sz = gdc.GetTextExtent(s);
+      img = image::create(sz.GetWidth(), sz.GetHeight());
+      if (! img) { throw -1; }
+      mdc.SelectObject(*cast_image(img->_obj));
+      if (fore) { gdc.SetTextForeground(to_wxcolor(*fore)); }
+      gdc.DrawText(s, 0, 0);
+      return img;
+    }
+    catch (...) {
+      delete img;
+      return NULL;
+    }
+#else
     try {
       wxMemoryDC mdc;
       wxString s(str.c_str(), wxConvUTF8);
+      if (s.empty()) { s = wxString(str.c_str(), wxConvLibc); }
       if (f)
       {
         wxFont *font = (wxFont *)f->get_rawobj();
@@ -700,6 +792,7 @@ namespace lev
       delete img;
       return NULL;
     }
+#endif
   }
 
   int image::string_l(lua_State *L)
@@ -835,6 +928,54 @@ namespace lev
     return true;
   }
 
+  bool image::texturize(canvas *cv, bool force)
+  {
+    myImageStatus *st = cast_status(_status);
+
+    if (cv == NULL) { return false; }
+    if (!force && st->texturized) { return false; }
+    st->Clear();
+
+    glGenTextures(1, &st->index);
+    if (st->index <= 0) { return false; }
+    st->texturized = true;
+
+    try {
+      boost::shared_array<unsigned char> data;
+      wxImage img = cast_image(_obj)->ConvertToImage();
+      const int w = get_w();
+      const int h = get_h();
+
+      data.reset(new unsigned char [4 * w * h]);
+      for (int i = 0 ; i < h ; i++)
+      {
+        for (int j = 0 ; j < w ; j++)
+        {
+          int k = (h - i - 1) * w + j;
+          data[4*k]     = img.GetRed(j, i);
+          data[4*k + 1] = img.GetGreen(j, i);
+          data[4*k + 2] = img.GetBlue(j, i);
+          data[4*k + 3] = img.HasAlpha() ? img.GetAlpha(j, i) : 255;
+        }
+      }
+
+      cv->set_current();
+      glBindTexture(GL_TEXTURE_2D, st->index);
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+      int res = gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, w, h, GL_RGBA,
+                                  GL_UNSIGNED_BYTE, data.get());
+      if (res != 0) { throw -1; }
+      return true;
+    }
+    catch (...) {
+      st->Clear();
+      return false;
+    }
+  }
+
+
 
   class myLayout
   {
@@ -844,7 +985,6 @@ namespace lev
           index_to_col(), index_to_row(), log(), rows()
       {
         font_obj = globals(application::get_app()->getL())["lev"]["font"]["load"]();
-        font_obj["size"] = 32;
         color_obj = globals(application::get_app()->getL())["lev"]["prim"]["color"](0, 0, 0);
 
         rows.push_back(std::vector<boost::shared_ptr<image> >());
@@ -900,10 +1040,6 @@ namespace lev
         log.clear();
         rows.clear();
 
-        font_obj = globals(application::get_app()->getL())["lev"]["font"]["load"]();
-        font_obj["size"] = 32;
-        color_obj = globals(application::get_app()->getL())["lev"]["prim"]["color"](0, 0, 0);
-
         rows.push_back(std::vector<boost::shared_ptr<image> >());
         return true;
       }
@@ -942,6 +1078,7 @@ namespace lev
       bool ReserveImage(const std::string &name, boost::shared_ptr<image> img)
       {
         try {
+          if (! img) { throw -1; }
           if (w >= 0 && current_x + img->get_w() > w)
           {
             rows.push_back(std::vector<boost::shared_ptr<image> >());
@@ -970,17 +1107,19 @@ namespace lev
         if (word.empty()) { return false; }
         try {
           font *f = object_cast<font *>(font_obj);
+          color *c = object_cast<color *>(color_obj);
           boost::shared_ptr<image> img;
           if (ruby.empty()) {
-            img.reset(image::string(word, f));
+            img.reset(image::string(word, f, c));
             return ReserveImage(word, img);
           }
           else
           {
             boost::shared_ptr<font> f_ruby(f->clone());
             f_ruby->set_point_size(f->get_point_size() / 2);
-            boost::shared_ptr<image> img_ruby(image::string(ruby, f_ruby.get()));
-            boost::shared_ptr<image> img_word(image::string(word, f));
+            boost::shared_ptr<image> img_ruby(image::string(ruby, f_ruby.get(), c));
+            boost::shared_ptr<image> img_word(image::string(word, f, c));
+            if (!img_ruby || !img_word) { throw -1; }
             int h = img_ruby->get_h() + img_word->get_h();
             int w = img_ruby->get_w();
             if (img_word->get_w() > w) { w = img_word->get_w(); }
@@ -1026,16 +1165,10 @@ namespace lev
 
   bool layout::complete()
   {
+    if (is_done()) { return false; }
+    cast_status(_status)->Clear();
     this->fit();
     return cast_lay(_buf)->Complete(this);
-  }
-
-  bool layout::draw_next()
-  {
-    myLayout *lay = cast_lay(_buf);
-    if (is_done()) { return false; }
-    this->fit();
-    return lay->DrawIndex(this, lay->index++);
   }
 
   layout* layout::create(int width_stop)
@@ -1052,6 +1185,15 @@ namespace lev
       delete img;
       return NULL;
     }
+  }
+
+  bool layout::draw_next()
+  {
+    if (is_done()) { return false; }
+    myLayout *lay = cast_lay(_buf);
+    cast_status(_status)->Clear();
+    this->fit();
+    return lay->DrawIndex(this, lay->index++);
   }
 
   bool layout::fit()

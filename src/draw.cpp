@@ -50,6 +50,8 @@ int luaopen_lev_draw(lua_State *L)
         .def("print", &canvas::print)
         .def("set_current", &canvas::set_current)
         .def("swap", &canvas::swap)
+        .def("texturize", &canvas::texturize)
+        .def("texturize", &canvas::texturize1)
         .scope
         [
           def("create_c", &canvas::create, adopt(result))
@@ -173,12 +175,16 @@ namespace lev
     return img->call_compiled(this);
   }
 
+  bool canvas::call_texture(image *img)
+  {
+    return img->call_texture(this);
+  }
+
   void canvas::clear()
   {
     set_current();
     glClear(GL_COLOR_BUFFER_BIT);
   }
-
 
   void canvas::clear_color(unsigned char r, unsigned char g, unsigned char b)
   {
@@ -259,37 +265,50 @@ namespace lev
   bool canvas::draw_image(image *bmp, int x, int y)
   {
     if (! this->is_valid()) { return false; }
+
+    if (bmp->is_texturized())
+    {
+      set_current();
+      call_texture(bmp);
+      glEnable(GL_TEXTURE_2D);
+      glBegin(GL_QUADS);
+        glTexCoord2i(0, 1);
+        glVertex2i(x, y);
+        glTexCoord2i(0, 0);
+        glVertex2i(x, y + bmp->get_h());
+        glTexCoord2i(1, 0);
+        glVertex2i(x + bmp->get_w(), y + bmp->get_h());
+        glTexCoord2i(1, 1);
+        glVertex2i(x + bmp->get_w(), y);
+      glEnd();
+      glDisable(GL_TEXTURE_2D);
+      return true;
+    }
+
     if (bmp->is_compiled())
     {
       set_current();
       glRasterPos2i(x, y + bmp->get_h());
-      return bmp->call_compiled(this);
+      return this->call_compiled(bmp);
     }
 
     try {
       boost::shared_array<unsigned char> data;
+      wxImage img = ((wxBitmap *)bmp->get_rawobj())->ConvertToImage();
       const int w = bmp->get_w();
       const int h = bmp->get_h();
-      wxBitmap *b = (wxBitmap*)bmp->get_rawobj();
-      wxAlphaPixelData pixels(*b);
-      pixels.UseAlpha();
-      wxAlphaPixelData::Iterator p(pixels), rawStart;
 
       data.reset(new unsigned char [4 * w * h]);
       for (int i = 0 ; i < h ; i++)
       {
-        rawStart = p;
         for (int j = 0 ; j < w ; j++)
         {
           int k = (h - i - 1) * w + j;
-          data[4*k]     = p.Red();
-          data[4*k + 1] = p.Green();
-          data[4*k + 2] = p.Blue();
-          data[4*k + 3] = p.Alpha();
-          p++;
+          data[4*k]     = img.GetRed(j, i);
+          data[4*k + 1] = img.GetGreen(j, i);
+          data[4*k + 2] = img.GetBlue(j, i);
+          data[4*k + 3] = img.HasAlpha() ? img.GetAlpha(j, i) : 255;
         }
-        p = rawStart;
-        p.OffsetY(pixels, 1);
       }
 
       set_current();
@@ -306,11 +325,34 @@ namespace lev
   {
     using namespace luabind;
     canvas *cv = NULL;
+    image *img = NULL;
 
     luaL_checktype(L, 1, LUA_TUSERDATA);
     cv = object_cast<canvas *>(object(from_stack(L, 1)));
     object t = util::get_merged(L, 2, -1);
 
+    if (t["lev.image.layout1"])
+    {
+      img = object_cast<image *>(t["lev.image.layout1"]);
+    }
+    else if (t["lev.image"])
+    {
+      img = object_cast<image *>(t["lev.image"]);
+    }
+    if (img)
+    {
+      int x = 0, y = 0;
+
+      if (t["x"]) { x = object_cast<int>(t["x"]); }
+      else if (t["lua.number1"]) { x = object_cast<int>(t["lua.number1"]); }
+
+      if (t["y"]) { y = object_cast<int>(t["y"]); }
+      else if (t["lua.number2"]) { y = object_cast<int>(t["lua.number2"]); }
+
+      cv->draw_image(img, x, y);
+      lua_pushboolean(L, true);
+      return 1;
+    }
     if (t["lev.image"])
     {
       image *img = object_cast<image *>(t["lev.image"]);
@@ -456,6 +498,12 @@ namespace lev
     if (! this->is_valid()) { return false; }
     cast_draw(_obj)->SwapBuffers();
     return true;
+  }
+
+  bool canvas::texturize(image *img, bool force)
+  {
+    if (! this->is_valid()) { return false; }
+    return img->texturize(this, force);
   }
 
 }

@@ -32,6 +32,7 @@ namespace lev
     public:
       ~canvas();
       bool call_compiled(image *img);
+      bool call_texture(image *img);
       void clear();
       void clear_color(unsigned char r, unsigned char g, unsigned char b);
       bool compile(image *img, bool force = false);
@@ -54,6 +55,8 @@ namespace lev
       bool set_current();
       virtual bool set_on_right_down(luabind::object func);
       bool swap();
+      bool texturize(image *img, bool force = false);
+      bool texturize1(image *img) { return texturize(img, false); }
   };
 }
 

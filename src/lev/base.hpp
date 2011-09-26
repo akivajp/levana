@@ -11,8 +11,9 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
-#include <string>
 #include <boost/format.hpp>
+#include <luabind/luabind.hpp>
+#include <string>
 
 namespace lev
 {

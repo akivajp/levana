@@ -1,6 +1,7 @@
-CXXFLAGS = `/usr/mingw32/usr/bin/wx-config --cxxflags` -I/usr/mingw32/usr/include/ClanLib-0.8
+CXXFLAGS = `/usr/mingw32/usr/bin/wx-config --cxxflags` -I/usr/mingw32/usr/include/ClanLib-0.8 \
+	   -DLIBARCHIVE_STATIC
 #LIBS = -L/usr/mingw32/usr/lib `/usr/mingw32/usr/bin/wx-config --libs std gl` -lglu32 -llua -lluabind -static
-CORE_LIBS =-L/usr/mingw32/usr/lib -lsqlite3 \
+CORE_LIBS =-L/usr/mingw32/usr/lib -lsqlite3 -larchive -llzma \
 	-lluabind -llua -lws2_32 \
 	`/usr/mingw32/usr/bin/wx-config --libs std,gl,media,stc` -lgdiplus -lglu32 -lpsapi \
 	-static

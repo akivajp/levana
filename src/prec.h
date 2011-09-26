@@ -12,6 +12,8 @@
 /////////////////////////////////////////////////////////////////////////////
 
 extern "C" {
+#include <archive.h>
+#include <archive_entry.h>
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
@@ -42,8 +44,8 @@ extern "C" {
 #include <wx/url.h>
 #include <wx/wxhtml.h>
 
-#include <archive.h>
-#include <archive_entry.h>
+#include <GL/glu.h>
+
 #include <map>
 #include <sstream>
 #include <string>

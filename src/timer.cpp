@@ -104,7 +104,7 @@ namespace lev
 
   bool stop_watch::start(long initial_msec)
   {
-    if (initial_msec <= 0) { return false; }
+    if (initial_msec < 0) { return false; }
     cast_watch(_obj)->Start(initial_msec);
     return true;
   }

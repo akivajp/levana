@@ -28,8 +28,9 @@ namespace lev
     public:
       virtual ~font();
       font* clone();
-      static font* load(const char *desc);
+      static font* load(const char *desc = NULL);
       static int load_l(lua_State *L);
+      std::string get_encoding();
       const char *get_face_name();
       const char *get_family();
       int get_point_size();
@@ -38,6 +39,7 @@ namespace lev
       virtual type_id get_type_id() const { return LEV_TFONT; }
       virtual const char *get_type_name() const { return "lev.font"; }
       static font* select_font();
+      bool set_encoding(const std::string &encode);
       bool set_face_name(const char *face);
       bool set_point_size(int size);
     protected:

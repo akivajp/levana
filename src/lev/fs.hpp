@@ -11,8 +11,6 @@
 // Licence:     MIT License
 /////////////////////////////////////////////////////////////////////////////
 
-#endif // _FS_HPP
-
 #include "base.hpp"
 #include <luabind/luabind.hpp>
 
@@ -114,4 +112,6 @@ namespace lev
   };
 
 }
+
+#endif // _FS_HPP
 

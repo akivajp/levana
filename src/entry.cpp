@@ -80,6 +80,11 @@ int luaopen_lev_base(lua_State *L)
   using namespace lev;
 
   open(L);
+  globals(L)["require"]("io");
+  globals(L)["require"]("math");
+  globals(L)["require"]("os");
+  globals(L)["require"]("string");
+  globals(L)["require"]("table");
 
   // base classes
   module(L, "lev")
@@ -98,21 +103,6 @@ int luaopen_lev_base(lua_State *L)
   return 0;
 }
 
-int luaopen_lev_lua(lua_State *L)
-{
-  using namespace luabind;
-
-  open(L);
-  globals(L)["require"]("debug");
-  globals(L)["require"]("io");
-  globals(L)["require"]("math");
-  globals(L)["require"]("os");
-  globals(L)["require"]("string");
-  globals(L)["require"]("table");
-
-  globals(L)["package"]["loaded"]["lev.lua"] = true;
-  return 0;
-}
 
 int luaopen_lev_std(lua_State *L)
 {
@@ -172,7 +162,6 @@ namespace lev
     register_to(globals(L)["package"]["preload"], "lev.info", luaopen_lev_info);
     register_to(globals(L)["package"]["preload"], "lev.input", luaopen_lev_input);
     register_to(globals(L)["package"]["preload"], "lev.locale", luaopen_lev_locale);
-    register_to(globals(L)["package"]["preload"], "lev.lua", luaopen_lev_lua);
     register_to(globals(L)["package"]["preload"], "lev.net", luaopen_lev_net);
     register_to(globals(L)["package"]["preload"], "lev.package", luaopen_lev_package);
     register_to(globals(L)["package"]["preload"], "lev.prim", luaopen_lev_prim);

@@ -1,5 +1,5 @@
 PREFIX=/tmp
-VERSION=0.5.1
+VERSION=0.5.2
 OUT = a.out
 BIN = levana
 CORE_DLIB = lev.so
