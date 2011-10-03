@@ -46,6 +46,8 @@ int luaopen_lev_image(lua_State *L)
         .def("blit", &image::blit)
         .def("clear", &image::clear)
         .def("clear", &image::clear0)
+        .def("compile", &image::compile)
+        .def("compile", &image::compile1)
         .def("draw", &image::blit)
         .def("draw_pixel", &image::draw_pixel)
         .def("fill_circle", &image::fill_circle)
@@ -64,6 +66,8 @@ int luaopen_lev_image(lua_State *L)
         .def("stroke_circle", &image::stroke_circle)
         .def("stroke_rect", &image::stroke_rect)
         .def("stroke_rectangle", &image::stroke_rect)
+        .def("texturize", &image::texturize)
+        .def("texturize", &image::texturize1)
         .property("w", &image::get_w)
         .property("width", &image::get_w)
         .scope
@@ -341,6 +345,7 @@ namespace lev
       img = new image;
       img->_obj = new wxBitmap(*cast_image(_obj));
       img->_status = new myImageStatus;
+      cast_image(_obj)->UseAlpha();
       return img;
     }
     catch (...) {
@@ -353,6 +358,7 @@ namespace lev
   bool image::compile(canvas *cv, bool force)
   {
     myImageStatus *st = cast_status(_status);
+    cv->set_current();
 
     if (cv == NULL) { return false; }
     if (!force && st->compiled) { return false; }
@@ -363,32 +369,33 @@ namespace lev
     st->compiled = true;
 
     try {
-      boost::shared_array<unsigned char> data;
-      wxImage img = cast_image(_obj)->ConvertToImage();
-      const int w = get_w();
-      const int h = get_h();
+      wxAlphaPixelData pixels(*cast_image(_obj));
+      pixels.UseAlpha();
+      wxAlphaPixelData::Iterator p(pixels), rawStart;
 
-      data.reset(new unsigned char [4 * w * h]);
-      for (int i = 0 ; i < h ; i++)
-      {
-        for (int j = 0 ; j < w ; j++)
-        {
-          int k = (h - i - 1) * w + j;
-          data[4*k]     = img.GetRed(j, i);
-          data[4*k + 1] = img.GetGreen(j, i);
-          data[4*k + 2] = img.GetBlue(j, i);
-          data[4*k + 3] = img.HasAlpha() ? img.GetAlpha(j, i) : 255;
-        }
-      }
-
-      cv->set_current();
       glNewList(st->index, GL_COMPILE);
-      glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, data.get());
+      glBegin(GL_POINTS);
+        for (int i = 0 ; i < get_h() ; i++)
+        {
+          rawStart = p;
+          for (int j = 0 ; j < get_w() ; j++)
+          {
+            if (p.Alpha())
+            {
+              glColor4ub(p.Red(), p.Green(), p.Blue(), p.Alpha());
+              glVertex2i(j, i);
+            }
+            p++;
+          }
+          p = rawStart;
+          p.OffsetY(pixels, 1);
+        }
+      glEnd();
       glEndList();
+
       return true;
     }
     catch (...) {
-      st->Clear();
       return false;
     }
   }
@@ -628,6 +635,7 @@ namespace lev
       img->_obj = obj = new wxBitmap(wxImage(f));
       img->_status = new myImageStatus;
       if (not obj->IsOk()) { throw -1; }
+      obj->UseAlpha();
       return img;
     }
     catch (...) {
@@ -638,17 +646,15 @@ namespace lev
 
   bool image::reload(const std::string &filename)
   {
-    void *obj = NULL;
     try {
-      obj = new wxBitmap(wxImage(wxString(filename.c_str(), wxConvUTF8)));
-      void *tmp = obj;
-      obj = _obj;
+      wxBitmap *tmp = new wxBitmap(wxImage(wxString(filename.c_str(), wxConvUTF8)));
+      tmp->UseAlpha();
+      delete cast_image(_obj);
       _obj = tmp;
       cast_status(_status)->Clear();
       return true;
     }
     catch (...) {
-      delete cast_image(obj);
       return false;
     }
   }
@@ -880,6 +886,7 @@ namespace lev
       img = new image;
       img->_obj = new wxBitmap(cast_image(_obj)->GetSubBitmap(wxRect(x, y, w, h)));
       img->_status = new myImageStatus;
+      cast_image(_obj)->UseAlpha();
       return img;
     }
     catch (...) {
@@ -931,6 +938,7 @@ namespace lev
   bool image::texturize(canvas *cv, bool force)
   {
     myImageStatus *st = cast_status(_status);
+    cv->set_current();
 
     if (cv == NULL) { return false; }
     if (!force && st->texturized) { return false; }
@@ -942,24 +950,29 @@ namespace lev
 
     try {
       boost::shared_array<unsigned char> data;
-      wxImage img = cast_image(_obj)->ConvertToImage();
       const int w = get_w();
       const int h = get_h();
+      wxAlphaPixelData pixels(*cast_image(_obj));
+      pixels.UseAlpha();
+      wxAlphaPixelData::Iterator p(pixels), rawStart;
 
       data.reset(new unsigned char [4 * w * h]);
       for (int i = 0 ; i < h ; i++)
       {
+        rawStart = p;
         for (int j = 0 ; j < w ; j++)
         {
           int k = (h - i - 1) * w + j;
-          data[4*k]     = img.GetRed(j, i);
-          data[4*k + 1] = img.GetGreen(j, i);
-          data[4*k + 2] = img.GetBlue(j, i);
-          data[4*k + 3] = img.HasAlpha() ? img.GetAlpha(j, i) : 255;
+          data[4*k]     = p.Red();
+          data[4*k + 1] = p.Green();
+          data[4*k + 2] = p.Blue();
+          data[4*k + 3] = p.Alpha();
+          p++;
         }
+        p = rawStart;
+        p.OffsetY(pixels, 1);
       }
 
-      cv->set_current();
       glBindTexture(GL_TEXTURE_2D, st->index);
       glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -973,6 +986,40 @@ namespace lev
       st->Clear();
       return false;
     }
+
+//    try {
+//      boost::shared_array<unsigned char> data;
+//      wxImage img = cast_image(_obj)->ConvertToImage();
+//      const int w = get_w();
+//      const int h = get_h();
+//
+//      data.reset(new unsigned char [4 * w * h]);
+//      for (int i = 0 ; i < h ; i++)
+//      {
+//        for (int j = 0 ; j < w ; j++)
+//        {
+//          int k = (h - i - 1) * w + j;
+//          data[4*k]     = img.GetRed(j, i);
+//          data[4*k + 1] = img.GetGreen(j, i);
+//          data[4*k + 2] = img.GetBlue(j, i);
+//          data[4*k + 3] = img.HasAlpha() ? img.GetAlpha(j, i) : 255;
+//        }
+//      }
+//
+//      cv->set_current();
+//      glBindTexture(GL_TEXTURE_2D, st->index);
+//      glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+//      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+//      int res = gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, w, h, GL_RGBA,
+//                                  GL_UNSIGNED_BYTE, data.get());
+//      if (res != 0) { throw -1; }
+//      return true;
+//    }
+//    catch (...) {
+//      st->Clear();
+//      return false;
+//    }
   }
 
 

@@ -36,12 +36,17 @@ int luaopen_lev_draw(lua_State *L)
       class_<canvas, control>("canvas")
         .def("clear", &canvas::clear)
         .def("clear", &canvas::clear_color)
+        .def("clear", &canvas::clear_color1)
+        .def("clear", &canvas::clear_color3)
         .def("compile", &canvas::compile)
         .def("compile", &canvas::compile1)
         .def("draw_image", &canvas::draw_image)
+        .def("draw_image", &canvas::draw_image1)
+        .def("draw_image", &canvas::draw_image3)
         .def("draw_point", &canvas::draw_point)
         .def("enable_alpha_blending", &canvas::enable_alpha_blending0)
         .def("enable_alpha_blending", &canvas::enable_alpha_blending)
+        .def("fill_rect", &canvas::fill_rect)
         .def("flush", &canvas::flush)
         .def("line",  &canvas::line)
         .def("map2d", &canvas::map2d)
@@ -180,18 +185,24 @@ namespace lev
     return img->call_texture(this);
   }
 
-  void canvas::clear()
+  bool canvas::clear()
   {
     set_current();
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    return true;
   }
 
-  void canvas::clear_color(unsigned char r, unsigned char g, unsigned char b)
+  bool canvas::clear_color(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
   {
     set_current();
-//    glClearColor(r / 255.0, g / 255.0, b / 255.0, 1.0);
-    glClearColor(r / 255.0, g / 255.0, b / 255.0, 0.0);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    return true;
+  }
+
+  bool canvas::clear_color1(const color &c)
+  {
+    return clear_color(c.get_r(), c.get_g(), c.get_b(), c.get_a());
   }
 
   bool canvas::compile(image *img, bool force)
@@ -262,16 +273,21 @@ namespace lev
     return 1;
   }
 
-  bool canvas::draw_image(image *bmp, int x, int y)
+  bool canvas::draw_image(image *bmp, int x, int y, unsigned char alpha)
   {
     if (! this->is_valid()) { return false; }
 
+    // nothing to draw
+    if (alpha == 0) { return true; }
+
     if (bmp->is_texturized())
     {
+      // bmp is texturized image
       set_current();
       call_texture(bmp);
       glEnable(GL_TEXTURE_2D);
       glBegin(GL_QUADS);
+        glColor4ub(255, 255, 255, alpha);
         glTexCoord2i(0, 1);
         glVertex2i(x, y);
         glTexCoord2i(0, 0);
@@ -285,35 +301,50 @@ namespace lev
       return true;
     }
 
-    if (bmp->is_compiled())
+    if (bmp->is_compiled() && alpha == 255)
     {
+      // bmp is compiled and not transparent at all
       set_current();
-      glRasterPos2i(x, y + bmp->get_h());
-      return this->call_compiled(bmp);
+      glPushMatrix();
+        glTranslatef(x, y, 0);
+        this->call_compiled(bmp);
+      glPopMatrix();
+      return true;
     }
 
     try {
-      boost::shared_array<unsigned char> data;
-      wxImage img = ((wxBitmap *)bmp->get_rawobj())->ConvertToImage();
-      const int w = bmp->get_w();
-      const int h = bmp->get_h();
-
-      data.reset(new unsigned char [4 * w * h]);
-      for (int i = 0 ; i < h ; i++)
-      {
-        for (int j = 0 ; j < w ; j++)
-        {
-          int k = (h - i - 1) * w + j;
-          data[4*k]     = img.GetRed(j, i);
-          data[4*k + 1] = img.GetGreen(j, i);
-          data[4*k + 2] = img.GetBlue(j, i);
-          data[4*k + 3] = img.HasAlpha() ? img.GetAlpha(j, i) : 255;
-        }
-      }
+      wxBitmap *b = (wxBitmap*)bmp->get_rawobj();
+      wxAlphaPixelData pixels(*b);
+      pixels.UseAlpha();
+      wxAlphaPixelData::Iterator p(pixels), rawStart;
 
       set_current();
-      glRasterPos2i(x, y + h);
-      glDrawPixels(bmp->get_w(), bmp->get_h(), GL_RGBA, GL_UNSIGNED_BYTE, data.get());
+      glPushMatrix();
+        glTranslatef(x, y, 0);
+        glBegin(GL_POINTS);
+          for (int i = 0 ; i < bmp->get_h() ; i++)
+          {
+            rawStart = p;
+            for (int j = 0 ; j < bmp->get_w() ; j++)
+            {
+              if (p.Alpha())
+              {
+                if (alpha == 255) { glColor4ub(p.Red(), p.Green(), p.Blue(), p.Alpha()); }
+                else
+                {
+                  // alpha is between 1 and 254
+                  glColor4ub(p.Red(), p.Green(), p.Blue(), p.Alpha() * (alpha / 255.0));
+                }
+                glVertex2i(j, i);
+              }
+              p++;
+            }
+            p = rawStart;
+            p.OffsetY(pixels, 1);
+          }
+        glEnd();
+      glPopMatrix();
+
       return true;
     }
     catch (...) {
@@ -342,6 +373,7 @@ namespace lev
     if (img)
     {
       int x = 0, y = 0;
+      unsigned char a = 255;
 
       if (t["x"]) { x = object_cast<int>(t["x"]); }
       else if (t["lua.number1"]) { x = object_cast<int>(t["lua.number1"]); }
@@ -349,7 +381,11 @@ namespace lev
       if (t["y"]) { y = object_cast<int>(t["y"]); }
       else if (t["lua.number2"]) { y = object_cast<int>(t["lua.number2"]); }
 
-      cv->draw_image(img, x, y);
+      if (t["alpha"]) { a = object_cast<int>(t["alpha"]); }
+      else if (t["a"]) { a = object_cast<int>(t["a"]); }
+      else if (t["lua.number3"]) { y = object_cast<int>(t["lua.number3"]); }
+
+      cv->draw_image(img, x, y, a);
       lua_pushboolean(L, true);
       return 1;
     }
@@ -357,6 +393,7 @@ namespace lev
     {
       image *img = object_cast<image *>(t["lev.image"]);
       int x = 0, y = 0;
+      unsigned char a = 255;
 
       if (t["x"]) { x = object_cast<int>(t["x"]); }
       else if (t["lua.number1"]) { x = object_cast<int>(t["lua.number1"]); }
@@ -364,7 +401,11 @@ namespace lev
       if (t["y"]) { y = object_cast<int>(t["y"]); }
       else if (t["lua.number2"]) { y = object_cast<int>(t["lua.number2"]); }
 
-      cv->draw_image(img, x, y);
+      if (t["alpha"]) { a = object_cast<int>(t["alpha"]); }
+      else if (t["a"]) { a = object_cast<int>(t["a"]); }
+      else if (t["lua.number3"]) { y = object_cast<int>(t["lua.number3"]); }
+
+      cv->draw_image(img, x, y, a);
       lua_pushboolean(L, true);
       return 1;
     }
@@ -417,6 +458,19 @@ namespace lev
   }
 
 
+  bool canvas::fill_rect(int x, int y, int w, int h, color *fill)
+  {
+    set_current();
+    glBegin(GL_QUADS);
+      glColor4ub(fill->get_r(), fill->get_g(), fill->get_b(), fill->get_a());
+      glVertex2i(x    , y);
+      glVertex2i(x    , y + h);
+      glVertex2i(x + w, y + h);
+      glVertex2i(x + w, y);
+    glEnd();
+  }
+
+
   bool canvas::enable_alpha_blending(bool enable)
   {
     set_current();
@@ -465,7 +519,7 @@ namespace lev
   {
     set_current();
     glLoadIdentity();
-    glOrtho(left, right, bottom, top, -1, 1);
+    glOrtho(left, right, bottom, top, -1, 256);
     return true;
   }
 

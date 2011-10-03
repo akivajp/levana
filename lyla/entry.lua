@@ -106,10 +106,13 @@ main:show()
 canvas:map2d(0, conf.frame_w, 0, conf.frame_h)
 canvas:enable_alpha_blending()
 
+sw = lev.stop_watch()
 while main.is_valid do
+--sw:start()
   canvas:clear(0, 0, 0)
 
   for i, j in ipairs(layers) do
+--print('draw', sw.time)
     app:yield()
     if j.texture then
       canvas:texturize(j)
@@ -123,9 +126,9 @@ while main.is_valid do
 
   canvas:swap()
   app:wait()
+--print('last', sw.time)
 --print()
 end
 
-layers.msgfg:save('aaa.png')
 print(lyla.history)
 

@@ -1,6 +1,6 @@
 CXX = g++
 WX_CXXFLAGS=`wx-config --cxxflags` -I/usr/include/ClanLib-0.8
-CXXFLAGS = $(WX_CXXFLAGS) -I/usr/include/freetype2 -fPIC -Os
+CXXFLAGS = $(WX_CXXFLAGS) -fPIC -Os
 SHARED= -shared
 SLIB = liblev.a
 OUT = a.out

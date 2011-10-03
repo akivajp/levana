@@ -33,17 +33,23 @@ namespace lev
       ~canvas();
       bool call_compiled(image *img);
       bool call_texture(image *img);
-      void clear();
-      void clear_color(unsigned char r, unsigned char g, unsigned char b);
+      bool clear();
+      bool clear_color(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
+      bool clear_color1(const color &c);
+      bool clear_color3(unsigned char r, unsigned char g, unsigned char b)
+      { return clear_color(r, g, b, 0); }
+
       bool compile(image *img, bool force = false);
       bool compile1(image *img) { return compile(img, false); }
       static canvas* create(control *parent, int width, int height);
       static int create_l(lua_State *L);
-      bool draw_image(image *bmp, int x = 0, int y = 0);
+      bool draw_image(image *bmp, int x = 0, int y = 0, unsigned char alpha = 255);
       bool draw_image1(image *bmp) { return draw_image(bmp); }
+      bool draw_image3(image *bmp, int x = 0, int y = 0) { return draw_image(bmp, x, y); }
       bool draw_point(point *pt);
       static int draw_l(lua_State *L);
       static int draw_points(lua_State *L);
+      bool fill_rect(int x, int y, int w, int h, color *filling);
       bool enable_alpha_blending(bool enable);
       bool enable_alpha_blending0() { return enable_alpha_blending(true); }
       void flush();

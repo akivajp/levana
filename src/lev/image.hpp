@@ -43,6 +43,7 @@ namespace lev
       virtual bool clear0() { return clear(color::transparent()); }
       image* clone();
       bool compile(canvas *cv, bool force = false);
+      bool compile1(canvas *cv) { return compile(cv); }
       static image* create(int width, int height);
       bool draw_pixel(color *c, int x, int y);
       bool draw_text(const std::string &text, font *f = NULL, color *fg = NULL,
@@ -74,6 +75,7 @@ namespace lev
       static int sub_image_l(lua_State *L);
       bool swap(image *img);
       bool texturize(canvas *cv, bool force = false);
+      bool texturize1(canvas *cv) { return texturize(cv); }
     protected:
       void *_obj;
       void *_status;
