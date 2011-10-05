@@ -7,6 +7,7 @@ require 'lev.package'
 require 'lev.prim'
 require 'lev.sound'
 require 'lev.timer'
+require 'lev.util'
 
 
 -- Path Settings
@@ -27,7 +28,8 @@ lev.require 'layers'
 conf = conf or {}
 conf.caption = 'Lyla Scripting System'
 conf.fg_color = white
-conf.font_size = 20
+conf.fps = 50
+conf.font_size = 18
 --conf.font_size = 12
 conf.first_load = 'start'
 conf.frame_h = 480
@@ -44,14 +46,14 @@ conf.wait_page_icon = 'wait_page.png'
 layers_init()
 -- background layer
 layers_add(lev.image.create(conf.frame_w, conf.frame_h),
-           {name = 'bg', on = true, texture = true})
+           {name = 'bg', visible = true, texture = true})
 -- message background
 layers_add(lev.image.create(conf.frame_w, conf.frame_h),
-           {name = 'msgbg', on = true, texture = true})
+           {name = 'msgbg', visible = true, texture = true})
 layers.msgbg:fill_rect(10, 375, 620, 95, lev.prim.color(0, 0, 255, 128))
 -- message foreground
 layers_add(lev.image.layout(conf.frame_w),
-           {name = 'msgfg', on = true, x = conf.msg_x, y = conf.msg_y, compile = true})
+           {name = 'msgfg', visible = true, x = conf.msg_x, y = conf.msg_y, compile = true})
 
 layers.msgfg.font.size = conf.font_size
 layers.msgfg.color = conf.fg_color or white
@@ -94,10 +96,42 @@ end
 timer:start(50)
 
 
-canvas.on_left_down = function()
+canvas.on_left_down = function(e)
+  -- click waiting process
   if lyla.status == 'wait_key' then
     lyla.key_pressed = true
   end
+
+  -- clickable images' process
+  for i,j in ipairs(layers) do
+    if j.type_name == 'lev.image.layout' then
+      local off_x = j.x
+      local off_y = j.y
+      j:on_left_click(e.x - off_x, e.y - off_y)
+    end
+  end
+
+  -- allow to focus
+  e:skip()
+end
+
+canvas.on_right_down = function(e)
+--  print('right', e.x, e.y)
+end
+
+canvas.on_motion = function(e)
+  for i,j in ipairs(layers) do
+    if j.type_name == 'lev.image.layout' then
+      local off_x = j.x
+      local off_y = j.y
+      j:on_hover(e.x - off_x, e.y - off_y)
+    end
+  end
+end
+
+canvas.on_key_down = function(e)
+--  print('down', e.key, e.x, e.y)
+--  e:skip()
 end
 
 -- Execute
@@ -107,6 +141,8 @@ canvas:map2d(0, conf.frame_w, 0, conf.frame_h)
 canvas:enable_alpha_blending()
 
 sw = lev.stop_watch()
+app.fps = conf.fps or 50
+jobs = {}
 while main.is_valid do
 --sw:start()
   canvas:clear(0, 0, 0)
@@ -119,9 +155,16 @@ while main.is_valid do
     elseif j.compile then
       canvas:compile(j)
     end
-    if j.on then
+    if j.visible then
       canvas:draw(j, j.x or 0, j.y or 0)
     end 
+  end
+
+  if type(jobs) == 'table' then
+    local f = table.remove(jobs, 1)
+    if type(f) == 'function' then
+      f()
+    end
   end
 
   canvas:swap()

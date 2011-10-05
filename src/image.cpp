@@ -46,6 +46,8 @@ int luaopen_lev_image(lua_State *L)
         .def("blit", &image::blit)
         .def("clear", &image::clear)
         .def("clear", &image::clear0)
+        .def("clear", &image::clear_rect)
+        .def("clear", &image::clear_rect1)
         .def("compile", &image::compile)
         .def("compile", &image::compile1)
         .def("draw", &image::blit)
@@ -62,8 +64,12 @@ int luaopen_lev_image(lua_State *L)
         .def("save", &image::save)
         .def("set_color", &image::set_pixel)
         .def("set_pixel", &image::set_pixel)
-        .property("size",  &image::get_size, adopt(result))
+        .property("rect",  &image::get_rect)
+        .property("sz",  &image::get_size)
+        .property("size",  &image::get_size)
         .def("stroke_circle", &image::stroke_circle)
+        .def("stroke_line", &image::stroke_line)
+        .def("stroke_line", &image::stroke_line6)
         .def("stroke_rect", &image::stroke_rect)
         .def("stroke_rectangle", &image::stroke_rect)
         .def("texturize", &image::texturize)
@@ -88,10 +94,15 @@ int luaopen_lev_image(lua_State *L)
         .def("clear", &layout::clear0)
         .def("complete", &layout::complete)
         .def("draw_next", &layout::draw_next)
+        .def("on_hover", &layout::on_hover)
+        .def("on_left_click", &layout::on_left_click)
+        .def("reserve_clickable", &layout::reserve_clickable)
+        .def("reserve_clickable", &layout::reserve_clickable_text)
         .def("reserve_image", &layout::reserve_image)
         .def("reserve_new_line", &layout::reserve_new_line)
         .def("reserve_word", &layout::reserve_word)
         .def("reserve_word", &layout::reserve_word1)
+        .def("set_on_hover", &layout::set_on_hover)
         .property("color", &layout::get_color, &layout::set_color)
         .property("font",  &layout::get_font, &layout::set_font)
         .property("fore",  &layout::get_color, &layout::set_color)
@@ -337,6 +348,36 @@ namespace lev
     return true;
   }
 
+  bool image::clear_rect(const rect &r, const color &c)
+  {
+    int num_pix = get_h() * get_w();
+    wxBitmap *bmp = cast_image(_obj);
+    wxAlphaPixelData data(*bmp);
+    data.UseAlpha();
+    wxAlphaPixelData::Iterator p(data), rawStart;
+    for (int y = 0 ; y < get_h() ; y++)
+    {
+      rawStart = p;
+      if (r.get_top() <= y && y <= r.get_bottom())
+      {
+        for (int x = 0 ; x < get_w() ; x++)
+        {
+          if (r.get_left() <= x && x <= r.get_right())
+          {
+            p.Red()   = c.get_r();
+            p.Green() = c.get_g();
+            p.Blue()  = c.get_b();
+            p.Alpha() = c.get_a();
+          }
+          ++p;
+        }
+      }
+      p = rawStart;
+      p.OffsetY(data, 1);
+    }
+    cast_status(_status)->Clear();
+    return true;
+  }
 
   image* image::clone()
   {
@@ -574,9 +615,14 @@ namespace lev
     }
   }
 
-  size* image::get_size()
+  const rect image::get_rect() const
   {
-    return size::create(get_w(), get_h());
+    return rect(0, 0, get_w(), get_h());
+  }
+
+  const size image::get_size() const
+  {
+    return size(get_w(), get_h());
   }
 
   int image::get_w() const
@@ -749,7 +795,7 @@ namespace lev
           double alpha_norm = ave / 255.0;
           if (fore)
           {
-            if (back)
+            if (back && back->get_a() > 0)
             {
               alpha_norm = alpha_norm * fore->get_a() / 255.0;
               double base_alpha = (1 - alpha_norm) * back->get_a() / 255.0;
@@ -855,6 +901,31 @@ namespace lev
       mdc.SetBackground(wxColour(0, 0, 0, 255));
       mdc.Clear();
       mdc.DrawCircle(x, y, radius);
+    }
+    catch (...) {
+      return false;
+    }
+    return image_draw_mask(this, &tmp, border);
+  }
+
+  bool image::stroke_line(int x1, int y1, int x2, int y2, color *border, int width,
+                          const std::string &style)
+  {
+    wxBitmap tmp(get_w(), get_h(), 32);
+    try {
+      wxMemoryDC mdc(tmp);
+      if (style == "dot")
+      {
+        mdc.SetPen(wxPen(wxColour(255, 255, 255, 255), width, wxDOT));
+      }
+      else
+      {
+        mdc.SetPen(wxPen(wxColour(255, 255, 255, 255), width));
+      }
+      mdc.SetBrush(wxColour(0, 0, 0, 255));
+      mdc.SetBackground(wxColour(0, 0, 0, 255));
+      mdc.Clear();
+      mdc.DrawLine(x1, y1, x2, y2);
     }
     catch (...) {
       return false;
@@ -986,53 +1057,22 @@ namespace lev
       st->Clear();
       return false;
     }
-
-//    try {
-//      boost::shared_array<unsigned char> data;
-//      wxImage img = cast_image(_obj)->ConvertToImage();
-//      const int w = get_w();
-//      const int h = get_h();
-//
-//      data.reset(new unsigned char [4 * w * h]);
-//      for (int i = 0 ; i < h ; i++)
-//      {
-//        for (int j = 0 ; j < w ; j++)
-//        {
-//          int k = (h - i - 1) * w + j;
-//          data[4*k]     = img.GetRed(j, i);
-//          data[4*k + 1] = img.GetGreen(j, i);
-//          data[4*k + 2] = img.GetBlue(j, i);
-//          data[4*k + 3] = img.HasAlpha() ? img.GetAlpha(j, i) : 255;
-//        }
-//      }
-//
-//      cv->set_current();
-//      glBindTexture(GL_TEXTURE_2D, st->index);
-//      glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-//      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-//      int res = gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, w, h, GL_RGBA,
-//                                  GL_UNSIGNED_BYTE, data.get());
-//      if (res != 0) { throw -1; }
-//      return true;
-//    }
-//    catch (...) {
-//      st->Clear();
-//      return false;
-//    }
   }
-
 
 
   class myLayout
   {
     public:
+
       myLayout(int width_stop = -1)
         : h(-1), w(width_stop), current_x(0), index(0), font_obj(),
-          index_to_col(), index_to_row(), log(), rows()
+          index_to_col(), index_to_row(), log(), rows(), last_hover(-1)
       {
         font_obj = globals(application::get_app()->getL())["lev"]["font"]["load"]();
+        font_obj["size"] = 24;
         color_obj = globals(application::get_app()->getL())["lev"]["prim"]["color"](0, 0, 0);
+        hover_fg_color_obj = globals(application::get_app()->getL())["lev"]["prim"]["color"](255, 0, 0);
+        hover_bg_color_obj = globals(application::get_app()->getL())["lev"]["prim"]["color"](0, 0, 0, 0);
 
         rows.push_back(std::vector<boost::shared_ptr<image> >());
       }
@@ -1087,6 +1127,12 @@ namespace lev
         log.clear();
         rows.clear();
 
+        clickable_areas.clear();
+        hover_funcs.clear();
+        hover_imgs.clear();
+        lclick_funcs.clear();
+        last_hover = -1;
+
         rows.push_back(std::vector<boost::shared_ptr<image> >());
         return true;
       }
@@ -1119,7 +1165,131 @@ namespace lev
           x += row[i]->get_w();
         }
 
+        if (hover_imgs.find(index) != hover_imgs.end())
+        {
+          clickable_areas[index].assign_position_size(vector(x, y),
+                                                      rows[row_index][col_index]->get_size());
+        }
         return img->blit(rows[row_index][col_index].get(), x, y);
+      }
+
+      bool OnHover(image *img, int x, int y)
+      {
+        using namespace luabind;
+
+        for (int i = 0; i < index; i++)
+        {
+          std::map<int, rect>::iterator found = clickable_areas.find(i);
+          if (found == clickable_areas.end()) { continue; }
+          const rect &r = found->second;
+          if (r.include(x, y))
+          {
+            if (hover_imgs.find(i) != hover_imgs.end())
+            {
+              img->clear_rect(r);
+              img->blit(hover_imgs[i].get(), r.get_x(), r.get_y());
+              last_hover = i;
+            }
+            if (hover_funcs.find(i) != hover_funcs.end())
+            {
+              if (hover_funcs[i] && type(hover_funcs[i]) == LUA_TFUNCTION)
+              {
+                hover_funcs[i](x, y);
+              }
+            }
+            return true;
+          }
+          else
+          {
+            // (x, y) isn't in the rect
+            if (last_hover == i)
+            {
+              img->clear_rect(r);
+              DrawIndex(img, i);
+              last_hover = -1;
+            }
+            continue;
+          }
+        }
+        return false;
+      }
+
+      bool OnLeftClick(int x, int y)
+      {
+        using namespace luabind;
+
+        for (int i = 0; i < index; i++)
+        {
+          std::map<int, rect>::iterator found = clickable_areas.find(i);
+          if (found == clickable_areas.end()) { continue; }
+          const rect &r = found->second;
+          if (r.include(x, y))
+          {
+            if (lclick_funcs.find(i) != lclick_funcs.end())
+            {
+              if (lclick_funcs[i] && type(lclick_funcs[i]) == LUA_TFUNCTION)
+              {
+                lclick_funcs[i](x, y);
+              }
+            }
+            return true;
+          }
+        }
+        return false;
+      }
+
+      bool ReserveClickable(const std::string &name,
+                            boost::shared_ptr<image> normal,
+                            boost::shared_ptr<image> hover,
+                            luabind::object lclick_func)
+      {
+        try {
+          if (! normal) { throw -1; }
+          if (! hover) { throw -1; }
+          if (w >= 0 && current_x + normal->get_w() > w)
+          {
+            rows.push_back(std::vector<boost::shared_ptr<image> >());
+            current_x = 0;
+          }
+          int index = log.size();
+          current_x += normal->get_w();
+          index_to_col.push_back(rows[rows.size() - 1].size());
+          index_to_row.push_back(rows.size() - 1);
+          log.push_back(name);
+          rows[rows.size() - 1].push_back(normal);
+
+          hover_imgs[index] = hover;
+          lclick_funcs[index] = lclick_func;
+          name_to_index[name] = index;
+          return true;
+        }
+        catch (...) {
+          return false;
+        }
+      }
+
+      bool ReserveClickableText(const std::string &name,
+                                const std::string &text,
+                                luabind::object lclick_func)
+      {
+        if (text.empty()) { return false; }
+        try {
+          font *f = object_cast<font *>(font_obj);
+          color *c = object_cast<color *>(color_obj);
+          color *hover_bg = object_cast<color *>(hover_bg_color_obj);
+          color *hover_fg = object_cast<color *>(hover_fg_color_obj);
+          boost::shared_ptr<image> img;
+          boost::shared_ptr<image> hover_img;
+
+          img.reset(image::string(text, f, c));
+          img->stroke_line(0, img->get_h() - 1,
+                           img->get_w() - 1, img->get_h() - 1, c, 1, "dot");
+          hover_img.reset(image::string(text, f, hover_fg, hover_bg));
+          return ReserveClickable(name, img, hover_img, lclick_func);
+        }
+        catch (...) {
+          return false;
+        }
       }
 
       bool ReserveImage(const std::string &name, boost::shared_ptr<image> img)
@@ -1182,14 +1352,30 @@ namespace lev
         }
       }
 
+      bool SetOnHover(const std::string &name, luabind::object hover_func)
+      {
+        if (name_to_index.find(name) == name_to_index.end()) { return false; }
+        int i = name_to_index[name];
+        hover_funcs[i] = hover_func;
+        return true;
+      }
+
       int h, w;
       int current_x;
       int index;
+      int last_hover;
       luabind::object color_obj;
+      luabind::object hover_bg_color_obj;
+      luabind::object hover_fg_color_obj;
       luabind::object font_obj;
+      std::map<int, rect> clickable_areas;
+      std::map<int, luabind::object> hover_funcs;
+      std::map<int, boost::shared_ptr<image> > hover_imgs;
+      std::map<int, luabind::object> lclick_funcs;
       std::vector<int> index_to_row;
       std::vector<int> index_to_col;
       std::vector<std::string> log;
+      std::map<std::string, int> name_to_index;
       std::vector<std::vector<boost::shared_ptr<image> > > rows;
   };
   static myLayout* cast_lay(void *obj) { return (myLayout *)obj; }
@@ -1284,6 +1470,31 @@ namespace lev
     return lay->index >= lay->log.size();
   }
 
+  bool layout::on_hover(int x, int y)
+  {
+    return cast_lay(_buf)->OnHover(this, x, y);
+  }
+
+  bool layout::on_left_click(int x, int y)
+  {
+    return cast_lay(_buf)->OnLeftClick(x, y);
+  }
+
+  bool layout::reserve_clickable(const std::string &name, image *normal, image *hover,
+                         luabind::object lclick_func)
+  {
+    return cast_lay(_buf)->ReserveClickable(name,
+                                            boost::shared_ptr<image>(normal->clone()),
+                                            boost::shared_ptr<image>(hover->clone()),
+                                            lclick_func);
+  }
+
+  bool layout::reserve_clickable_text(const std::string &name, const std::string &text,
+                                      luabind::object lclick_func)
+  {
+    return cast_lay(_buf)->ReserveClickableText(name, text, lclick_func);
+  }
+
   bool layout::reserve_image(const std::string &name, image *img)
   {
     return cast_lay(_buf)->ReserveImage(name, boost::shared_ptr<image>(img->clone()));
@@ -1307,12 +1518,16 @@ namespace lev
     return true;
   }
 
-
   bool layout::set_font(luabind::object f)
   {
     if (! base::is_type_of(f, LEV_TFONT)) { return false; }
     cast_lay(_buf)->font_obj = f;
     return true;
+  }
+
+  bool layout::set_on_hover(const std::string &name, luabind::object hover_func)
+  {
+    return cast_lay(_buf)->SetOnHover(name, hover_func);
   }
 
 }

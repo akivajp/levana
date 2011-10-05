@@ -48,7 +48,9 @@ int luaopen_lev_app(lua_State *L)
         .property("on_idle", &handler::get_on_idle, &handler::set_on_idle)
         .property("on_key_down", &handler::get_on_key_down, &handler::set_on_key_down)
         .property("on_key_up", &handler::get_on_key_up, &handler::set_on_key_up)
-        .property("on_left_down", &handler::get_on_left_down, &handler::set_on_left_down),
+        .property("on_left_down", &handler::get_on_left_down, &handler::set_on_left_down)
+        .property("on_motion", &handler::get_on_motion, &handler::set_on_motion)
+        .property("on_right_down", &handler::get_on_right_down, &handler::set_on_right_down),
       // application management class
       class_<application, handler>("app")
         .def("autoloop", &application::autoloop)

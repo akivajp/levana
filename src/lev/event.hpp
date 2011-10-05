@@ -36,8 +36,9 @@ namespace lev
       virtual object get_on_key_down();
       virtual object get_on_key_up();
       virtual object get_on_left_down();
-      virtual object get_on_right_down();
       virtual object get_on_menu(int id);
+      virtual object get_on_motion();
+      virtual object get_on_right_down();
       void *get_rawobj() { return _obj; }
       virtual type_id get_type_id() const { return LEV_THANDLER; }
       virtual const char *get_type_name() const { return "lev.handler"; }
@@ -49,8 +50,9 @@ namespace lev
       virtual bool set_on_key_down(object lua_func);
       virtual bool set_on_key_up(object lua_func);
       virtual bool set_on_left_down(object lua_func);
-      virtual bool set_on_right_down(object lua_func);
       virtual bool set_on_menu(int id, object lua_func);
+      virtual bool set_on_motion(object lua_func);
+      virtual bool set_on_right_down(object lua_func);
 
     protected:
       boost::function<void (int, int, luabind::object)> connector;

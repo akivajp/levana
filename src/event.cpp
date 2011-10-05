@@ -55,6 +55,7 @@ namespace lev
   {
     return get_func(id, wxEVT_COMMAND_MENU_SELECTED);
   }
+  object handler::get_on_motion() { return get_func(wxEVT_MOTION); }
   object handler::get_on_right_down() { return get_func(wxEVT_RIGHT_DOWN); }
 
   bool handler::hold()
@@ -75,6 +76,7 @@ namespace lev
   {
     return connect(id, wxEVT_COMMAND_MENU_SELECTED, lua_func);
   }
+  bool handler::set_on_motion(object lua_func) { return connect(wxEVT_MOTION, lua_func); }
   bool handler::set_on_right_down(object lua_func) { return connect(wxEVT_RIGHT_DOWN, lua_func); }
 
 

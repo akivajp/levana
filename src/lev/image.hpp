@@ -41,6 +41,8 @@ namespace lev
       static size calc_string1(const std::string &str) { return calc_string(str, NULL); }
       virtual bool clear(const color &c);
       virtual bool clear0() { return clear(color::transparent()); }
+      bool clear_rect(const rect &r, const color &c = color::transparent());
+      bool clear_rect1(const rect &r) { return clear_rect(r); }
       image* clone();
       bool compile(canvas *cv, bool force = false);
       bool compile1(canvas *cv) { return compile(cv); }
@@ -54,7 +56,8 @@ namespace lev
       virtual int get_h() const;
       color* get_pixel(int x, int y);
       void* get_rawobj() { return _obj; }
-      size* get_size();
+      const rect get_rect() const;
+      const size get_size() const;
       virtual type_id get_type_id() const { return LEV_TIMAGE; }
       virtual const char *get_type_name() const { return "lev.image"; }
       virtual int get_w() const;
@@ -70,6 +73,11 @@ namespace lev
       static image* string1(const std::string &str) { return string(str, NULL, NULL, NULL); }
       static int string_l(lua_State *L);
       bool stroke_circle(int x, int y, int radius, color *border, int width);
+      bool stroke_line(int x1, int y1, int x2, int y2, color *border, int width,
+                       const std::string &style = "");
+      bool stroke_line6(int x1, int y1, int x2, int y2, color *border, int width)
+      { return stroke_line(x1, y1, x2, y2, border, width); }
+
       bool stroke_rect(int x, int y, int w, int h, color *border, int width);
       image* sub_image(int x, int y, int w, int h);
       static int sub_image_l(lua_State *L);
@@ -99,12 +107,19 @@ namespace lev
       virtual type_id get_type_id() const { return LEV_TLAYOUT; }
       virtual const char *get_type_name() const { return "lev.image.layout"; }
       bool is_done();
+      bool on_hover(int x, int y);
+      bool on_left_click(int x, int y);
+      bool reserve_clickable(const std::string &name, image *normal, image *hover,
+                             luabind::object lclick_func);
+      bool reserve_clickable_text(const std::string &name, const std::string &text,
+                                  luabind::object lclick_func);
       bool reserve_image(const std::string &name, image *img);
       bool reserve_new_line();
       bool reserve_word(const std::string &word, const std::string &ruby);
       bool reserve_word1(const std::string &word) { return reserve_word(word, ""); }
       bool set_color(luabind::object c);
       bool set_font(luabind::object f);
+      bool set_on_hover(const std::string &name, luabind::object hover_func);
     protected:
       void *_buf;
   };

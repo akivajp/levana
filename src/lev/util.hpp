@@ -25,6 +25,8 @@ namespace lev
       static int execute_code_l(lua_State *L);
       static luabind::object get_merged(lua_State *L, int start, int end);
       static int merge(lua_State *L);
+      static bool open(const std::string &path, const std::string &type = "");
+      static bool open1(const std::string &path) { return open(path); }
       static bool print_table(luabind::object t);
       static int remove_first(lua_State *L);
       static int reverse(lua_State *L);

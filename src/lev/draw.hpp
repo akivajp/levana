@@ -53,13 +53,11 @@ namespace lev
       bool enable_alpha_blending(bool enable);
       bool enable_alpha_blending0() { return enable_alpha_blending(true); }
       void flush();
-      virtual luabind::object get_on_right_down();
       void line(int x1, int y1, int x2, int y2);
       bool map2d_auto();
       bool map2d(int left, int right, int top, int bottom);
       bool print(const char *text);
       bool set_current();
-      virtual bool set_on_right_down(luabind::object func);
       bool swap();
       bool texturize(image *img, bool force = false);
       bool texturize1(image *img) { return texturize(img, false); }

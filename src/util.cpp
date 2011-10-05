@@ -16,6 +16,7 @@
 
 #include <boost/format.hpp>
 #include <luabind/luabind.hpp>
+#include <wx/mimetype.h>
 
 static const char *code_using =
 "-- looking up of varnames\n\
@@ -97,7 +98,10 @@ int luaopen_lev_util(lua_State *L)
   [
     namespace_("util")
     [
-      def("execute", &util::execute)
+      def("execute", &util::execute),
+      def("print_table", &util::print_table),
+      def("open", &util::open),
+      def("open", &util::open1)
     ]
   ];
   object lev = globals(L)["lev"];
@@ -300,14 +304,50 @@ namespace lev
     return 1;
   }
 
+  bool util::open(const std::string &path, const std::string &type)
+  {
+    wxMimeTypesManager manager;
+    wxFileType *ft = NULL;
+    if (! type.empty())
+    {
+      ft = manager.GetFileTypeFromExtension(wxString(type.c_str(), wxConvUTF8));
+      if (! ft) { ft = manager.GetFileTypeFromMimeType(wxString(type.c_str(), wxConvUTF8)); }
+      if (! ft) { return false; }
+    }
+    else
+    {
+      wxString ext(file_system::get_ext(path).c_str(), wxConvUTF8);
+      if (path.find("http://") == 0 || path.find("https://") == 0)
+      {
+        ft = manager.GetFileTypeFromMimeType(wxT("text/html"));
+      }
+      else
+      {
+        ft = manager.GetFileTypeFromExtension(ext);
+      }
+      if (! ft) { return false; }
+    }
+    wxString command = ft->GetOpenCommand(wxString(path.c_str(), wxConvUTF8));
+    wxExecute(command);
+    return true;
+  }
+
   bool util::print_table(luabind::object t)
   {
     using namespace luabind;
 
     lua_State *L = t.interpreter();
-    for (iterator i(t), end; i != end; i++)
+    if (!t) { return false; }
+    if (type(t) == LUA_TTABLE)
     {
-      globals(L)["print"](i.key(), *i);
+      for (iterator i(t), end; i != end; i++)
+      {
+        globals(L)["print"](i.key(), *i);
+      }
+    }
+    else
+    {
+      globals(L)["print"](t);
     }
     return true;
   }

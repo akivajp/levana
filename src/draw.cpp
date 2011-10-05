@@ -51,7 +51,6 @@ int luaopen_lev_draw(lua_State *L)
         .def("line",  &canvas::line)
         .def("map2d", &canvas::map2d)
         .def("map2d", &canvas::map2d_auto)
-        .property("on_right_down", &canvas::get_on_right_down, &canvas::set_on_right_down)
         .def("print", &canvas::print)
         .def("set_current", &canvas::set_current)
         .def("swap", &canvas::swap)
@@ -84,7 +83,7 @@ namespace lev
 
       myCanvas(wxWindow *parent, int *attribList, int width, int height)
         : wxGLCanvas(parent, wxID_ANY, attribList, wxDefaultPosition, wxSize(width, height)),
-          context(NULL)
+          context(NULL), func_motion()
       {}
 
       virtual ~myCanvas()
@@ -113,11 +112,11 @@ namespace lev
         return boost::bind(&myCanvas::GetFunc, this, _1, _2);
       }
 
-      void OnRightDown(wxMouseEvent &e)
-      {
-        if (func_right_down) { func_right_down(event(&e)); }
-        else { e.Skip(); }
-      }
+//      void OnMotion(wxMouseEvent &e)
+//      {
+//        if (func_motion) { func_motion(event(&e)); }
+//        else { e.Skip(); }
+//      }
 
       void ProcEvent(wxEvent &evt)
       {
@@ -159,13 +158,13 @@ namespace lev
 
       std::map<int, std::map<int, luabind::object> > fmap;
       wxGLContext *context;
-      luabind::object func_right_down;
+      luabind::object func_motion;
 
-      DECLARE_EVENT_TABLE();
+//      DECLARE_EVENT_TABLE();
   };
-  BEGIN_EVENT_TABLE(myCanvas, wxGLCanvas)
-    EVT_RIGHT_DOWN(myCanvas::OnRightDown)
-  END_EVENT_TABLE();
+//  BEGIN_EVENT_TABLE(myCanvas, wxGLCanvas)
+//    EVT_KEY_DOWN(myCanvas::OnKeyDown)
+//  END_EVENT_TABLE();
 
   static myCanvas* cast_draw(void *obj) { return (myCanvas *)obj; }
 
@@ -492,11 +491,6 @@ namespace lev
     glFlush();
   }
 
-  luabind::object canvas::get_on_right_down()
-  {
-    return cast_draw(_obj)->func_right_down;
-  }
-
   void canvas::line(int x1, int y1, int x2, int y2)
   {
     glBegin(GL_LINES);
@@ -538,12 +532,6 @@ namespace lev
   bool canvas::set_current()
   {
     cast_draw(_obj)->SetCurrent();
-    return true;
-  }
-
-  bool canvas::set_on_right_down(luabind::object func)
-  {
-    cast_draw(_obj)->func_right_down = func;
     return true;
   }
 

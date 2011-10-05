@@ -60,6 +60,8 @@ namespace lev
   {
     public:
       size(int w, int h, int d = 0) : w(w), h(h), d(d), base() {}
+      bool assign(int w, int h, int d = 0);
+      bool assign_size(const size &sz) { return assign(sz.w, sz.h, sz.d); }
       static size* create(int w, int h, int d = 0);
       static int create_l(lua_State *L);
       int get_d() const { return d; }
@@ -82,6 +84,8 @@ namespace lev
     public:
       vector(const vector &orig);
       vector(int x = 0, int y = 0, int z = 0) : x(x), y(y), z(z) { }
+      bool assign(int x = 0, int y = 0, int z = 0);
+      bool assign_vector(const vector &vec) { return assign(vec.x, vec.y, vec.z); }
       static vector* create(int x = 0, int y = 0, int z = 0);
       static int create_l(lua_State *L);
       int get_x() const { return x; }
@@ -123,29 +127,45 @@ namespace lev
 
   class rect : public base
   {
-    protected:
-      rect() : pos(NULL), sz(NULL) { }
     public:
+      rect(int x = 0, int y = 0, int w = 0, int h = 0);
+      rect(const vector &pos, const size &sz);
+      rect(const rect &r);
       virtual ~rect();
+      bool assign(int x, int y, int w, int h);
+      bool assign_position_size(const vector &v, const size &sz);
+      bool assign_rect(const rect &r);
       static rect* create(int x, int y, int w, int h);
       static int create_l(lua_State *L);
-      int get_h() { return sz->get_h(); }
-      vector* get_position() { return pos; }
-      size*   get_size() { return sz; }
-      int get_x() { return pos->get_x(); }
-      int get_y() { return pos->get_y(); }
-      int get_w() { return sz->get_w(); }
+      int get_bottom() const { return get_y() + sz.get_h(); }
+      int get_h() const { return sz.get_h(); }
+      int get_left() const { return pos.get_x(); }
+      vector* get_position() { return &pos; }
+      int get_right() const { return get_x() + sz.get_w(); }
+      size*   get_size() { return &sz; }
+      int get_top() const { return pos.get_y(); }
+      int get_x() const { return pos.get_x(); }
+      int get_y() const { return pos.get_y(); }
+      int get_w() const { return sz.get_w(); }
       virtual type_id get_type_id() const { return LEV_TRECT; }
       virtual const char *get_type_name() const { return "lev.prim.rect"; }
-      bool set_h(int h) { return sz->set_h(h); }
-      bool set_position(vector *vec);
-      bool set_size(size *new_size);
-      bool set_x(int x) { return pos->set_x(x); }
-      bool set_y(int y) { return pos->set_y(y); }
-      bool set_w(int w) { return sz->set_w(w); }
+      bool include(int x, int y) const;
+      bool include1(const vector &p) const { return include(p.get_x(), p.get_y()); }
+      bool set_bottom(int bottom) { return sz.set_h(bottom - get_y()); }
+      bool set_h(int h) { return sz.set_h(h); }
+      bool set_left(int left) { return pos.set_x(left); }
+      bool set_position(const vector &vec);
+      bool set_right(int right) { return sz.set_w(right - get_x()); }
+      bool set_size(const size &new_size);
+      bool set_top(int top) { return pos.set_y(top); }
+      bool set_x(int x) { return pos.set_x(x); }
+      bool set_y(int y) { return pos.set_y(y); }
+      bool set_w(int w) { return sz.set_w(w); }
+
+      const rect& operator=(const rect &rhs);
     protected:
-      vector *pos;
-      size   *sz;
+      vector pos;
+      size   sz;
   };
 
   class text : public base

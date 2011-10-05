@@ -48,6 +48,8 @@ int luaopen_lev_prim(lua_State *L)
           def("create_c", &color::create, adopt(result))
         ],
       class_<size, base>("size")
+        .def("assign", &size::assign)
+        .def("assign", &size::assign_size)
         .property("d", &size::get_d, &size::set_d)
         .property("depth", &size::get_h, &size::set_d)
         .property("h", &size::get_h, &size::set_h)
@@ -59,6 +61,8 @@ int luaopen_lev_prim(lua_State *L)
           def("create_c", &size::create, adopt(result))
         ],
       class_<vector, base>("vector")
+        .def("assign", &vector::assign)
+        .def("assign", &vector::assign_vector)
         .def(self + vector())
         .property("x", &vector::get_x, &vector::set_x)
         .property("y", &vector::get_y, &vector::set_y)
@@ -84,14 +88,27 @@ int luaopen_lev_prim(lua_State *L)
           def("create_c", &point::create, adopt(result))
         ],
       class_<rect, base>("rect")
+        .def("assign", &rect::assign)
+        .def("assign", &rect::assign_position_size)
+        .def("assign", &rect::assign_rect)
+        .property("b", &rect::get_bottom, &rect::set_bottom)
+        .property("bottom", &rect::get_bottom, &rect::set_bottom)
         .property("h", &rect::get_h, &rect::set_h)
         .property("height", &rect::get_h, &rect::set_h)
+        .def("include", &rect::include)
+        .def("include", &rect::include1)
+        .property("l", &rect::get_left, &rect::set_left)
+        .property("left", &rect::get_left, &rect::set_left)
         .property("p", &rect::get_position, &rect::set_position)
         .property("pos", &rect::get_position, &rect::set_position)
         .property("position", &rect::get_position, &rect::set_position)
+        .property("r", &rect::get_right, &rect::set_right)
+        .property("right", &rect::get_right, &rect::set_right)
         .property("s", &rect::get_size, &rect::set_size)
         .property("size", &rect::get_size, &rect::set_size)
         .property("sz", &rect::get_size, &rect::set_size)
+        .property("t", &rect::get_top, &rect::set_top)
+        .property("top", &rect::get_top, &rect::set_top)
         .property("v", &rect::get_position, &rect::set_position)
         .property("vec", &rect::get_position, &rect::set_position)
         .property("vector", &rect::get_position, &rect::set_position)
@@ -201,6 +218,13 @@ namespace lev
     return str;
   }
 
+  bool size::assign(int new_w, int new_h, int new_d)
+  {
+    this->w = new_w;
+    this->h = new_h;
+    this->d = new_d;
+    return true;
+  }
 
   size* size::create(int w, int h, int d)
   {
@@ -242,6 +266,14 @@ namespace lev
 
   vector::vector(const vector &orig)
     : x(orig.x), y(orig.y), z(orig.z) { }
+
+  bool vector::assign(int new_x, int new_y, int new_z)
+  {
+    this->x = new_x;
+    this->y = new_y;
+    this->z = new_z;
+    return true;
+  }
 
   vector* vector::create(int x, int y, int z)
   {
@@ -394,28 +426,46 @@ namespace lev
     return true;
   }
 
+  rect::rect(int x, int y, int w, int h)
+    : pos(x, y), sz(w, h)
+  { }
+
+  rect::rect(const vector &p, const size &s)
+    : pos(p), sz(s)
+  { }
+
+  rect::rect(const rect &r)
+    : pos(r.pos), sz(r.sz)
+  { }
 
   rect::~rect()
   {
-    if (pos)
-    {
-      delete pos;
-      pos = NULL;
-    }
-    if (sz)
-    {
-      delete sz;
-      sz = NULL;
-    }
+  }
+
+  bool rect::assign(int x, int y, int w, int h)
+  {
+    pos.assign(x, y);
+    sz.assign(w, h);
+    return true;
+  }
+
+  bool rect::assign_position_size(const vector &v, const size &s)
+  {
+    pos.assign_vector(v);
+    sz.assign_size(s);
+    return true;
+  }
+
+  bool rect::assign_rect(const rect &r)
+  {
+    return assign_position_size(r.pos, r.sz);
   }
 
   rect* rect::create(int x, int y, int w, int h)
   {
     rect *r = NULL;
     try {
-      r = new rect;
-      r->pos = new vector(x, y);
-      r->sz  = new size(w, h);
+      r = new rect(x, y, w, h);
       return r;
     }
     catch (...) {
@@ -483,28 +533,29 @@ namespace lev
     return 1;
   }
 
-  bool rect::set_position(vector *vec)
+  bool rect::include(int x, int y) const
   {
-    if (vec == NULL) { return false; }
-    try {
-      pos = new vector(*vec);
-      return true;
-    }
-    catch (...) {
-      return false;
-    }
+    if (x < get_left())   { return false; }
+    if (x > get_right())  { return false; }
+    if (y < get_top())    { return false; }
+    if (y > get_bottom()) { return false; }
+    return true;
   }
 
-  bool rect::set_size(size *new_size)
+  bool rect::set_position(const vector &vec)
   {
-    if (sz == NULL) { return false; }
-    try {
-      sz = new size(*new_size);
-      return true;
-    }
-    catch (...) {
-      return false;
-    }
+    return pos.assign_vector(vec);
+  }
+
+  bool rect::set_size(const size &new_size)
+  {
+    return sz.assign_size(new_size);
+  }
+
+  const rect& rect::operator=(const rect &rhs)
+  {
+    assign_rect(rhs);
+    return *this;
   }
 
 

@@ -1,14 +1,32 @@
 require 'lev.image'
 require 'lev.package'
 require 'lev.timer'
+require 'lev.util'
 
 module('tags', package.seeall)
 
 wait_timer = lev.stop_watch()
 wait_until = 0
 
-replacers = {'ruby'}
+replacers = {'a', 'ruby'}
 stoppers = {'br', 'clear', 'r'}
+
+function a(param)
+  local text = param.text or param.txt or param[1]
+  local href = param.href
+
+  if text then
+    local on_click
+    if href then
+      on_click = function()
+        table.insert(jobs, function() lev.util.open(href) end)
+      end
+    end
+    layers.msgfg:reserve_clickable('anchor', text, on_click)
+    lyla.history = lyla.history .. text
+    table.insert(lyla.do_list, function() layers.msgfg:draw_next() end)
+  end
+end
 
 function br()
   layers.msgfg:reserve_new_line()
