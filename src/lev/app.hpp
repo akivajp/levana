@@ -46,7 +46,7 @@ namespace lev
       frame *get_top();
       virtual type_id get_type_id() const { return LEV_TAPP; }
       virtual const char *get_type_name() const { return "lev.app"; }
-      void mainloop();
+      void main_loop();
       bool on_tick();
       bool run();
       bool set_fps(double fps);

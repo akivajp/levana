@@ -50,6 +50,7 @@ int luaopen_lev_app(lua_State *L)
         .property("on_key_up", &handler::get_on_key_up, &handler::set_on_key_up)
         .property("on_left_down", &handler::get_on_left_down, &handler::set_on_left_down)
         .property("on_motion", &handler::get_on_motion, &handler::set_on_motion)
+        .property("on_paint", &handler::get_on_paint, &handler::set_on_paint)
         .property("on_right_down", &handler::get_on_right_down, &handler::set_on_right_down),
       // application management class
       class_<application, handler>("app")
@@ -63,6 +64,7 @@ int luaopen_lev_app(lua_State *L)
         .property("instate", &application::get_instate)
         .property("interval", &application::get_interval, &application::set_interval)
         .property("locale", &application::get_locale)
+        .def("main_loop", &application::main_loop)
         .property("name", &application::get_name, &application::set_name)
         .property("pid", &application::get_process_id)
         .property("process_id", &application::get_process_id)
@@ -98,7 +100,7 @@ namespace lev
   class myApp : public myHandler<wxApp>
   {
     public:
-      inline myApp()
+      myApp()
         : istate(), rec(), fps(60), locale(wxLANGUAGE_DEFAULT),
           offset(0), sw() { }
 
@@ -172,7 +174,8 @@ namespace lev
         if (!this->Pending()) { this->ProcessIdle(); }
 //        while(!this->Pending()) { this->ProcessIdle(); }
 //        while (this->Pending() && Dispatch());
-        return wxTheApp->Yield(true);
+//        return wxTheApp->Yield(true);
+        return this->Dispatch();
       }
 
       lua_State *L;
@@ -312,7 +315,7 @@ namespace lev
     return frame::get_top();
   }
 
-  void application::mainloop()
+  void application::main_loop()
   {
     wxGetApp().MainLoop();
   }

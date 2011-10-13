@@ -53,7 +53,13 @@ int luaopen_lev_sound(lua_State *L)
         .property("pos", &channel::get_position, &channel::set_position)
         .property("position", &channel::get_position, &channel::set_position),
       class_<mixer, base>("mixer")
+        .def("ch", &mixer::get_channel)
+        .def("ch", &mixer::get_channel0)
+        .def("channel", &mixer::get_channel)
+        .def("channel", &mixer::get_channel0)
+        .def("clean_channel", &mixer::clean_channel)
         .def("get_channel", &mixer::get_channel)
+        .def("get_channel", &mixer::get_channel0)
         .def("pause", &mixer::pause)
         .def("play", &mixer::play)
         .property("is_playing", &mixer::get_playing, &mixer::set_playing)
@@ -164,20 +170,19 @@ namespace lev
       {
         CL_SoundBuffer *buffer = NULL;
         CL_SoundBuffer_Session *session = NULL;
-        if (this->buf) { this->Clean(); }
-        buffer = new CL_SoundBuffer(filename);
-        if (buffer == NULL) { goto Error; }
-        session = new CL_SoundBuffer_Session(buffer->prepare());
-        if (session == NULL) { goto Error; }
-
-        this->buf      = buffer;
-        this->playback = session;
-        return true;
-
-        Error:
-        if (session) { delete session; }
-        if (buffer)  { delete buffer; }
-        return false;
+        try {
+          if (this->buf) { this->Clean(); }
+          buffer = new CL_SoundBuffer(filename);
+          session = new CL_SoundBuffer_Session(buffer->prepare());
+          this->buf      = buffer;
+          this->playback = session;
+          return true;
+        }
+        catch (...) {
+          delete session;
+          delete buffer;
+          return false;
+        }
       }
 
       bool Play(const char *filename)
@@ -315,12 +320,16 @@ namespace lev
               // channels[i] is not found
               return CreateChannel(i);
             }
-            else if (channels[channel_num] == NULL)
+            else if (channels[i] == NULL)
             {
               // cannnels[i] is NULL
               return CreateChannel(i);
             }
-            else { return channels[i]; }
+            else
+            {
+              // channels[i] is found
+              continue;
+            }
           }
         }
         else // if (channel_num > 0)
@@ -358,24 +367,31 @@ namespace lev
     if (_obj) { delete (myMixer *)_obj; }
   }
 
+  bool mixer::clean_channel(int channel_num)
+  {
+    return ((myMixer *)_obj)->CleanChannel(channel_num);
+  }
+
   mixer* mixer::create()
   {
-    if (not sound::init()) { return NULL; }
-    mixer *mx = new mixer;
-    if (mx == NULL) { return NULL; }
-    myMixer *obj = myMixer::Create();
-    if (obj == NULL) { goto Error; }
-    mx->_obj = obj;
-    return mx;
-
-    Error:
-    delete mx;
-    return NULL;
+    mixer *mx = NULL;
+    try {
+      if (! sound::init()) { throw -1; }
+      mx = new mixer;
+      mx->_obj = myMixer::Create();
+      if (! mx->_obj) { throw -2; }
+      return mx;
+    }
+    catch (...) {
+      delete mx;
+      return NULL;
+    }
   }
 
   int mixer::create_l(lua_State *L)
   {
     using namespace luabind;
+
     object func = globals(L)["lev"]["classes"]["mixer"]["create_c"];
     object mx = func();
     if (mx)
@@ -508,9 +524,14 @@ namespace lev
   {
     static sound snd;
     if (snd._obj) { return &snd; }
-    snd._obj = mySoundManager::Create();
-    if (snd._obj == NULL) { return NULL; }
-    else { return &snd; }
+    try {
+      snd._obj = mySoundManager::Create();
+      if (snd._obj == NULL) { return NULL; }
+      else { return &snd; }
+    }
+    catch (...) {
+      return NULL;
+    }
   }
 
   bool sound::init()

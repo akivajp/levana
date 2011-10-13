@@ -27,7 +27,27 @@ namespace lev
   class control;
   class font;
 
-  class image : public base
+
+  class drawable : public base
+  {
+    protected:
+      drawable();
+    public:
+      virtual ~drawable();
+      virtual bool call_compiled(canvas *cv) { return false; }
+      virtual bool call_texture(canvas *cv) { return false; }
+      virtual bool compile(canvas *cv, bool force = false) { return false; }
+      virtual bool compile2(canvas *cv) { return compile(cv); }
+      virtual bool draw_on(canvas *cv, int x = 0, int y = 0, unsigned char alpha = 255) { return false; }
+      virtual bool draw_on1(canvas *cv) { return false; }
+      virtual bool draw_on3(canvas *cv, int x = 0, int y = 0) { return false; }
+      virtual type_id get_type_id() const { return LEV_TDRAWABLE; }
+      virtual const char *get_type_name() const { return "lev.drawable"; }
+      virtual bool texturize(canvas *cv, bool force = false) { return false; }
+      virtual bool texturize2(canvas *cv) { return texturize(cv); }
+  };
+
+  class image : public drawable
   {
     protected:
       image();
@@ -44,9 +64,11 @@ namespace lev
       bool clear_rect(const rect &r, const color &c = color::transparent());
       bool clear_rect1(const rect &r) { return clear_rect(r); }
       image* clone();
-      bool compile(canvas *cv, bool force = false);
-      bool compile1(canvas *cv) { return compile(cv); }
+      virtual bool compile(canvas *cv, bool force = false);
       static image* create(int width, int height);
+      virtual bool draw_on(canvas *cv, int x = 0, int y = 0, unsigned char alpha = 255);
+      virtual bool draw_on1(canvas *cv) { return draw_on(cv); }
+      virtual bool draw_on3(canvas *cv, int x, int y) { return draw_on(cv, x, y); }
       bool draw_pixel(color *c, int x, int y);
       bool draw_text(const std::string &text, font *f = NULL, color *fg = NULL,
                      color *bg = NULL, int x = 0, int y = 0);
@@ -65,7 +87,7 @@ namespace lev
       bool is_compiled();
       bool is_texturized();
       static image* levana_icon();
-      static image* load(const char *filename);
+      static image* load(const std::string &filename);
       bool reload(const std::string &filename);
       bool save(const char *filename) const;
       bool set_pixel(color* c, int x, int y);
@@ -82,15 +104,53 @@ namespace lev
       image* sub_image(int x, int y, int w, int h);
       static int sub_image_l(lua_State *L);
       bool swap(image *img);
-      bool texturize(canvas *cv, bool force = false);
-      bool texturize1(canvas *cv) { return texturize(cv); }
+      virtual bool texturize(canvas *cv, bool force = false);
     protected:
       void *_obj;
       void *_status;
   };
 
 
-  class layout : public image
+  class animation : public drawable
+  {
+    protected:
+      animation();
+    public:
+      virtual ~animation();
+      virtual bool compile(canvas *cv, bool force = false);
+      image* get_current();
+      bool add_file(const std::string &filename, int duration);
+      static animation* create(bool repeating = true);
+      static animation* create0() { return create(); }
+//      virtual type_id get_type_id() const { return LEV_TANIMATION; }
+      virtual const char *get_type_name() const { return "lev.image.animation"; }
+      virtual bool texturize(canvas *cv, bool force = false);
+    protected:
+      void *_obj;
+  };
+
+  class transition : public drawable
+  {
+    protected:
+      transition();
+    public:
+      virtual ~transition();
+      virtual bool draw_on(canvas *cv, int x = 0, int y = 0, unsigned char alpha = 255);
+      virtual bool draw_on1(canvas *cv) { return draw_on(cv); }
+      virtual bool draw_on3(canvas *cv, int x = 0, int y = 0) { return draw_on(cv, x, y); }
+      static transition* create(luabind::object img);
+      static transition* create0() { return create(luabind::object()); }
+      virtual type_id get_type_id() const { return LEV_TTRANSITION; }
+      virtual const char *get_type_name() const { return "lev.image.transition"; }
+      bool is_running();
+      bool set_current(luabind::object current);
+      bool set_next(luabind::object next, int duration = 1000, const std::string &type = "");
+      virtual bool texturize(canvas *cv, bool force = false);
+    protected:
+      void *_obj;
+  };
+
+  class layout : public drawable
   {
     protected:
       layout();
@@ -100,8 +160,7 @@ namespace lev
       virtual bool clear0() { return clear(color::transparent()); }
       bool complete();
       static layout* create(int width_stop = -1);
-      bool draw_next();
-      bool fit();
+      virtual bool draw_on(canvas *cv, int x = 0, int y = 0, unsigned char alpha = 255);
       luabind::object get_color();
       luabind::object get_font();
       virtual type_id get_type_id() const { return LEV_TLAYOUT; }
@@ -120,8 +179,9 @@ namespace lev
       bool set_color(luabind::object c);
       bool set_font(luabind::object f);
       bool set_on_hover(const std::string &name, luabind::object hover_func);
+      bool show_next();
     protected:
-      void *_buf;
+      void *_obj;
   };
 
 }

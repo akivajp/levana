@@ -62,7 +62,8 @@ namespace lev
       static mixer *create();
       static int create_l(lua_State *L);
       bool clean_channel(int channel_num);
-      channel *get_channel(int channel_num);
+      channel *get_channel(int channel_num = 0);
+      channel *get_channel0() { return get_channel(); }
       static int get_field(lua_State *L);
       bool get_playing();
       virtual type_id get_type_id() const { return LEV_TMIXER; }

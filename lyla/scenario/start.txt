@@ -2,11 +2,51 @@
 
 *start|プロローグ
 
-[image layer='bg' src='bg001.png']
-あHello, World! ggg [a txt="クリッカブル" href="http://www.google.com"][l][r]
-[ruby text='に']日[ruby text='ほん']本[ruby text='ご']語テスト[p]
-[wait delay=1000][clear]
+aaa\あいう[l][r][r]
+[link]リンク１ggg[endlink][l][r]
+;[s]
+[cm]
 
+[image layer='bg' src='bg001.png']
+あHello, World! ggg[l][r]
+[ruby text='に']日[ruby text='ほん']本[ruby text='ご']語テスト[p]
+[wait delay=1000][cm]
+
+[image layer='bg' src='bg002.png' mode='fade' duration=10000]
+我々は宇宙人である。[cm]
+
+*test|テスト
+
+Phase2![r]
+[r]
+
+[activate name='sel'][cm]
+どうする？[r]
+[r]
+・[link target='select1']選択肢１[endlink][r]
+[r]
+・[link target='select2']選択肢２[endlink][r]
+[r]
+・[link target='select3']選択肢３[endlink][r]
+[s]
+
+*select1|選択肢1
+[activate name='msg'][cm]
+選択肢１が選択されました。[r]
+[jump target='common']
+
+*select2|選択肢2
+[activate name='msg'][cm]
+選択肢2が選択されました。[r]
+[jump target='common']
+
+*select3|選択肢3
+[activate name='msg'][cm]
+選択肢3が選択されました。[r]
+[jump target='common']
+
+*common|共通
 [image layer='bg' src='bg002.png']
-我々は宇宙人である。
+[image layer='bg' mode='fade_out' duration=2000]
+共通メッセージです。
 

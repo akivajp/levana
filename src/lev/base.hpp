@@ -29,6 +29,14 @@ namespace lev
           LEV_TCHANNEL,
           LEV_TCOLOR,
           LEV_TDB,
+
+          LEV_TDRAWABLE,
+            LEV_TTRANSITION,
+            LEV_TIMAGE,
+              LEV_TLAYOUT,
+            LEV_TIMAGE_END,
+          LEV_TDRAWABLE_END,
+
           LEV_TEVENT,
           LEV_TFILE_PATH,
           LEV_TFILE_SYSTEM,
@@ -37,6 +45,7 @@ namespace lev
           LEV_THANDLER,
             LEV_TAPP,
             LEV_TCONTROL,
+              LEV_TCANVAS,
               LEV_TFRAME,
               LEV_THTMLVIEW,
               LEV_TMENUBAR,
@@ -47,10 +56,6 @@ namespace lev
             LEV_TTIMER,
           LEV_THANDLER_END,
 
-          LEV_TIMAGE,
-            LEV_TLAYOUT,
-          LEV_TIMAGE_END,
-
           LEV_TINFO,
 
           LEV_TINPUT,
@@ -58,6 +63,7 @@ namespace lev
             LEV_TINRECORD,
           LEV_TINPUT_END,
 
+          LEV_TMB_STRING,
           LEV_TMIXER,
 
           LEV_TLOCALE,

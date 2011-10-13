@@ -101,7 +101,8 @@ int luaopen_lev_util(lua_State *L)
       def("execute", &util::execute),
       def("print_table", &util::print_table),
       def("open", &util::open),
-      def("open", &util::open1)
+      def("open", &util::open1),
+      def("serialize", &util::serialize1)
     ]
   ];
   object lev = globals(L)["lev"];
@@ -424,21 +425,53 @@ namespace lev
     return 1;
   }
 
-  // subtituting the new value
-  static int substitute(lua_State *L)
+  std::string util::serialize(luabind::object var, int indent)
   {
     using namespace luabind;
 
-    luaL_checktype(L, 1, LUA_TTABLE);
-    luaL_checkstring(L, 2);
-    luaL_checkany(L, 3);
-    object env(from_stack(L, 1));
-    object key(from_stack(L, 2));
-    object value(from_stack(L, 3));
+    lua_State *L = var.interpreter();
 
-    object meta = getmetatable(env);
-    meta["__owner"][key] = value;
-    return 0;
+    if (indent > 20)
+    {
+      luaL_error(L, "a cyclic linkage was detected!");
+      return "";
+    }
+
+    if (! var) { return "nil"; }
+    if (type(var) == LUA_TNIL) { return "nil"; }
+    if (type(var) == LUA_TNUMBER)
+    {
+      return object_cast<const char *>(globals(L)["tostring"](var));
+    }
+    else if (type(var) == LUA_TSTRING)
+    {
+      wxString str(object_cast<const char *>(var), wxConvUTF8);
+      str.Replace(wxT("\\"), wxT("\\\\"), true);
+      str.Replace(wxT("\""), wxT("\\\""), true);
+      str.Replace(wxT("\'"), wxT("\\\'"), true);
+      str.Replace(wxT("\n"), wxT("\\\n"), true);
+      return std::string("\"") + (const char *)str.mb_str() + "\"";
+    }
+    else if (type(var) == LUA_TTABLE)
+    {
+      std::string str_indent = "";
+      for (int i = 0; i < indent; i++)
+      {
+        str_indent += " ";
+      }
+
+      iterator i(var), end;
+      std::string str_exp = "{\n";
+      for (; i != end; i++)
+      {
+        if (type(i.key()) != LUA_TNUMBER && type(i.key()) != LUA_TSTRING) { continue; }
+        str_exp += str_indent + "  [" + serialize(i.key(), 0) + "] = ";
+        str_exp += serialize(*i, indent + 2) + ",\n";
+      }
+      str_exp += str_indent + "}";
+      return str_exp;
+    }
+    return "nil";
   }
 
 }

@@ -42,14 +42,20 @@ int luaopen_lev_image(lua_State *L)
     namespace_("image"),
     namespace_("classes")
     [
-      class_<image, base>("image")
+      class_<drawable, base>("drawable")
+        .def("compile", &drawable::compile)
+        .def("compile", &drawable::compile2)
+        .def("draw_on", &drawable::draw_on)
+        .def("draw_on", &drawable::draw_on1)
+        .def("draw_on", &drawable::draw_on3)
+        .def("texturize", &drawable::texturize)
+        .def("texturize", &drawable::texturize2),
+      class_<image, drawable>("image")
         .def("blit", &image::blit)
         .def("clear", &image::clear)
         .def("clear", &image::clear0)
         .def("clear", &image::clear_rect)
         .def("clear", &image::clear_rect1)
-        .def("compile", &image::compile)
-        .def("compile", &image::compile1)
         .def("draw", &image::blit)
         .def("draw_pixel", &image::draw_pixel)
         .def("fill_circle", &image::fill_circle)
@@ -72,8 +78,6 @@ int luaopen_lev_image(lua_State *L)
         .def("stroke_line", &image::stroke_line6)
         .def("stroke_rect", &image::stroke_rect)
         .def("stroke_rectangle", &image::stroke_rect)
-        .def("texturize", &image::texturize)
-        .def("texturize", &image::texturize1)
         .property("w", &image::get_w)
         .property("width", &image::get_w)
         .scope
@@ -89,11 +93,31 @@ int luaopen_lev_image(lua_State *L)
           def("string_c",  &image::string, adopt(result)),
           def("sub_image_c", &image::sub_image, adopt(result))
         ],
-      class_<layout, image>("layout")
+      class_<animation, drawable>("animation")
+        .def("add", &animation::add_file)
+        .property("current", &animation::get_current)
+        .scope
+        [
+          def("create", &animation::create, adopt(result)),
+          def("create", &animation::create0, adopt(result))
+        ],
+      class_<transition, drawable>("transition")
+        .property("is_running", &transition::is_running)
+        .def("set_current", &transition::set_current)
+        .def("set_next", &transition::set_next)
+        .scope
+        [
+          def("create", &transition::create, adopt(result)),
+          def("create", &transition::create0, adopt(result))
+        ],
+      class_<layout, drawable>("layout")
         .def("clear", &layout::clear)
         .def("clear", &layout::clear0)
+        .property("color", &layout::get_color, &layout::set_color)
         .def("complete", &layout::complete)
-        .def("draw_next", &layout::draw_next)
+        .property("font",  &layout::get_font, &layout::set_font)
+        .property("fore",  &layout::get_color, &layout::set_color)
+        .property("is_done", &layout::is_done)
         .def("on_hover", &layout::on_hover)
         .def("on_left_click", &layout::on_left_click)
         .def("reserve_clickable", &layout::reserve_clickable)
@@ -103,10 +127,7 @@ int luaopen_lev_image(lua_State *L)
         .def("reserve_word", &layout::reserve_word)
         .def("reserve_word", &layout::reserve_word1)
         .def("set_on_hover", &layout::set_on_hover)
-        .property("color", &layout::get_color, &layout::set_color)
-        .property("font",  &layout::get_font, &layout::set_font)
-        .property("fore",  &layout::get_color, &layout::set_color)
-        .property("is_done", &layout::is_done)
+        .def("show_next", &layout::show_next)
         .scope
         [
           def("create", &layout::create, adopt(result))
@@ -123,14 +144,16 @@ int luaopen_lev_image(lua_State *L)
   register_to(classes["image"], "sub", &image::sub_image_l);
   register_to(classes["image"], "sub_image", &image::sub_image_l);
 
+  image["animation"]   = classes["animation"]["create"];
   image["calc_string"] = classes["image"]["calc_string"];
   image["capture"]     = classes["image"]["capture"];
   image["create"]      = classes["image"]["create"];
   image["init"]        = classes["image"]["init"];
+  image["layout"]      = classes["layout"]["create"];
   image["levana_icon"] = classes["image"]["levana_icon"];
   image["load"]        = classes["image"]["load"];
   image["string"]      = classes["image"]["string"];
-  image["layout"]      = classes["layout"]["create"];
+  image["transition"]  = classes["transition"]["create"];
 
   globals(L)["package"]["loaded"]["lev.image"] = image;
   return 0;
@@ -197,6 +220,11 @@ namespace lev
     return wxColour(c.get_r(), c.get_g(), c.get_b(), c.get_a());
   }
 
+
+  drawable::drawable() : base() { }
+
+  drawable::~drawable() { }
+
   static bool image_draw_mask(image *img, wxBitmap *bmp, color *c)
   {
     if (c == NULL) { return false; }
@@ -238,7 +266,7 @@ namespace lev
     }
   }
 
-  image::image() : base(), _obj(NULL), _status(NULL) { }
+  image::image() : drawable(), _obj(NULL) { }
 
   image::~image()
   {
@@ -461,6 +489,84 @@ namespace lev
     }
   }
 
+  bool image::draw_on(canvas *cv, int x, int y, unsigned char alpha)
+  {
+    if (! cv || ! cv->is_valid()) { return false; }
+
+    // nothing to draw
+    if (alpha == 0) { return true; }
+
+    if (is_texturized())
+    {
+      // bmp is texturized image
+      cv->set_current();
+      cv->call_texture(this);
+      glEnable(GL_TEXTURE_2D);
+      glBegin(GL_QUADS);
+        glColor4ub(255, 255, 255, alpha);
+        glTexCoord2i(0, 1);
+        glVertex2i(x, y);
+        glTexCoord2i(0, 0);
+        glVertex2i(x, y + get_h());
+        glTexCoord2i(1, 0);
+        glVertex2i(x + get_w(), y + get_h());
+        glTexCoord2i(1, 1);
+        glVertex2i(x + get_w(), y);
+      glEnd();
+      glDisable(GL_TEXTURE_2D);
+      return true;
+    }
+
+    if (is_compiled() && alpha == 255)
+    {
+      // bmp is compiled and not transparent at all
+      cv->set_current();
+      glPushMatrix();
+        glTranslatef(x, y, 0);
+        cv->call_compiled(this);
+      glPopMatrix();
+      return true;
+    }
+
+    try {
+      wxAlphaPixelData pixels(*cast_image(_obj));
+      pixels.UseAlpha();
+      wxAlphaPixelData::Iterator p(pixels), rawStart;
+
+      cv->set_current();
+      glPushMatrix();
+        glTranslatef(x, y, 0);
+        glBegin(GL_POINTS);
+          for (int i = 0 ; i < get_h() ; i++)
+          {
+            rawStart = p;
+            for (int j = 0 ; j < get_w() ; j++)
+            {
+              if (p.Alpha())
+              {
+                if (alpha == 255) { glColor4ub(p.Red(), p.Green(), p.Blue(), p.Alpha()); }
+                else
+                {
+                  // alpha is between 1 and 254
+                  glColor4ub(p.Red(), p.Green(), p.Blue(), p.Alpha() * (alpha / 255.0));
+                }
+                glVertex2i(j, i);
+              }
+              p++;
+            }
+            p = rawStart;
+            p.OffsetY(pixels, 1);
+          }
+        glEnd();
+      glPopMatrix();
+
+      return true;
+    }
+    catch (...) {
+      return false;
+    }
+  }
+
   bool image::draw_pixel(color *c, int x, int y)
   {
     if (x < 0 || x >= get_w() || y < 0 || y >= get_h()) { return false; }
@@ -670,14 +776,14 @@ namespace lev
     }
   }
 
-  image* image::load(const char *filename)
+  image* image::load(const std::string &filename)
   {
     image *img = NULL;
     wxBitmap *obj = NULL;
     try {
       image::init();
       img = new image;
-      wxString f = wxString(filename, wxConvUTF8);
+      wxString f = wxString(filename.c_str(), wxConvUTF8);
       img->_obj = obj = new wxBitmap(wxImage(f));
       img->_status = new myImageStatus;
       if (not obj->IsOk()) { throw -1; }
@@ -1000,9 +1106,16 @@ namespace lev
   bool image::swap(image *img)
   {
     if (! img) { return false; }
+
+    // swap the images
     void *tmp  = this->_obj;
     this->_obj = img->_obj;
     img->_obj  = tmp;
+
+    // swap the status
+    tmp = this->_status;
+    this->_status = img->_status;
+    img->_status = tmp;
     return true;
   }
 
@@ -1060,13 +1173,308 @@ namespace lev
   }
 
 
+  class myAnimation
+  {
+    public:
+
+      myAnimation(bool repeating = true) : imgs(), repeating(repeating)
+      {
+        sw.Start(0);
+      }
+
+      ~myAnimation() { }
+
+      bool AddFile(const std::string &filename, int duration)
+      {
+        if (duration <= 0) { return false; }
+        try {
+          boost::shared_ptr<image> img(image::load(filename));
+          if (! img) { throw -1; }
+          imgs.push_back(img);
+          durations.push_back(duration);
+          return true;
+        }
+        catch (...) {
+          return false;
+        }
+      }
+
+      bool CompileAll(canvas *cv, bool force)
+      {
+        for (int i = 0; i < imgs.size(); i++)
+        {
+          cv->compile(imgs[i].get(), force);
+        }
+        return true;
+      }
+
+      image* GetCurrent()
+      {
+        long now = sw.Time();
+        long total = 0;
+        if (imgs.size() == 0) { return NULL; }
+        for (int i = 0; i < durations.size(); i++)
+        {
+          if (total <= now && now < total + durations[i])
+          {
+            return imgs[i].get();
+          }
+          total += durations[i];
+        }
+        if (! repeating) { return imgs[imgs.size() - 1].get(); }
+        sw.Start(sw.Time() - total);
+        return GetCurrent();
+      }
+
+      bool TexturizeAll(canvas *cv, bool force)
+      {
+        for (int i = 0; i < imgs.size(); i++)
+        {
+          cv->texturize(imgs[i].get(), force);
+        }
+        return true;
+      }
+
+      bool repeating;
+      wxStopWatch sw;
+      std::vector<boost::shared_ptr<image> > imgs;
+      std::vector<int> durations;
+  };
+  static myAnimation* cast_anim(void *obj) { return (myAnimation *)obj; }
+
+  animation::animation()
+    : drawable(), _obj(NULL)
+  { }
+
+  animation::~animation()
+  {
+    if (_obj) { delete cast_anim(_obj); }
+  }
+
+  bool animation::add_file(const std::string &filename, int duration)
+  {
+    return cast_anim(_obj)->AddFile(filename, duration);
+  }
+
+  bool animation::compile(canvas *cv, bool force)
+  {
+    return cast_anim(_obj)->CompileAll(cv, force);
+  }
+
+  image* animation::get_current()
+  {
+    return cast_anim(_obj)->GetCurrent();
+  }
+
+  animation* animation::create(bool repeating)
+  {
+    animation* anim = NULL;
+    try {
+      anim = new animation;
+      anim->_obj = new myAnimation(repeating);
+      return anim;
+    }
+    catch (...) {
+      delete anim;
+      return NULL;
+    }
+  }
+
+  bool animation::texturize(canvas *cv, bool force)
+  {
+    return cast_anim(_obj)->TexturizeAll(cv, force);
+  }
+
+
+  class myTransition
+  {
+    public:
+
+      enum transition_type
+      {
+        LEV_TRAN_NONE = 0,
+        LEV_TRAN_FADE,
+        LEV_TRAN_FADE_OUT,
+      };
+
+      myTransition(luabind::object img)
+       : imgs()
+      {
+        sw.Start();
+        if (! img) { imgs.push_back(luabind::object()); }
+        else if (luabind::type(img) == LUA_TSTRING)
+        {
+          luabind::object data = globals(img.interpreter())["lev"]["image"]["load"](img);
+          imgs.push_back(data);
+        }
+        else if (base::is_type_of(img, base::LEV_TFILE_PATH))
+        {
+          luabind::object data = globals(img.interpreter())["lev"]["image"]["load"](img["full"]);
+          imgs.push_back(data);
+        }
+        else if (base::is_type_of(img, base::LEV_TDRAWABLE, base::LEV_TDRAWABLE_END)) { imgs.push_back(img); }
+        else { imgs.push_back(luabind::object()); }
+      }
+
+      ~myTransition() { }
+
+      bool DrawOn(canvas *cv, int x, int y, unsigned char alpha)
+      {
+        double grad = 1.0;
+        if (durations.size() >= 1 && durations[0] > 0)
+        {
+          grad = ((double)sw.Time()) / durations[0];
+          if (grad > 1.0) { grad = 1.0; }
+        }
+
+        if (imgs.size() == 0) { return false; }
+        if (imgs[0])
+        {
+          if (types.size() >= 1 && types[0] == LEV_TRAN_FADE_OUT)
+          {
+            imgs[0]["draw_on"](imgs[0], cv, x, y, 255 - (int)(alpha * grad));
+          }
+          else { imgs[0]["draw_on"](imgs[0], cv, x, y, alpha); }
+        }
+
+        if (imgs.size() == 1) { return true; }
+        if (imgs[1])
+        {
+          if (types[0] == LEV_TRAN_FADE)
+          {
+            imgs[1]["draw_on"](imgs[1], cv, x, y, alpha * grad);
+          }
+        }
+
+        if (sw.Time() >= durations[0])
+        {
+          sw.Start(sw.Time() - durations[0]);
+          imgs.erase(imgs.begin());
+          durations.erase(durations.begin());
+          types.erase(types.begin());
+        }
+        return true;
+      }
+
+      bool SetCurrent(luabind::object img)
+      {
+        imgs.resize(0);
+        durations.resize(0);
+        if (! img) { imgs.push_back(luabind::object()); }
+        else if (luabind::type(img) == LUA_TSTRING)
+        {
+          luabind::object data = globals(img.interpreter())["lev"]["image"]["load"](img);
+          imgs.push_back(data);
+        }
+        else if (base::is_type_of(img, base::LEV_TFILE_PATH))
+        {
+          luabind::object data = globals(img.interpreter())["lev"]["image"]["load"](img["full"]);
+          imgs.push_back(data);
+        }
+        else if (base::is_type_of(img, base::LEV_TDRAWABLE, base::LEV_TDRAWABLE_END)) { imgs.push_back(img); }
+        else { imgs.push_back(luabind::object()); }
+      }
+
+      bool SetNext(luabind::object img, int duration, const std::string &type)
+      {
+        if (duration < 0) { return false; }
+        if (! img) { imgs.push_back(luabind::object()); }
+        else if (luabind::type(img) == LUA_TSTRING)
+        {
+          luabind::object data = globals(img.interpreter())["lev"]["image"]["load"](img);
+          imgs.push_back(data);
+        }
+        else if (base::is_type_of(img, base::LEV_TFILE_PATH))
+        {
+          luabind::object data = globals(img.interpreter())["lev"]["image"]["load"](img["full"]);
+          imgs.push_back(data);
+        }
+        else if (base::is_type_of(img, base::LEV_TDRAWABLE, base::LEV_TDRAWABLE_END)) { imgs.push_back(img); }
+        else { imgs.push_back(luabind::object()); }
+
+        durations.push_back(duration);
+
+        if (type == "fade") { types.push_back(LEV_TRAN_FADE); }
+        else if (type == "fade_out") { types.push_back(LEV_TRAN_FADE_OUT); }
+        else { types.push_back(LEV_TRAN_FADE); }
+
+        return false;
+      }
+
+      bool TexturizeAll(canvas *cv, bool force)
+      {
+        for (int i = 0; i < imgs.size(); i++)
+        {
+          if (base::is_type_of(imgs[i], base::LEV_TDRAWABLE, base::LEV_TDRAWABLE_END))
+          {
+            imgs[i]["texturize"](imgs[i], cv, force);
+          }
+        }
+        return true;
+      }
+
+      std::vector<luabind::object> imgs;
+      std::vector<long> durations;
+      std::vector<transition_type> types;
+      wxStopWatch sw;
+  };
+  static myTransition* cast_tran(void *obj) { return (myTransition *)obj; }
+
+  transition::transition() : drawable(), _obj(NULL) { }
+
+  transition::~transition()
+  {
+    if (_obj) { delete cast_tran(_obj); }
+  }
+
+  transition* transition::create(luabind::object img)
+  {
+    transition* tran = NULL;
+    try {
+      tran = new transition;
+      tran->_obj = new myTransition(img);
+      return tran;
+    }
+    catch (...) {
+      delete tran;
+      return NULL;
+    }
+  }
+
+  bool transition::draw_on(canvas *cv, int x, int y, unsigned char alpha)
+  {
+    return cast_tran(_obj)->DrawOn(cv, x, y, alpha);
+  }
+
+  bool transition::is_running()
+  {
+    if (cast_tran(_obj)->imgs.size() <= 1) { return false; }
+    else { return true; }
+  }
+
+  bool transition::set_current(luabind::object current)
+  {
+    return cast_tran(_obj)->SetCurrent(current);
+  }
+
+  bool transition::set_next(luabind::object next, int duration, const std::string &type)
+  {
+    return cast_tran(_obj)->SetNext(next, duration, type);
+  }
+
+  bool transition::texturize(canvas *cv, bool force)
+  {
+    return cast_tran(_obj)->TexturizeAll(cv, force);
+  }
+
+
   class myLayout
   {
     public:
 
       myLayout(int width_stop = -1)
-        : h(-1), w(width_stop), current_x(0), index(0), font_obj(),
-          index_to_col(), index_to_row(), log(), rows(), last_hover(-1)
+        : h(-1), w(width_stop), current_x(0), last_index(0), font_obj(),
+          index_to_col(), index_to_row(), log(), rows()
       {
         font_obj = globals(application::get_app()->getL())["lev"]["font"]["load"]();
         font_obj["size"] = 24;
@@ -1121,63 +1529,52 @@ namespace lev
       bool Clear()
       {
         current_x = 0;
-        index = 0;
+        last_index = 0;
         index_to_col.clear();
         index_to_row.clear();
         log.clear();
         rows.clear();
 
+        actives.clear();
         clickable_areas.clear();
+        coordinates.clear();
         hover_funcs.clear();
         hover_imgs.clear();
         lclick_funcs.clear();
-        last_hover = -1;
+        name_to_index.clear();
 
         rows.push_back(std::vector<boost::shared_ptr<image> >());
         return true;
       }
 
-      bool Complete(image *img)
+      bool Complete()
       {
-        for (; index < log.size(); index++)
+        for (; last_index < log.size(); last_index++)
         {
-          DrawIndex(img, index);
+          ShowIndex(last_index);
         }
         return true;
       }
 
-      bool DrawIndex(image *img, int index)
+
+      bool DrawOn(canvas *cv, int x, int y, unsigned char alpha)
       {
-        int col_index = index_to_col[index];
-        int row_index = index_to_row[index];
-
-        int y = 0;
-        for (int i = 0; i <= row_index; i++)
+        for (int i = 0; i < actives.size(); i++)
         {
-          y += CalcRowHeight(rows[i]);
+          if (actives[i])
+          {
+            const vector &vec = coordinates[i];
+            actives[i]->draw_on(cv, x + vec.get_x(), y + vec.get_y(), alpha);
+          }
         }
-        y -= rows[row_index][col_index]->get_h();
-
-        int x = 0;
-        const std::vector<boost::shared_ptr<image> > &row = rows[row_index];
-        for (int i = 0; i < col_index; i++)
-        {
-          x += row[i]->get_w();
-        }
-
-        if (hover_imgs.find(index) != hover_imgs.end())
-        {
-          clickable_areas[index].assign_position_size(vector(x, y),
-                                                      rows[row_index][col_index]->get_size());
-        }
-        return img->blit(rows[row_index][col_index].get(), x, y);
+        return true;
       }
 
-      bool OnHover(image *img, int x, int y)
+      bool OnHover(int x, int y)
       {
         using namespace luabind;
 
-        for (int i = 0; i < index; i++)
+        for (int i = 0; i < last_index; i++)
         {
           std::map<int, rect>::iterator found = clickable_areas.find(i);
           if (found == clickable_areas.end()) { continue; }
@@ -1186,9 +1583,7 @@ namespace lev
           {
             if (hover_imgs.find(i) != hover_imgs.end())
             {
-              img->clear_rect(r);
-              img->blit(hover_imgs[i].get(), r.get_x(), r.get_y());
-              last_hover = i;
+              actives[i] = hover_imgs[i];
             }
             if (hover_funcs.find(i) != hover_funcs.end())
             {
@@ -1197,28 +1592,22 @@ namespace lev
                 hover_funcs[i](x, y);
               }
             }
-            return true;
           }
           else
           {
             // (x, y) isn't in the rect
-            if (last_hover == i)
-            {
-              img->clear_rect(r);
-              DrawIndex(img, i);
-              last_hover = -1;
-            }
+            ShowIndex(i);
             continue;
           }
         }
-        return false;
+        return true;
       }
 
       bool OnLeftClick(int x, int y)
       {
         using namespace luabind;
 
-        for (int i = 0; i < index; i++)
+        for (int i = 0; i < last_index; i++)
         {
           std::map<int, rect>::iterator found = clickable_areas.find(i);
           if (found == clickable_areas.end()) { continue; }
@@ -1315,6 +1704,10 @@ namespace lev
 
       bool ReserveNewLine()
       {
+        font *f = object_cast<font *>(font_obj);
+        boost::shared_ptr<image> new_line(image::create(1, f->get_point_size()));
+        if (! new_line) { return false; }
+        ReserveImage("space", new_line);
         rows.push_back(std::vector<boost::shared_ptr<image> >());
         current_x = 0;
       }
@@ -1360,10 +1753,43 @@ namespace lev
         return true;
       }
 
+      bool ShowIndex(int index)
+      {
+        int col_index = index_to_col[index];
+        int row_index = index_to_row[index];
+
+        int y = 0;
+        for (int i = 0; i <= row_index; i++)
+        {
+          y += CalcRowHeight(rows[i]);
+        }
+        y -= rows[row_index][col_index]->get_h();
+
+        int x = 0;
+        const std::vector<boost::shared_ptr<image> > &row = rows[row_index];
+        for (int i = 0; i < col_index; i++)
+        {
+          x += row[i]->get_w();
+        }
+
+        if (hover_imgs.find(index) != hover_imgs.end())
+        {
+          clickable_areas[index].assign_position_size(vector(x, y),
+                                                      rows[row_index][col_index]->get_size());
+        }
+        if (actives.size() <= index)
+        {
+          actives.resize(index + 1);
+          coordinates.resize(index + 1);
+        }
+        actives[index] = rows[row_index][col_index];
+        coordinates[index] = vector(x, y);
+        return true;
+      }
+
       int h, w;
       int current_x;
-      int index;
-      int last_hover;
+      int last_index;
       luabind::object color_obj;
       luabind::object hover_bg_color_obj;
       luabind::object hover_fg_color_obj;
@@ -1372,36 +1798,37 @@ namespace lev
       std::map<int, luabind::object> hover_funcs;
       std::map<int, boost::shared_ptr<image> > hover_imgs;
       std::map<int, luabind::object> lclick_funcs;
+      std::map<std::string, int> name_to_index;
+      std::vector<boost::shared_ptr<image> > actives;
+      std::vector<vector> coordinates;
       std::vector<int> index_to_row;
       std::vector<int> index_to_col;
       std::vector<std::string> log;
-      std::map<std::string, int> name_to_index;
       std::vector<std::vector<boost::shared_ptr<image> > > rows;
   };
   static myLayout* cast_lay(void *obj) { return (myLayout *)obj; }
 
   layout::layout()
-    : image(), _buf(NULL)
+    : drawable(), _obj(NULL)
   {
   }
 
   layout::~layout()
   {
-    if (_buf) { delete cast_lay(_buf); }
+    if (_obj) { delete cast_lay(_obj); }
   }
 
   bool layout::clear(const color &c)
   {
-    cast_lay(_buf)->Clear();
-    return image::clear(c);
+    return cast_lay(_obj)->Clear();
+//    return image::clear(c);
   }
 
   bool layout::complete()
   {
     if (is_done()) { return false; }
-    cast_status(_status)->Clear();
-    this->fit();
-    return cast_lay(_buf)->Complete(this);
+//    cast_status(_status)->Clear();
+    return cast_lay(_obj)->Complete();
   }
 
   layout* layout::create(int width_stop)
@@ -1409,9 +1836,7 @@ namespace lev
     layout* img = NULL;
     try {
       img = new layout;
-      img->_obj = new wxBitmap(1, 1, 32);
-      img->_status = new myImageStatus;
-      img->_buf = new myLayout(width_stop);
+      img->_obj = new myLayout(width_stop);
       return img;
     }
     catch (...) {
@@ -1420,70 +1845,41 @@ namespace lev
     }
   }
 
-  bool layout::draw_next()
+  bool layout::draw_on(canvas *cv, int x, int y, unsigned char alpha)
   {
-    if (is_done()) { return false; }
-    myLayout *lay = cast_lay(_buf);
-    cast_status(_status)->Clear();
-    this->fit();
-    return lay->DrawIndex(this, lay->index++);
-  }
-
-  bool layout::fit()
-  {
-    int w = cast_lay(_buf)->CalcMaxWidth();
-    if (get_w() > w) { w = get_w(); }
-    int h = cast_lay(_buf)->CalcTotalHeight();
-    if (get_h() > h) { h = get_h(); }
-    if (h == get_h() && w == get_w()) { return false; }
-
-    image *img2 = NULL;
-    try {
-      img2 = image::create(w, h);
-      if (img2 == NULL) { throw -1; }
-      img2->blit(this, 0, 0);
-      this->swap(img2);
-
-      delete img2;
-      return true;
-    }
-    catch (...) {
-      delete img2;
-      return false;
-    }
+    return cast_lay(_obj)->DrawOn(cv, x, y, alpha);
   }
 
   luabind::object layout::get_color()
   {
-    return cast_lay(_buf)->color_obj;
+    return cast_lay(_obj)->color_obj;
   }
-
 
   luabind::object layout::get_font()
   {
-    return cast_lay(_buf)->font_obj;
+    return cast_lay(_obj)->font_obj;
   }
 
   bool layout::is_done()
   {
-    myLayout *lay = cast_lay(_buf);
-    return lay->index >= lay->log.size();
+    myLayout *lay = cast_lay(_obj);
+    return lay->last_index >= lay->log.size();
   }
 
   bool layout::on_hover(int x, int y)
   {
-    return cast_lay(_buf)->OnHover(this, x, y);
+    return cast_lay(_obj)->OnHover(x, y);
   }
 
   bool layout::on_left_click(int x, int y)
   {
-    return cast_lay(_buf)->OnLeftClick(x, y);
+    return cast_lay(_obj)->OnLeftClick(x, y);
   }
 
   bool layout::reserve_clickable(const std::string &name, image *normal, image *hover,
                          luabind::object lclick_func)
   {
-    return cast_lay(_buf)->ReserveClickable(name,
+    return cast_lay(_obj)->ReserveClickable(name,
                                             boost::shared_ptr<image>(normal->clone()),
                                             boost::shared_ptr<image>(hover->clone()),
                                             lclick_func);
@@ -1492,42 +1888,49 @@ namespace lev
   bool layout::reserve_clickable_text(const std::string &name, const std::string &text,
                                       luabind::object lclick_func)
   {
-    return cast_lay(_buf)->ReserveClickableText(name, text, lclick_func);
+    return cast_lay(_obj)->ReserveClickableText(name, text, lclick_func);
   }
 
   bool layout::reserve_image(const std::string &name, image *img)
   {
-    return cast_lay(_buf)->ReserveImage(name, boost::shared_ptr<image>(img->clone()));
+    return cast_lay(_obj)->ReserveImage(name, boost::shared_ptr<image>(img->clone()));
   }
 
   bool layout::reserve_new_line()
   {
-    return cast_lay(_buf)->ReserveNewLine();
+    return cast_lay(_obj)->ReserveNewLine();
   }
 
   bool layout::reserve_word(const std::string &word, const std::string &ruby)
   {
-    return cast_lay(_buf)->ReserveWord(word, ruby);
+    return cast_lay(_obj)->ReserveWord(word, ruby);
   }
 
 
   bool layout::set_color(luabind::object c)
   {
     if (! base::is_type_of(c, LEV_TCOLOR)) { return false; }
-    cast_lay(_buf)->color_obj = c;
+    cast_lay(_obj)->color_obj = c;
     return true;
   }
 
   bool layout::set_font(luabind::object f)
   {
     if (! base::is_type_of(f, LEV_TFONT)) { return false; }
-    cast_lay(_buf)->font_obj = f;
+    cast_lay(_obj)->font_obj = f;
     return true;
   }
 
   bool layout::set_on_hover(const std::string &name, luabind::object hover_func)
   {
-    return cast_lay(_buf)->SetOnHover(name, hover_func);
+    return cast_lay(_obj)->SetOnHover(name, hover_func);
+  }
+
+  bool layout::show_next()
+  {
+    if (is_done()) { return false; }
+    myLayout *lay = cast_lay(_obj);
+    return lay->ShowIndex(lay->last_index++);
   }
 
 }

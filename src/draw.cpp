@@ -51,6 +51,7 @@ int luaopen_lev_draw(lua_State *L)
         .def("line",  &canvas::line)
         .def("map2d", &canvas::map2d)
         .def("map2d", &canvas::map2d_auto)
+        .def("redraw", &canvas::redraw)
         .def("print", &canvas::print)
         .def("set_current", &canvas::set_current)
         .def("swap", &canvas::swap)
@@ -174,12 +175,12 @@ namespace lev
   {
   }
 
-  bool canvas::call_compiled(image *img)
+  bool canvas::call_compiled(drawable *img)
   {
     return img->call_compiled(this);
   }
 
-  bool canvas::call_texture(image *img)
+  bool canvas::call_texture(drawable *img)
   {
     return img->call_texture(this);
   }
@@ -204,7 +205,7 @@ namespace lev
     return clear_color(c.get_r(), c.get_g(), c.get_b(), c.get_a());
   }
 
-  bool canvas::compile(image *img, bool force)
+  bool canvas::compile(drawable *img, bool force)
   {
     if (! this->is_valid()) { return false; }
     return img->compile(this, force);
@@ -272,90 +273,19 @@ namespace lev
     return 1;
   }
 
-  bool canvas::draw_image(image *bmp, int x, int y, unsigned char alpha)
+  bool canvas::draw_image(drawable *img, int x, int y, unsigned char alpha)
   {
     if (! this->is_valid()) { return false; }
-
-    // nothing to draw
-    if (alpha == 0) { return true; }
-
-    if (bmp->is_texturized())
-    {
-      // bmp is texturized image
-      set_current();
-      call_texture(bmp);
-      glEnable(GL_TEXTURE_2D);
-      glBegin(GL_QUADS);
-        glColor4ub(255, 255, 255, alpha);
-        glTexCoord2i(0, 1);
-        glVertex2i(x, y);
-        glTexCoord2i(0, 0);
-        glVertex2i(x, y + bmp->get_h());
-        glTexCoord2i(1, 0);
-        glVertex2i(x + bmp->get_w(), y + bmp->get_h());
-        glTexCoord2i(1, 1);
-        glVertex2i(x + bmp->get_w(), y);
-      glEnd();
-      glDisable(GL_TEXTURE_2D);
-      return true;
-    }
-
-    if (bmp->is_compiled() && alpha == 255)
-    {
-      // bmp is compiled and not transparent at all
-      set_current();
-      glPushMatrix();
-        glTranslatef(x, y, 0);
-        this->call_compiled(bmp);
-      glPopMatrix();
-      return true;
-    }
-
-    try {
-      wxBitmap *b = (wxBitmap*)bmp->get_rawobj();
-      wxAlphaPixelData pixels(*b);
-      pixels.UseAlpha();
-      wxAlphaPixelData::Iterator p(pixels), rawStart;
-
-      set_current();
-      glPushMatrix();
-        glTranslatef(x, y, 0);
-        glBegin(GL_POINTS);
-          for (int i = 0 ; i < bmp->get_h() ; i++)
-          {
-            rawStart = p;
-            for (int j = 0 ; j < bmp->get_w() ; j++)
-            {
-              if (p.Alpha())
-              {
-                if (alpha == 255) { glColor4ub(p.Red(), p.Green(), p.Blue(), p.Alpha()); }
-                else
-                {
-                  // alpha is between 1 and 254
-                  glColor4ub(p.Red(), p.Green(), p.Blue(), p.Alpha() * (alpha / 255.0));
-                }
-                glVertex2i(j, i);
-              }
-              p++;
-            }
-            p = rawStart;
-            p.OffsetY(pixels, 1);
-          }
-        glEnd();
-      glPopMatrix();
-
-      return true;
-    }
-    catch (...) {
-      return false;
-    }
+    if (! img) { return false; }
+    return img->draw_on(this, x, y, alpha);
   }
+
 
   int canvas::draw_l(lua_State *L)
   {
     using namespace luabind;
     canvas *cv = NULL;
-    image *img = NULL;
+    drawable *img = NULL;
 
     luaL_checktype(L, 1, LUA_TUSERDATA);
     cv = object_cast<canvas *>(object(from_stack(L, 1)));
@@ -363,12 +293,21 @@ namespace lev
 
     if (t["lev.image.layout1"])
     {
-      img = object_cast<image *>(t["lev.image.layout1"]);
+      img = object_cast<drawable *>(t["lev.image.layout1"]);
     }
-    else if (t["lev.image"])
+    else if (t["lev.image1"])
     {
-      img = object_cast<image *>(t["lev.image"]);
+      img = object_cast<drawable *>(t["lev.image1"]);
     }
+    else if (t["lev.image.animation1"])
+    {
+      img = object_cast<drawable *>(t["lev.image.animation1"]);
+    }
+    else if (t["lev.image.transition1"])
+    {
+      img = object_cast<drawable *>(t["lev.image.transition1"]);
+    }
+
     if (img)
     {
       int x = 0, y = 0;
@@ -382,35 +321,15 @@ namespace lev
 
       if (t["alpha"]) { a = object_cast<int>(t["alpha"]); }
       else if (t["a"]) { a = object_cast<int>(t["a"]); }
-      else if (t["lua.number3"]) { y = object_cast<int>(t["lua.number3"]); }
+      else if (t["lua.number3"]) { a = object_cast<int>(t["lua.number3"]); }
 
       cv->draw_image(img, x, y, a);
       lua_pushboolean(L, true);
       return 1;
     }
-    if (t["lev.image"])
+    if (t["lev.prim.point1"])
     {
-      image *img = object_cast<image *>(t["lev.image"]);
-      int x = 0, y = 0;
-      unsigned char a = 255;
-
-      if (t["x"]) { x = object_cast<int>(t["x"]); }
-      else if (t["lua.number1"]) { x = object_cast<int>(t["lua.number1"]); }
-
-      if (t["y"]) { y = object_cast<int>(t["y"]); }
-      else if (t["lua.number2"]) { y = object_cast<int>(t["lua.number2"]); }
-
-      if (t["alpha"]) { a = object_cast<int>(t["alpha"]); }
-      else if (t["a"]) { a = object_cast<int>(t["a"]); }
-      else if (t["lua.number3"]) { y = object_cast<int>(t["lua.number3"]); }
-
-      cv->draw_image(img, x, y, a);
-      lua_pushboolean(L, true);
-      return 1;
-    }
-    if (t["lev.prim.point"])
-    {
-      point *pt = object_cast<point *>(t["lev.prim.point"]);
+      point *pt = object_cast<point *>(t["lev.prim.point1"]);
       cv->draw_point(pt);
       lua_pushboolean(L, true);
       return 1;
@@ -529,6 +448,13 @@ namespace lev
     }
   }
 
+  bool canvas::redraw()
+  {
+    wxPaintEvent e;
+    cast_draw(_obj)->AddPendingEvent(e);
+    return true;
+  }
+
   bool canvas::set_current()
   {
     cast_draw(_obj)->SetCurrent();
@@ -542,7 +468,7 @@ namespace lev
     return true;
   }
 
-  bool canvas::texturize(image *img, bool force)
+  bool canvas::texturize(drawable *img, bool force)
   {
     if (! this->is_valid()) { return false; }
     return img->texturize(this, force);

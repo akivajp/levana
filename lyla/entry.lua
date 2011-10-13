@@ -23,14 +23,17 @@ lev.require 'colors'
 lev.require 'lyla'
 lev.require 'layers'
 
+-- Initialize
+
+app = lev.app()
+mixer = lev.sound.mixer()
 
 -- Configuration
 conf = conf or {}
 conf.caption = 'Lyla Scripting System'
 conf.fg_color = white
 conf.fps = 50
-conf.font_size = 18
---conf.font_size = 12
+conf.font_size = 17
 conf.first_load = 'start'
 conf.frame_h = 480
 conf.frame_w = 640
@@ -38,44 +41,62 @@ conf.msg_x = 15
 conf.msg_y = 380
 conf.msg_w = 600
 conf.msg_h = 90
+conf.save_dir = 'savedata'
+conf.save_game = 'log'
+conf.save_system = 'system'
+conf.sel_x = 15
+conf.sel_y = 10
 conf.wait_line_icon = 'wait_line.png'
 conf.wait_page_icon = 'wait_page.png'
+
+-- Mixer Channels
+
+channels = {}
+channels.effect = mixer.ch[0]
+channels.voice  = mixer.ch[10]
+channels.bgm    = mixer.ch[20]
 
 -- Layers
 
 layers_init()
 -- background layer
-layers_add(lev.image.create(conf.frame_w, conf.frame_h),
+layers_add(lev.image.transition(),
            {name = 'bg', visible = true, texture = true})
 -- message background
 layers_add(lev.image.create(conf.frame_w, conf.frame_h),
-           {name = 'msgbg', visible = true, texture = true})
-layers.msgbg:fill_rect(10, 375, 620, 95, lev.prim.color(0, 0, 255, 128))
+           {name = 'msg_bg', texture = true, msg = true})
+layers.msg_bg.img:fill_rect(10, 375, conf.frame_w - 20, 95, lev.prim.color(0, 0, 255, 128))
 -- message foreground
-layers_add(lev.image.layout(conf.frame_w),
-           {name = 'msgfg', visible = true, x = conf.msg_x, y = conf.msg_y, compile = true})
+layers_add(lev.image.layout(conf.frame_w - 10),
+           {name = 'msg_fg', x = conf.msg_x, y = conf.msg_y, compile = true, msg = true})
+layers.msg_fg.img.font.size = conf.font_size
+layers.msg_fg.img.color = conf.fg_color or white
+-- selection background
+layers_add(lev.image.create(conf.frame_w, conf.frame_h),
+           {name = 'sel_bg', texture = true, msg = true})
+layers.sel_bg.img:fill_rect(10, 5, conf.frame_w - 20, conf.frame_h - 10, lev.prim.color(255, 0, 200, 128))
+-- selection foreground
+layers_add(lev.image.layout(conf.frame_w - 10),
+           {name = 'sel_fg', x = conf.sel_x, y = conf.sel_y, compile = true, msg = true})
+layers.sel_fg.img.font.size = conf.font_size
+layers.sel_fg.img.color = conf.fg_color or white
+msg_activate('msg')
+--msg_activate('sel')
 
-layers.msgfg.font.size = conf.font_size
-layers.msgfg.color = conf.fg_color or white
 -- wait line icon
 local icon_path = lev.package.resolve(conf.wait_line_icon)
 if not icon_path then
   error(string.format('%s is not found'), conf.wait_line_icon)
 end
 layers_add(lev.image.load(icon_path.full),
-           {name = 'wait_line', on = false, x = 590, y = 440, texture = true})
+           {name = 'wait_line', visible = false, x = 590, y = 440, texture = true})
 -- wait page icon
 local icon_path = lev.package.resolve(conf.wait_page_icon)
 if not icon_path then
   error(string.format('%s is not found'), conf.wait_page_icon)
 end
 layers_add(lev.image.load(icon_path.full),
-           {name = 'wait_page', on = false, x = 590, y = 440, texture = true})
-
--- Initialize
-
-app = lev.app()
-mixer = lev.sound.mixer()
+           {name = 'wait_page', visible = false, x = 590, y = 440, texture = true})
 
 -- Design
 
@@ -84,17 +105,17 @@ canvas = lev.gui.canvas { p = main, w = conf.frame_w, h = conf.frame_h }
 main:fit()
 
 -- Controls
-if (not lyla.load(conf.first_load)) then
-  lev.gui.msgbox(string.format(_'%s is not found!', conf.first_load))
-  return -1
-end
+lyla.init()
+--if (not lyla.load(conf.first_load)) then
+--  lev.gui.msgbox(string.format(_'%s is not found!', conf.first_load))
+--  return -1
+--end
 
 timer = lev.timer()
 timer.notify = function()
   lyla.proc()
 end
 timer:start(50)
-
 
 canvas.on_left_down = function(e)
   -- click waiting process
@@ -104,10 +125,10 @@ canvas.on_left_down = function(e)
 
   -- clickable images' process
   for i,j in ipairs(layers) do
-    if j.type_name == 'lev.image.layout' then
+    if j.img.type_name == 'lev.image.layout' then
       local off_x = j.x
       local off_y = j.y
-      j:on_left_click(e.x - off_x, e.y - off_y)
+      j.img:on_left_click(e.x - off_x, e.y - off_y)
     end
   end
 
@@ -117,14 +138,15 @@ end
 
 canvas.on_right_down = function(e)
 --  print('right', e.x, e.y)
+--  app:yield()
 end
 
 canvas.on_motion = function(e)
   for i,j in ipairs(layers) do
-    if j.type_name == 'lev.image.layout' then
+    if j.img.type_name == 'lev.image.layout' then
       local off_x = j.x
       local off_y = j.y
-      j:on_hover(e.x - off_x, e.y - off_y)
+      j.img:on_hover(e.x - off_x, e.y - off_y)
     end
   end
 end
@@ -132,6 +154,21 @@ end
 canvas.on_key_down = function(e)
 --  print('down', e.key, e.x, e.y)
 --  e:skip()
+end
+
+canvas.on_paint = function(e)
+  canvas:clear(0, 0, 0)
+  for i, j in ipairs(layers) do
+    if j.texture then
+      canvas:texturize(j.img)
+    elseif j.compile then
+      canvas:compile(j.img)
+    end
+    if j.visible and j.img then
+      canvas:draw(j.img, j.x or 0, j.y or 0)
+    end 
+  end
+  canvas:swap()
 end
 
 -- Execute
@@ -142,36 +179,15 @@ canvas:enable_alpha_blending()
 
 sw = lev.stop_watch()
 app.fps = conf.fps or 50
-jobs = {}
+
 while main.is_valid do
---sw:start()
-  canvas:clear(0, 0, 0)
-
-  for i, j in ipairs(layers) do
---print('draw', sw.time)
-    app:yield()
-    if j.texture then
-      canvas:texturize(j)
-    elseif j.compile then
-      canvas:compile(j)
-    end
-    if j.visible then
-      canvas:draw(j, j.x or 0, j.y or 0)
-    end 
-  end
-
-  if type(jobs) == 'table' then
-    local f = table.remove(jobs, 1)
-    if type(f) == 'function' then
-      f()
-    end
-  end
-
-  canvas:swap()
+--  canvas.on_paint()
+  canvas:redraw()
   app:wait()
---print('last', sw.time)
---print()
 end
 
-print(lyla.history)
+lyla.exit()
+lyla.save_game()
+
+print(log.history)
 

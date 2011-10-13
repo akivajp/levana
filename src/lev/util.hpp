@@ -30,6 +30,8 @@ namespace lev
       static bool print_table(luabind::object t);
       static int remove_first(lua_State *L);
       static int reverse(lua_State *L);
+      static std::string serialize(luabind::object var, int indent = 0);
+      static std::string serialize1(luabind::object var) { return serialize(var); }
       static int using_l(lua_State *L);
   };
 }

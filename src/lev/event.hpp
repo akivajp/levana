@@ -38,6 +38,7 @@ namespace lev
       virtual object get_on_left_down();
       virtual object get_on_menu(int id);
       virtual object get_on_motion();
+      virtual object get_on_paint();
       virtual object get_on_right_down();
       void *get_rawobj() { return _obj; }
       virtual type_id get_type_id() const { return LEV_THANDLER; }
@@ -52,6 +53,7 @@ namespace lev
       virtual bool set_on_left_down(object lua_func);
       virtual bool set_on_menu(int id, object lua_func);
       virtual bool set_on_motion(object lua_func);
+      virtual bool set_on_paint(object lua_func);
       virtual bool set_on_right_down(object lua_func);
 
     protected:

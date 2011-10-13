@@ -1,8 +1,14 @@
 require 'lev.fs'
 require 'lev.package'
 require 'lev.string'
+require 'lev.util'
 
 lev.require 'tags'
+
+-- status variables
+log = { }
+sys = { }
+tmp = { }
 
 module('lyla', package.seeall)
 
@@ -16,8 +22,11 @@ new_line = false
 status = ''
 do_list = {}
 
-
 -- functions
+
+function exit()
+  save_system()
+end
 
 -- find tag starting with "left" and ending with "right". e.g: [ and ]
 -- seek at next position from the correspondence termination
@@ -49,10 +58,23 @@ function find_tag(left, right)
   return ''
 end
 
+-- init the data
+function init()
+  buffer = lev.string.mb_str(content)
+  key_pressed = false
+--  log.history = ''
 
+  history = ''
+  load_system()
+  load_game()
+--  load_scenario(conf.first_load)
+end
 
 -- load file and init
-function load(filename)
+function load_scenario(filename, target)
+  if not filename then
+    filename = log.filename or conf.first_load
+  end
   local real_file
   local found = lev.package.resolve(filename)
               or lev.package.resolve(filename .. '.lyl')
@@ -62,19 +84,43 @@ function load(filename)
   local infile = io.open(found.full, 'r')
   content = infile:read('*a')
   buffer = lev.string.mb_str(content)
-  history = ''
   key_pressed = false
   new_line = true
   status = 'continue'
   do_list = {}
+  history = history or ''
+
+  log.filename = filename
+  if target then
+    local pos = content:find(string.format('^%%*%s|', target))
+    pos = pos or content:find(string.format('^%%*%s\r?\n', target))
+    pos = pos or content:find(string.format('\n%%*%s|', target))
+    pos = pos or content:find(string.format('\n%%*%s\r?\n', target))
+    if pos then
+      buffer = lev.string.mb_str(content:sub(pos))
+    end
+  end
   return true
+end
+
+function load_game(id)
+  lev.fs.mkdir(conf.save_dir, true)
+  local suffix = ''
+  if id then suffix = '_'..id end
+  local f = loadfile(conf.save_dir .. '/' .. conf.save_game .. suffix .. '.lua')
+  if f then
+    _G.log = f()
+  else
+    _G.log = { }
+  end
+  history = log.history or ''
+--print('loading', log.filename, log.label, log.scene)
+  load_scenario(log.filename, log.label)
 end
 
 function load_list()
   while true do
     local ch = tostring(buffer:index(0))
---if ch then print('CH', ch) end
---print("BUFFERLEN:", #buffer)
     if #ch == 0 then return true end
     if ch == '[' then
       local tag = find_tag('[', ']')
@@ -123,24 +169,47 @@ function load_list()
       end
     elseif ch == '*' and new_line then
       -- scene setting
-      local line = seek_to_endl()
-print('SCENE:', line)
+      local line = tostring(seek_to_endl())
+      log.label = line:match('%*(%w+)')
+      local scene  = line:match('%*%w+|(.*)')
+      if scene and #scene > 0 then
+        log.scene = scene
+      end
+      log.history = history
+print('scene:', log.label, log.scene)
     elseif ch == '\n' or ch == '\r' then
       -- nothing to do (no line feed)
       buffer = buffer:sub(1)
-      history = history .. ch
+--      history = history .. ch
       new_line = true
     elseif ch == ';' then
       -- comment line
       seek_to_endl()
     else
-      layers.msgfg:reserve_word(ch)
-      table.insert(do_list, function() layers.msgfg:draw_next() end)
+      -- ordinal character
+      msg_reserve_word(ch)
+      local f = function()
+        msg_show_next()
+        canvas.on_paint()
+      end
+      table.insert(do_list, f)
       buffer = buffer:sub(1)
       history = history .. ch
     end
   end
   return true
+end
+
+
+function load_system()
+  lev.fs.mkdir(conf.save_dir, true)
+  local f = loadfile(conf.save_dir .. '/' .. conf.save_system .. '.lua')
+  if f then
+    sys = f()
+  else
+    sys = { }
+  end
+  sys.count = (sys.count or 0) + 1
 end
 
 function proc()
@@ -151,11 +220,36 @@ function proc()
     else
       return load_list()
     end
+  elseif status == 'stop' then
+    return stop()
   elseif status == 'wait' then
     return wait()
   elseif status == 'wait_key' then
     return wait_key()
   end
+end
+
+function save_game(id)
+  local suffix = ''
+  if id then suffix = '_'..id end
+  local file = io.open(conf.save_dir .. '/' .. conf.save_game .. suffix .. '.lua', 'w')
+  file:write('return ' .. lev.util.serialize(log) .. '\n')
+  file:close()
+end
+
+function save_system()
+  local file = io.open(conf.save_dir .. '/' .. conf.save_system .. '.lua', 'w')
+  file:write('return ' .. lev.util.serialize(sys) .. '\n')
+  file:close()
+end
+
+function seek_to(term)
+  local index = buffer:find(term)
+  if index < 0 then return '' end
+
+  local value = buffer:mid(0, index)
+  buffer = buffer:mid(index + #lev.string.mb_str(term))
+  return value.str
 end
 
 function seek_to_endl()
@@ -171,6 +265,10 @@ function seek_to_endl()
   return line
 end
 
+function stop()
+  return nil
+end
+
 function wait()
   if tags.wait_timer.time < tags.wait_until then
     status = 'wait'
@@ -181,8 +279,8 @@ end
 
 function wait_key()
   if key_pressed then
-    layers.wait_line.on = false
-    layers.wait_page.on = false
+    layers.wait_line.visible = false
+    layers.wait_page.visible = false
     key_pressed = false
     status = 'continue'
   end

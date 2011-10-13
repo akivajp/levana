@@ -29,6 +29,7 @@ int luaopen_lev_string(lua_State *L)
         .def("cmp", &mb_string::compare_with)
         .def("compare", &mb_string::compare_with)
         .def("empty", &mb_string::empty)
+        .def("find", &mb_string::find)
         .def("index", &mb_string::index, adopt(result))
         .property("len", &mb_string::len)
         .property("length", &mb_string::len)
@@ -147,6 +148,11 @@ namespace lev
   bool mb_string::empty() const
   {
     return cast_str(_obj)->empty();
+  }
+
+  int mb_string::find(const std::string &str)
+  {
+    return cast_str(_obj)->Find(wxString(str.c_str(), wxConvUTF8));
   }
 
   std::string mb_string::get_string() const

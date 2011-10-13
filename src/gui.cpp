@@ -756,6 +756,7 @@ namespace lev
     myHtmlWindow *obj = NULL;
     wxWindow *p = NULL;
     try {
+      image::init();
       html = new htmlview;
       if (parent)
       {
